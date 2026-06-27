@@ -1,0 +1,37 @@
+{
+  "name": "sentinel-vault-console",
+  "version": "1.0.0",
+  "description": "Defence-grade enterprise password manager web console prototype.",
+  "main": "server.mjs",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "vite build",
+    "preview": "NODE_ENV=production node server.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.7.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "lucide-react": "^1.21.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
+  }
+}
