@@ -1,0 +1,10 @@
+services:
+  sentinel-vault:
+    build: .
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 5173
+      VAULT_ROOT_KEY: change-me-for-local-demo-only

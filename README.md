@@ -49,9 +49,42 @@ http://127.0.0.1:5173
 
 ```bash
 pnpm typecheck
+pnpm test
 pnpm build
 pnpm preview
 ```
+
+Run the full local quality gate:
+
+```bash
+pnpm verify
+```
+
+## Project Structure
+
+```text
+src/
+  api/              Frontend API client
+  lib/              Frontend utilities
+  server/
+    crypto/         Password hashing and vault encryption
+    data/           Seed state and store abstraction
+    middleware/     Auth, RBAC, and error middleware
+    rbac/           Role-permission model
+    routes/         API route modules
+    services/       Vault, audit, and session services
+  types.ts          Shared frontend contracts
+tests/              Node test suites
+.github/workflows/ CI quality gate
+```
+
+## Docker
+
+```bash
+docker compose up --build
+```
+
+The production container serves the compiled Vite frontend from the Express API.
 
 ## Configuration
 

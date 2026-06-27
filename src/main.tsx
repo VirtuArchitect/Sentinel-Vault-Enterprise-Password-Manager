@@ -29,30 +29,10 @@ import {
   Users,
   WandSparkles
 } from "lucide-react";
+import { api } from "./api/client";
+import { generatePassword as generateCredentialPassword } from "./lib/passwordGenerator";
+import type { AddSecret, AuditEvent, ConsoleData, Policies, Secret, UserRecord } from "./types";
 import "./styles.css";
-
-type Role = "SECURITY_ADMIN" | "VAULT_OPERATOR" | "AUDITOR";
-type UserRecord = { id: string; name: string; email: string; role: Role; unit: string; mfa: boolean; permissions: string[] };
-type VaultRecord = { id: string; name: string; classification: string; ownerUnit: string; members: string[]; health: number };
-type Secret = { id: string; vaultId: string; name: string; username: string; url: string; tags: string[]; risk: string; rotatedAt: string; sharedWith: string[]; strength: number };
-type AuditEvent = { id: string; ts: string; actor: string; action: string; target: string; detail: string; source: string; outcome: string };
-type Policies = { rotationDays: number; minimumLength: number; mfaRequired: boolean; justInTimeAccess: boolean; breakGlassApproval: string; clipboardTtl: number; sessionMinutes: number };
-type ConsoleData = { user: UserRecord; users: UserRecord[]; vaults: VaultRecord[]; secrets: Secret[]; policies: Policies; audit: AuditEvent[]; metrics: { secrets: number; vaults: number; stale: number; highRisk: number } };
-type AddSecret = { vaultId: string; name: string; username: string; password: string; repeat: string; url: string; tags: string; notes: string };
-
-const api = async <T,>(path: string, options: RequestInit = {}, token?: string): Promise<T> => {
-  const response = await fetch(path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {})
-    }
-  });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || "Request failed");
-  return body;
-};
 
 const blankSecret = (vaultId = ""): AddSecret => ({
   vaultId,
@@ -176,15 +156,7 @@ function App() {
   };
 
   const generatePassword = () => {
-    const pools = [
-      generator.upper ? "ABCDEFGHJKLMNPQRSTUVWXYZ" : "",
-      generator.lower ? "abcdefghijkmnopqrstuvwxyz" : "",
-      generator.digits ? "23456789" : "",
-      generator.symbols ? "!#$%&*+-=?@^_" : ""
-    ].filter(Boolean);
-    const joined = pools.join("") || "abcdefghijkmnopqrstuvwxyz23456789";
-    const chars = Array.from({ length: generator.length }, (_, index) => pools[index % pools.length]?.[Math.floor(Math.random() * pools[index % pools.length].length)] || joined[Math.floor(Math.random() * joined.length)]);
-    const password = chars.sort(() => Math.random() - 0.5).join("");
+    const password = generateCredentialPassword(generator);
     setAddSecret((current) => ({ ...current, password, repeat: password }));
   };
 

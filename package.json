@@ -7,7 +7,9 @@
     "dev": "node server.mjs",
     "build": "vite build",
     "preview": "NODE_ENV=production node server.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_ENV=test node --test tests/*.test.mjs",
+    "verify": "pnpm typecheck && pnpm test && pnpm build"
   },
   "keywords": [],
   "author": "",
