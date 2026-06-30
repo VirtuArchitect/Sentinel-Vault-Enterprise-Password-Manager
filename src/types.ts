@@ -65,6 +65,7 @@ export type ConsoleData = {
   identity: IdentityStatus;
   crypto: CryptoStatus;
   integrations: IntegrationStatus;
+  storage: StorageStatus;
   audit: AuditEvent[];
   accessRequests: AccessRequest[];
   metrics: {
@@ -75,6 +76,14 @@ export type ConsoleData = {
     reused: number;
     pendingRequests: number;
   };
+};
+
+export type StorageStatus = {
+  mode: string;
+  statePath: string;
+  stateVersion: number;
+  exists: boolean;
+  backups: Array<{ file: string; size: number; createdAt: string }>;
 };
 
 export type IntegrationStatus = {

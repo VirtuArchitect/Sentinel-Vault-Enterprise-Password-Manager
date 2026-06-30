@@ -106,7 +106,7 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedSecretId, setSelectedSecretId] = useState("");
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"entries" | "access" | "audit" | "users" | "policy">("entries");
+  const [tab, setTab] = useState<"entries" | "access" | "audit" | "users" | "policy" | "manage">("entries");
   const [reveal, setReveal] = useState<{ name: string; password: string; expiresIn: number } | null>(null);
   const [toast, setToast] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -270,6 +270,7 @@ function App() {
             <button className={tab === "audit" ? "active" : ""} onClick={() => setTab("audit")}>Audit</button>
             <button className={tab === "users" ? "active" : ""} onClick={() => setTab("users")}>Users</button>
             <button className={tab === "policy" ? "active" : ""} onClick={() => setTab("policy")}>Options</button>
+            <button className={tab === "manage" ? "active" : ""} onClick={() => setTab("manage")}>Manage</button>
           </div>
 
           {tab === "entries" && (
@@ -319,6 +320,7 @@ function App() {
           {tab === "audit" && <AuditTable events={data.audit} />}
           {tab === "users" && <UserTable users={data.users} />}
           {tab === "policy" && <PolicyPanel policies={data.policies} canWrite={can("policy:write")} onChange={updatePolicy} />}
+          {tab === "manage" && <ManagementPanel data={data} />}
         </section>
       </section>
 
@@ -441,6 +443,24 @@ function UserTable({ users }: { users: UserRecord[] }) {
     <div className="utility-table">
       <div className="table-header users"><span>Name</span><span>Email</span><span>Role</span><span>MFA</span><span>Unit</span></div>
       {users.map((user) => <div className="user-line" key={user.id}><strong>{user.name}</strong><span>{user.email}</span><span>{user.role.replace("_", " ")}</span><span>{user.mfa ? "Enabled" : "Disabled"}</span><span>{user.unit}</span></div>)}
+    </div>
+  );
+}
+
+function ManagementPanel({ data }: { data: ConsoleData }) {
+  return (
+    <div className="options-panel management-panel">
+      <h2><Settings size={18} />Management</h2>
+      <dl>
+        <div><dt>Identity</dt><dd>{data.identity.name} ({data.identity.mode})</dd></div>
+        <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion}</dd></div>
+        <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
+        <div><dt>Backups</dt><dd>{data.storage.backups.length} retained</dd></div>
+        <div><dt>SIEM</dt><dd>{data.integrations.siem.mode}</dd></div>
+        <div><dt>DevOps tokens</dt><dd>{data.integrations.devopsApi.tokenCount}</dd></div>
+        <div><dt>Secret health</dt><dd>{data.metrics.highRisk} high risk / {data.metrics.stale} stale / {data.metrics.reused} reused</dd></div>
+        <div><dt>Requests</dt><dd>{data.metrics.pendingRequests} pending</dd></div>
+      </dl>
     </div>
   );
 }
