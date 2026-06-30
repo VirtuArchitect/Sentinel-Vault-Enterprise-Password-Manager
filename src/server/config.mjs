@@ -11,5 +11,7 @@ export const config = {
   vaultRootKey: process.env.VAULT_ROOT_KEY || "sentinel-demo-root-key",
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
   rootDir,
+  dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),
+  stateFile: process.env.STATE_FILE || "sentinel-state.json",
   distDir: path.join(rootDir, "dist")
 };

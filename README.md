@@ -41,6 +41,12 @@ pnpm install
 pnpm dev
 ```
 
+Demo dashboard / console:
+
+```text
+http://127.0.0.1:5173
+```
+
 Open:
 
 ```text
@@ -103,6 +109,7 @@ The package includes installer scripts for running Sentinel Vault on Windows Ser
 Implemented in this prototype:
 
 - Encrypted in-memory vault records and secret metadata
+- JSON-backed local persistence for prototype state
 - RBAC-protected API routes with object-level vault checks
 - JIT access request and approval records
 - Temporary reveal access after approval
@@ -111,7 +118,7 @@ Implemented in this prototype:
 
 Still intentionally out of scope for the prototype:
 
-- Persistent database storage
+- Production database storage with migrations
 - AD, Entra ID, LDAP, SAML, OIDC, passkey, or real MFA integration
 - Browser extension autofill
 - SIEM, ITSM, PAM, SOAR, Kubernetes, and CI/CD integrations

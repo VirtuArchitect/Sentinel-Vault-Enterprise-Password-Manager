@@ -13,4 +13,5 @@ export const audit = (actorId, action, target, detail = "", source = "127.0.0.1"
     source,
     outcome: "allowed"
   });
+  store.save();
 };
