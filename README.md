@@ -2,6 +2,9 @@
 
 Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager prototype with a web console and an Express API. It is designed as a defence-grade reference interface: group tree, entry table, database-style tabs, entry details, password generator, audit trail, RBAC, policy controls, and encrypted vault records.
 
+<img width="1168" height="186" alt="image" src="https://github.com/user-attachments/assets/428f5d89-8840-444d-8aaf-47b40d64f131" />
+
+
 **Demo:** [Open the local Sentinel Vault console](http://127.0.0.1:5173) after starting the app with `pnpm dev`.
 
 ## Features
