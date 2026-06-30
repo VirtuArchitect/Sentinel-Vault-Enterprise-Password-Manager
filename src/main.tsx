@@ -411,9 +411,9 @@ function AccessTable({ requests, canApprove, onDecision }: { requests: AccessReq
           <span>{new Date(request.requestedAt).toLocaleString()}</span>
           <strong>{request.secretName}</strong>
           <span>{request.requesterName}</span>
-          <span>{request.status}{request.expiresAt ? ` until ${new Date(request.expiresAt).toLocaleTimeString()}` : ""}</span>
+          <span>{request.status} {request.approvalCount}/{request.requiredApprovals}{request.expiresAt ? ` until ${new Date(request.expiresAt).toLocaleTimeString()}` : ""}</span>
           <small>
-            {request.reason}
+            {request.ticketRef ? `${request.ticketRef} - ` : ""}{request.reason}
             {canApprove && request.status === "pending" && (
               <span className="row-actions">
                 <button onClick={() => onDecision(request, "approve")}>Approve</button>

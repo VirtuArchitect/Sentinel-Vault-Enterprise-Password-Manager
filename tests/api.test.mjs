@@ -93,10 +93,12 @@ test("approved access request grants temporary reveal access", async () => {
 
     const requestResponse = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
       method: "POST",
-      body: JSON.stringify({ secretId: "s3", reason: "Need temporary supplier incident support" })
+      body: JSON.stringify({ secretId: "s3", reason: "Need temporary supplier incident support", ticketRef: "INC-123", minutes: 30 })
     });
     assert.equal(requestResponse.status, 201);
     const { request } = await requestResponse.json();
+    assert.equal(request.ticketRef, "INC-123");
+    assert.equal(request.requiredApprovals, 1);
 
     const approveResponse = await jsonFetch(`${baseUrl}/access-requests/${request.id}/approve`, ada.token, {
       method: "POST",

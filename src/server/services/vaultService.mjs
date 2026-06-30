@@ -52,8 +52,12 @@ const publicRequest = (request) => {
   const secret = store.findSecretById(request.secretId);
   const requester = store.findUserById(request.requesterId);
   const approver = store.findUserById(request.approvedBy);
+  const approvals = request.approvals || [];
   return {
     ...request,
+    approvals,
+    approvalCount: approvals.length,
+    requiredApprovals: request.requiredApprovals || 1,
     secretName: secret?.name || "Unknown secret",
     requesterName: requester?.name || "Unknown user",
     approvedByName: approver?.name || null
@@ -202,7 +206,7 @@ export const shareSecret = (user, id, userId) => {
   audit(user.id, "SHARE_SECRET", secret.name, `Granted to ${target.name}`);
 };
 
-export const requestSecretAccess = (user, secretId, reason) => {
+export const requestSecretAccess = (user, secretId, reason, options = {}) => {
   const secret = requireSecret(secretId);
   if (canAccessSecret(user, secret)) {
     const error = new Error("User already has access to this secret");
@@ -215,6 +219,7 @@ export const requestSecretAccess = (user, secretId, reason) => {
     error.status = 400;
     throw error;
   }
+  const requestedMinutes = clampInteger(options.minutes || 30, 5, 240, "minutes");
   const existing = store.state.accessRequests.find((request) => request.secretId === secretId && request.requesterId === user.id && request.status === "pending");
   if (existing) return publicRequest(existing);
   const request = {
@@ -226,7 +231,11 @@ export const requestSecretAccess = (user, secretId, reason) => {
     requestedAt: new Date().toISOString(),
     expiresAt: null,
     approvedBy: null,
-    decidedAt: null
+    decidedAt: null,
+    ticketRef: String(options.ticketRef || "").trim(),
+    requestedMinutes,
+    approvals: [],
+    requiredApprovals: secret.approvalsRequired ? 2 : 1
   };
   store.state.accessRequests.unshift(request);
   audit(user.id, "ACCESS_REQUEST", secret.name, text);
@@ -242,17 +251,29 @@ export const approveAccessRequest = (user, requestId, minutes = 30) => {
   }
   const secret = requireSecret(request.secretId);
   requireVaultAccess(user, secret);
+  if (request.requesterId === user.id) {
+    const error = new Error("Requesters cannot approve their own temporary access");
+    error.status = 403;
+    throw error;
+  }
   if (request.status !== "pending") {
     const error = new Error("Access request has already been decided");
     error.status = 400;
     throw error;
   }
-  const ttl = clampInteger(minutes, 5, 240, "minutes");
-  request.status = "approved";
-  request.expiresAt = new Date(Date.now() + ttl * 60000).toISOString();
+  const ttl = clampInteger(minutes || request.requestedMinutes || 30, 5, 240, "minutes");
+  request.approvals = request.approvals || [];
+  if (!request.approvals.includes(user.id)) request.approvals.push(user.id);
   request.approvedBy = user.id;
-  request.decidedAt = new Date().toISOString();
-  audit(user.id, "ACCESS_APPROVED", secret.name, `Temporary access for ${ttl} minutes`);
+  request.requestedMinutes = ttl;
+  request.requiredApprovals = request.requiredApprovals || (secret.approvalsRequired ? 2 : 1);
+  const privilegedApproval = user.role === "SECURITY_ADMIN" && secret.approvalsRequired;
+  if (privilegedApproval || request.approvals.length >= request.requiredApprovals) {
+    request.status = "approved";
+    request.expiresAt = new Date(Date.now() + ttl * 60000).toISOString();
+    request.decidedAt = new Date().toISOString();
+  }
+  audit(user.id, "ACCESS_APPROVED", secret.name, `Approval ${request.approvals.length}/${request.requiredApprovals}; temporary access for ${ttl} minutes`);
   return publicRequest(request);
 };
 

@@ -43,7 +43,11 @@ export const createSeedState = () => ({
       requestedAt: "2026-06-27T08:15:00Z",
       expiresAt: null,
       approvedBy: null,
-      decidedAt: null
+      decidedAt: null,
+      ticketRef: "INC-2026-0627",
+      requestedMinutes: 30,
+      approvals: [],
+      requiredApprovals: 2
     }
   ],
   audit: [

@@ -55,7 +55,12 @@ consoleRoutes.post("/secrets/:id/share", auth, can("vault:share"), (req, res, ne
 
 consoleRoutes.post("/access-requests", auth, (req, res, next) => {
   try {
-    res.status(201).json({ request: requestSecretAccess(req.user, req.body.secretId, req.body.reason) });
+    res.status(201).json({
+      request: requestSecretAccess(req.user, req.body.secretId, req.body.reason, {
+        minutes: req.body.minutes,
+        ticketRef: req.body.ticketRef
+      })
+    });
   } catch (err) {
     next(err);
   }

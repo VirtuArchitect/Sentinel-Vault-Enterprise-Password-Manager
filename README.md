@@ -13,6 +13,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Password generator with configurable character classes and quality feedback
 - Audit trail for login, reveal, rotate, share, create, policy, and access approval actions
 - Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
+- JIT approval metadata with ticket references, requested duration, approval counts, and high-risk approval requirements
 - Session expiry enforcement and permission-scoped console payloads
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
@@ -114,6 +115,7 @@ Implemented in this prototype:
 - JSON-backed local persistence for prototype state
 - RBAC-protected API routes with object-level vault checks
 - JIT access request and approval records
+- Ticket-linked approval workflow metadata and high-risk multi-approval support
 - Temporary reveal access after approval
 - Policy validation and session timeout enforcement
 - Audit events for security-sensitive actions

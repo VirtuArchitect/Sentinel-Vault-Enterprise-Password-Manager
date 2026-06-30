@@ -129,4 +129,9 @@ export type AccessRequest = {
   approvedBy: string | null;
   approvedByName: string | null;
   decidedAt: string | null;
+  ticketRef: string;
+  requestedMinutes: number;
+  approvals: string[];
+  approvalCount: number;
+  requiredApprovals: number;
 };
