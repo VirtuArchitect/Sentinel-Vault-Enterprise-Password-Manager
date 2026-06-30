@@ -1,6 +1,7 @@
 import express from "express";
 import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
+import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken } from "../services/serviceTokenService.mjs";
@@ -37,6 +38,14 @@ consoleRoutes.get("/integrations/status", auth, can("audit:read"), (_req, res) =
 
 consoleRoutes.get("/service-tokens", auth, can("policy:write"), (_req, res) => {
   res.json({ tokens: listServiceTokens() });
+});
+
+consoleRoutes.get("/storage/status", auth, can("policy:write"), (_req, res) => {
+  res.json({ storage: store.getStorageStatus() });
+});
+
+consoleRoutes.post("/storage/backup", auth, can("policy:write"), (_req, res) => {
+  res.json({ backupPath: store.createBackup() });
 });
 
 consoleRoutes.post("/service-tokens", auth, can("policy:write"), (req, res, next) => {

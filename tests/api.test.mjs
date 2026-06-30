@@ -239,6 +239,20 @@ test("managed service tokens are scoped to allowed secrets", async () => {
   }
 });
 
+test("storage status and backup endpoints are admin-only", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const status = await jsonFetch(`${baseUrl}/storage/status`, ada.token);
+    assert.equal(status.status, 200);
+    const body = await status.json();
+    assert.equal(body.storage.mode, "json");
+    assert.equal(body.storage.stateVersion, 2);
+
+    const backup = await jsonFetch(`${baseUrl}/storage/backup`, ada.token, { method: "POST" });
+    assert.equal(backup.status, 200);
+  });
+});
+
 test("approved access request grants temporary reveal access", async () => {
   await withApi(async (baseUrl) => {
     const morgan = await login(baseUrl, "morgan@defence.local");
