@@ -22,5 +22,11 @@ export const config = {
     tenantId: process.env.ENTRA_TENANT_ID || "",
     groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups"
   },
+  integrations: {
+    siemWebhookUrl: process.env.SIEM_WEBHOOK_URL || "",
+    itsmBaseUrl: process.env.ITSM_BASE_URL || "",
+    devopsApiEnabled: process.env.DEVOPS_API_ENABLED === "true",
+    outboxLimit: Number(process.env.INTEGRATION_OUTBOX_LIMIT || 100)
+  },
   distDir: path.join(rootDir, "dist")
 };

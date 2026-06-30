@@ -64,6 +64,7 @@ export type ConsoleData = {
   policies: Policies;
   identity: IdentityStatus;
   crypto: CryptoStatus;
+  integrations: IntegrationStatus;
   audit: AuditEvent[];
   accessRequests: AccessRequest[];
   metrics: {
@@ -74,6 +75,13 @@ export type ConsoleData = {
     reused: number;
     pendingRequests: number;
   };
+};
+
+export type IntegrationStatus = {
+  siem: { configured: boolean; mode: string };
+  itsm: { configured: boolean; mode: string };
+  devopsApi: { enabled: boolean; mode: string };
+  outboxDepth: number;
 };
 
 export type CryptoStatus = {

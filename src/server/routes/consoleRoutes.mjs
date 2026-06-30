@@ -1,6 +1,7 @@
 import express from "express";
 import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
+import { getIntegrationStatus } from "../services/integrationService.mjs";
 import {
   approveAccessRequest,
   createSecret,
@@ -22,6 +23,10 @@ consoleRoutes.get("/console", auth, (req, res) => {
 
 consoleRoutes.get("/reports/secret-health", auth, can("audit:read"), (_req, res) => {
   res.json({ secrets: getSecretHealthReport() });
+});
+
+consoleRoutes.get("/integrations/status", auth, can("audit:read"), (_req, res) => {
+  res.json({ integrations: getIntegrationStatus() });
 });
 
 consoleRoutes.post("/secrets", auth, can("vault:write"), (req, res, next) => {

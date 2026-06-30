@@ -67,6 +67,7 @@ test("console payload respects users and audit permissions", async () => {
     assert.equal(consoleData.identity.configured, true);
     assert.equal(consoleData.crypto.algorithm, "AES-256-GCM");
     assert.equal(consoleData.crypto.keyVersion, "demo-root-v1");
+    assert.equal(consoleData.integrations.siem.mode, "outbox");
   });
 });
 
@@ -118,6 +119,17 @@ test("secret health report is auditor-only and reuse is blocked", async () => {
       })
     });
     assert.equal(blocked.status, 400);
+  });
+});
+
+test("integration status is available to audit-capable users", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const response = await jsonFetch(`${baseUrl}/integrations/status`, ada.token);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.integrations.siem.configured, false);
+    assert.equal(body.integrations.devopsApi.enabled, false);
   });
 });
 

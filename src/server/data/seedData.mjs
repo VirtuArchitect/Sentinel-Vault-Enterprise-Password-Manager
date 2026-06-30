@@ -51,6 +51,7 @@ export const createSeedState = () => ({
       requiredApprovals: 2
     }
   ],
+  integrationOutbox: [],
   audit: [
     { id: crypto.randomUUID(), ts: "2026-06-27T07:42:00Z", actor: "Iris Chen", action: "EXPORT_REVIEW", target: "Audit evidence pack", detail: "Quarterly compliance export opened", source: "10.20.4.18", outcome: "allowed" },
     { id: crypto.randomUUID(), ts: "2026-06-26T17:10:00Z", actor: "Morgan Vale", action: "ROTATE_SECRET", target: "Secure Build Registry", detail: "Automated rotation completed", source: "10.20.9.42", outcome: "allowed" },

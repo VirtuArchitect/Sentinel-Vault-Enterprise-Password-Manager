@@ -325,7 +325,7 @@ function App() {
       <section className="statusbar">
         <span>{data.vaults.length} groups / {filteredSecrets.length} entries</span>
         <span>{selectedSecret ? `1 of ${filteredSecrets.length} selected` : "No entry selected"}</span>
-        <span>{data.identity.name} / key {data.crypto.keyVersion}</span>
+        <span>{data.identity.name} / SIEM {data.integrations.siem.mode}</span>
       </section>
 
       {locked && (

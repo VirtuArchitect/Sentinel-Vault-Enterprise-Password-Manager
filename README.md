@@ -18,6 +18,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Session expiry enforcement and permission-scoped console payloads
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
+- Integration status and audit outbox for SIEM, ITSM, and DevOps API readiness
 
 ## Demo Accounts
 
@@ -149,6 +150,10 @@ OIDC_ISSUER=
 OIDC_CLIENT_ID=
 ENTRA_TENANT_ID=
 IDENTITY_GROUP_CLAIM=groups
+SIEM_WEBHOOK_URL=
+ITSM_BASE_URL=
+DEVOPS_API_ENABLED=false
+INTEGRATION_OUTBOX_LIMIT=100
 ```
 
 ## Important Security Note

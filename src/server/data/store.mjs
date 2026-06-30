@@ -20,6 +20,7 @@ const normalizeState = (candidate) => {
     vaults: candidate?.vaults || seeded.vaults,
     secrets: candidate?.secrets || seeded.secrets,
     accessRequests: candidate?.accessRequests || seeded.accessRequests,
+    integrationOutbox: candidate?.integrationOutbox || seeded.integrationOutbox,
     audit: candidate?.audit || seeded.audit,
     policies: { ...seeded.policies, ...(candidate?.policies || {}) }
   };
