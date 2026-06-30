@@ -35,6 +35,15 @@ const jsonFetch = (url, token, options = {}) => fetch(url, {
   }
 });
 
+test("health endpoint is available without authentication", async () => {
+  await withApi(async (baseUrl) => {
+    const response = await fetch(baseUrl.replace("/api", "/healthz"));
+    assert.equal(response.status, 200);
+    const health = await response.json();
+    assert.equal(health.ok, true);
+  });
+});
+
 test("auditor is blocked from policy updates", async () => {
   await withApi(async (baseUrl) => {
     const iris = await login(baseUrl, "iris@defence.local");

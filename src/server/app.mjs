@@ -15,9 +15,10 @@ export const createApp = async () => {
   app.use("/api", authRoutes);
   app.use("/api", consoleRoutes);
   app.use(errorHandler);
+  app.get("/healthz", (_req, res) => res.json({ ok: true, service: "sentinel-vault" }));
 
   if (config.isTest) {
-    app.get("/healthz", (_req, res) => res.json({ ok: true }));
+    return app;
   } else if (config.isProduction) {
     app.use(express.static(config.distDir));
     app.get("/{*splat}", (_req, res) => res.sendFile(path.join(config.distDir, "index.html")));

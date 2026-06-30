@@ -46,6 +46,7 @@ Copy-Tree -Source (Join-Path $root "src\server") -Destination (Join-Path $appRoo
 Copy-Item -Path (Join-Path $root "deployments\windows\install.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\uninstall.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\run-sentinel.ps1") -Destination $stageRoot
+Copy-Item -Path (Join-Path $root "deployments\windows\healthcheck.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\README.md") -Destination $stageRoot
 
 if (Test-Path $zipPath) {

@@ -93,6 +93,12 @@ Logs:
 C:\Program Files\Sentinel Vault\logs
 ```
 
+Health check:
+
+```powershell
+.\healthcheck.ps1 -Url "http://127.0.0.1:5173/healthz"
+```
+
 Runtime configuration:
 
 ```text
