@@ -7,6 +7,7 @@ import { authRoutes } from "./routes/authRoutes.mjs";
 import { consoleRoutes } from "./routes/consoleRoutes.mjs";
 import { devopsRoutes } from "./routes/devopsRoutes.mjs";
 import { errorHandler } from "./middleware/errors.mjs";
+import { securityHeaders } from "./middleware/securityHeaders.mjs";
 
 export const createApp = async () => {
   const configIssues = validateConfig();
@@ -16,7 +17,13 @@ export const createApp = async () => {
 
   const app = express();
 
-  app.use(cors());
+  app.use(securityHeaders);
+  app.use(cors({
+    origin(origin, callback) {
+      if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
+      callback(new Error("Origin not allowed by Sentinel Vault CORS policy"));
+    }
+  }));
   app.use(express.json({ limit: "1mb" }));
   app.use("/api", authRoutes);
   app.use("/api", consoleRoutes);

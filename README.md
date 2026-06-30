@@ -22,6 +22,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Integration status and audit outbox for SIEM, ITSM, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
 - Startup configuration validation and login rate limiting
+- Configurable CORS allowlist and baseline browser security headers
 
 ## Demo Accounts
 
@@ -143,6 +144,7 @@ Copy `.env.example` to `.env` for local development and set:
 
 ```text
 PORT=5173
+CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 VAULT_ROOT_KEY=your-local-development-root-key
 VAULT_KEY_VERSION=demo-root-v1
 VAULT_KEY_SALT=sentinel-vault

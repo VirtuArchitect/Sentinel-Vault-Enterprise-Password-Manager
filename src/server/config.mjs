@@ -12,6 +12,10 @@ export const config = {
   vaultKeyVersion: process.env.VAULT_KEY_VERSION || "demo-root-v1",
   vaultKeySalt: process.env.VAULT_KEY_SALT || "sentinel-vault",
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
+  corsOrigins: String(process.env.CORS_ORIGINS || "http://127.0.0.1:5173,http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   rootDir,
   dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),
   stateFile: process.env.STATE_FILE || "sentinel-state.json",

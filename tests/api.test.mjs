@@ -39,8 +39,20 @@ test("health endpoint is available without authentication", async () => {
   await withApi(async (baseUrl) => {
     const response = await fetch(baseUrl.replace("/api", "/healthz"));
     assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-frame-options"), "DENY");
+    assert.match(response.headers.get("content-security-policy"), /default-src 'self'/);
     const health = await response.json();
     assert.equal(health.ok, true);
+  });
+});
+
+test("cors allows configured origins and rejects unexpected origins", async () => {
+  await withApi(async (baseUrl) => {
+    const allowed = await fetch(baseUrl.replace("/api", "/healthz"), { headers: { Origin: "http://127.0.0.1:5173" } });
+    assert.equal(allowed.headers.get("access-control-allow-origin"), "http://127.0.0.1:5173");
+
+    const rejected = await fetch(baseUrl.replace("/api", "/healthz"), { headers: { Origin: "https://evil.example" } });
+    assert.equal(rejected.status, 500);
   });
 });
 
