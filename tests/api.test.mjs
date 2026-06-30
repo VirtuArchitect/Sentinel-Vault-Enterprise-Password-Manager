@@ -5,11 +5,13 @@ process.env.NODE_ENV = "test";
 const { createApp } = await import("../src/server/app.mjs");
 const { config } = await import("../src/server/config.mjs");
 
+let nextPort = 18100;
+
 const withApi = async (run) => {
   const app = await createApp();
-  const server = app.listen(0, "127.0.0.1");
+  const port = nextPort++;
+  const server = app.listen(port, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
-  const { port } = server.address();
   try {
     await run(`http://127.0.0.1:${port}/api`);
   } finally {
