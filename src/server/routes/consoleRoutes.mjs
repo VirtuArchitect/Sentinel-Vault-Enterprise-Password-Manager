@@ -1,6 +1,7 @@
 import express from "express";
 import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
+import { getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
 import {
   approveAccessRequest,
@@ -27,6 +28,10 @@ consoleRoutes.get("/reports/secret-health", auth, can("audit:read"), (_req, res)
 
 consoleRoutes.get("/integrations/status", auth, can("audit:read"), (_req, res) => {
   res.json({ integrations: getIntegrationStatus() });
+});
+
+consoleRoutes.get("/reports/compliance", auth, can("audit:read"), (_req, res) => {
+  res.json({ report: getComplianceReport() });
 });
 
 consoleRoutes.post("/secrets", auth, can("vault:write"), (req, res, next) => {

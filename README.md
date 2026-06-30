@@ -19,6 +19,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 - Integration status and audit outbox for SIEM, ITSM, and DevOps API readiness
+- Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
 
 ## Demo Accounts
 
@@ -122,6 +123,7 @@ Implemented in this prototype:
 - Policy validation and session timeout enforcement
 - Audit events for security-sensitive actions
 - Secret fingerprinting for reuse detection without storing plaintext
+- Compliance report endpoint for audit-ready control summaries
 
 Still intentionally out of scope for the prototype:
 

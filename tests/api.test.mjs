@@ -133,6 +133,18 @@ test("integration status is available to audit-capable users", async () => {
   });
 });
 
+test("compliance report summarizes implemented controls", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const response = await jsonFetch(`${baseUrl}/reports/compliance`, ada.token);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.ok(body.report.standards.includes("ISO/IEC 27001"));
+    assert.ok(body.report.summary.implemented >= 1);
+    assert.ok(body.report.controls.some((control) => control.control === "audit_logging"));
+  });
+});
+
 test("approved access request grants temporary reveal access", async () => {
   await withApi(async (baseUrl) => {
     const morgan = await login(baseUrl, "morgan@defence.local");
