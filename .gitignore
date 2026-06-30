@@ -12,4 +12,4 @@ coverage/
 .vite/
 artifacts/
 Sentinel Vault Enterprise Password Manager/
-data/
+/data/
