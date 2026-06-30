@@ -86,8 +86,8 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
             <span>Enterprise Password Manager</span>
           </div>
         </header>
-        <h1>Open enterprise password database</h1>
-        <p>Unlock the multi-user vault workbench with a defence identity and MFA-backed session.</p>
+        <h1>Unlock Sentinel Vault</h1>
+        <p>Sign in with a defence identity to access the multi-user password vault and audit-controlled workbench.</p>
         <form onSubmit={submit} className="unlock-form">
           <label>
             User name
@@ -98,7 +98,7 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
             <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" />
           </label>
           {error && <div className="error">{error}</div>}
-          <button className="primary" disabled={busy}><LockKeyhole size={17} />{busy ? "Opening..." : "Open Database"}</button>
+          <button className="primary" disabled={busy}><LockKeyhole size={17} />{busy ? "Unlocking..." : "Unlock Vault"}</button>
         </form>
         <div className="demo-accounts">
           <span>Demo identities</span>
