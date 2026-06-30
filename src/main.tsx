@@ -9,7 +9,6 @@ import {
   Edit3,
   Eye,
   FileDown,
-  FileKey2,
   FilePlus2,
   Folder,
   FolderLock,
@@ -31,6 +30,7 @@ import {
   WandSparkles
 } from "lucide-react";
 import { api } from "./api/client";
+import sentinelVaultMarkUrl from "./assets/sentinel-vault-mark.svg";
 import { generatePassword as generateCredentialPassword } from "./lib/passwordGenerator";
 import type { AccessRequest, AddSecret, AuditEvent, ConsoleData, Policies, Secret, UserRecord } from "./types";
 import "./styles.css";
@@ -47,11 +47,19 @@ const blankSecret = (vaultId = ""): AddSecret => ({
   notes: ""
 });
 
-function Login({ onLogin }: { onLogin: (token: string, data: ConsoleData) => void }) {
+function SentinelLogo({ size = "medium" }: { size?: "small" | "medium" | "large" }) {
+  return <img className={`sentinel-logo ${size}`} src={sentinelVaultMarkUrl} alt="" aria-hidden="true" />;
+}
+
+function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: ConsoleData) => void; initialError?: string }) {
   const [email, setEmail] = useState("ada@defence.local");
   const [password, setPassword] = useState("Passw0rd!");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setError(initialError);
+  }, [initialError]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -72,7 +80,7 @@ function Login({ onLogin }: { onLogin: (token: string, data: ConsoleData) => voi
     <main className="login-shell">
       <section className="unlock-card" aria-label="Open database">
         <div className="app-badge">
-          <FileKey2 size={26} />
+          <SentinelLogo size="large" />
           <span>Sentinel.kdbx</span>
         </div>
         <h1>Open enterprise password database</h1>
@@ -101,9 +109,27 @@ function Login({ onLogin }: { onLogin: (token: string, data: ConsoleData) => voi
   );
 }
 
+function SplashState({ title, message }: { title: string; message: string }) {
+  return (
+    <main className="login-shell">
+      <section className="unlock-card splash-card" aria-live="polite">
+        <div className="app-badge">
+          <SentinelLogo size="large" />
+          <span>Sentinel Vault</span>
+        </div>
+        <h1>{title}</h1>
+        <p>{message}</p>
+        <div className="loading-bar"><span /></div>
+      </section>
+    </main>
+  );
+}
+
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("sentinel-token") || "");
   const [data, setData] = useState<ConsoleData | null>(null);
+  const [booting, setBooting] = useState(() => Boolean(localStorage.getItem("sentinel-token")));
+  const [bootError, setBootError] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedSecretId, setSelectedSecretId] = useState("");
   const [query, setQuery] = useState("");
@@ -125,16 +151,24 @@ function App() {
   };
 
   useEffect(() => {
-    load().catch(() => {
+    if (!token) {
+      setBooting(false);
+      return;
+    }
+
+    setBooting(true);
+    load().catch((err) => {
       localStorage.removeItem("sentinel-token");
       setToken("");
-    });
+      setBootError(err instanceof Error ? `Previous session could not be restored: ${err.message}` : "Previous session could not be restored");
+    }).finally(() => setBooting(false));
   }, []);
 
   const onLogin = (nextToken: string, nextData: ConsoleData) => {
     localStorage.setItem("sentinel-token", nextToken);
     setToken(nextToken);
     setData(nextData);
+    setBootError("");
     setSelectedGroup("all");
     setSelectedSecretId(nextData.secrets[0]?.id || "");
     setAddSecret(blankSecret(nextData.vaults[0]?.id || ""));
@@ -162,7 +196,8 @@ function App() {
     setAddSecret((current) => ({ ...current, password, repeat: password }));
   };
 
-  if (!data || !token) return <Login onLogin={onLogin} />;
+  if (booting) return <SplashState title="Opening enterprise vault" message="Checking the saved session and loading the encrypted console state." />;
+  if (!data || !token) return <Login onLogin={onLogin} initialError={bootError} />;
 
   const can = (permission: string) => data.user.permissions.includes(permission);
   const groupCounts = new Map<string, number>();
@@ -216,7 +251,7 @@ function App() {
   return (
     <main className={`window-shell ${locked ? "is-locked" : ""}`}>
       <section className="titlebar">
-        <div><FileKey2 size={17} />Sentinel.kdbx - Sentinel Vault Enterprise</div>
+        <div><SentinelLogo size="small" />Sentinel.kdbx - Sentinel Vault Enterprise</div>
         <div className="window-controls"><span /><span /><span /></div>
       </section>
 
@@ -246,7 +281,7 @@ function App() {
       </section>
 
       <section className="database-tabs">
-        <button className="active"><Database size={15} />Sentinel.kdbx</button>
+        <button className="active"><SentinelLogo size="small" />Sentinel.kdbx</button>
         <button><Archive size={15} />BreakGlass.kdbx</button>
       </section>
 
@@ -290,6 +325,13 @@ function App() {
                     <span><meter min={0} max={100} value={secret.strength} />{secret.strength}%</span>
                   </button>
                 ))}
+                {!filteredSecrets.length && (
+                  <div className="empty-state" role="row">
+                    <Search size={22} />
+                    <strong>No matching entries</strong>
+                    <span>Adjust the search text or select a different vault group.</span>
+                  </div>
+                )}
               </div>
 
               {selectedSecret && (
@@ -312,6 +354,14 @@ function App() {
                     <div><dt>Shared With</dt><dd>{selectedSecret.sharedWith.length} identities</dd></div>
                   </dl>
                   <textarea value={`${selectedSecret.notes || "Entry notes"}\nOwner unit: ${selectedVault?.ownerUnit || "Unknown"}\nRotation policy: ${data.policies.rotationDays} days\nLast modified: ${new Date(selectedSecret.rotatedAt).toLocaleString()}`} readOnly />
+                </section>
+              )}
+              {!selectedSecret && (
+                <section className="details-pane empty-details">
+                  <div>
+                    <h2>No entry selected</h2>
+                    <p>Select a credential entry to inspect its metadata, access controls, and rotation posture.</p>
+                  </div>
                 </section>
               )}
             </>

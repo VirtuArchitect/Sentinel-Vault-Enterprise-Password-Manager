@@ -7,9 +7,15 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 
 **Demo:** [Open the local Sentinel Vault console](http://127.0.0.1:5173) after starting the app with `pnpm dev`.
 
+![Sentinel Vault logo](src/assets/sentinel-vault-mark.svg)
+
+The local demo opens directly into the Sentinel Vault console experience with seeded demo identities, branded favicon/app icon assets, and a Windows-console-inspired vault workbench.
+
 ## Features
 
 - KeePass-style vault workbench with menu bar, toolbar, group tree, entry grid, preview pane, and status bar
+- Branded Sentinel Vault logo, browser favicon, and Windows package icon asset
+- Branded loading, locked, error, and empty-result states for the demo console
 - Multi-user demo identities with role-based access control
 - Server-side RBAC checks for vault read/write/share, audit, users, and policy operations
 - AES-256-GCM encrypted secret payloads in the API layer

@@ -31,6 +31,8 @@ The package is created at:
 artifacts/windows/SentinelVault-Windows.zip
 ```
 
+The zip also includes `assets/sentinel-vault-app-icon.svg` for installer shortcuts, MSI/WiX authoring, or IIS site branding.
+
 ## Install Without IIS
 
 Extract the zip on the target server, then run:

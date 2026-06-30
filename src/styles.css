@@ -47,8 +47,37 @@ button:disabled { cursor: not-allowed; opacity: .48; }
   font-weight: 700;
 }
 
+.sentinel-logo {
+  display: inline-block;
+  flex: 0 0 auto;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.sentinel-logo.small { width: 17px; height: 17px; border-radius: 4px; }
+.sentinel-logo.medium { width: 22px; height: 22px; border-radius: 5px; }
+.sentinel-logo.large { width: 34px; height: 34px; border-radius: 7px; }
+
 .unlock-card h1 { margin: 18px 24px 8px; font-size: 28px; letter-spacing: 0; }
 .unlock-card p { margin: 0 24px 18px; color: #4f5863; line-height: 1.5; }
+.splash-card { padding-bottom: 24px; }
+.loading-bar {
+  height: 6px;
+  margin: 0 24px;
+  overflow: hidden;
+  border: 1px solid #a4adb7;
+  background: #dfe5ec;
+}
+.loading-bar span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  background: linear-gradient(90deg, #2d7fd0, #7c8db5);
+  animation: loading-slide 1.15s ease-in-out infinite;
+}
+@keyframes loading-slide {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(275%); }
+}
 .unlock-form, .demo-accounts { display: grid; gap: 12px; margin: 0 24px; }
 label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: #2d333a; }
 input, select, textarea {
@@ -234,6 +263,18 @@ textarea { min-height: 86px; resize: vertical; }
 .entry-row span:first-child { display: flex; align-items: center; gap: 7px; }
 .entry-row span:first-child small { color: inherit; opacity: .72; text-transform: capitalize; }
 meter { width: 54px; height: 10px; margin-right: 7px; }
+
+.empty-state {
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  color: #586574;
+  border-bottom: 1px solid #edf0f4;
+}
+.empty-state strong { color: #243243; }
+.empty-details { align-content: center; }
 
 .details-pane {
   border-top: 1px solid #aeb8c3;

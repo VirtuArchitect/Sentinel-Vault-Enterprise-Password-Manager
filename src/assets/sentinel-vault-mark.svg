@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+  <title id="title">Sentinel Vault logo mark</title>
+  <desc id="desc">Shield and lock mark for Sentinel Vault Enterprise Password Manager.</desc>
+  <rect x="0" y="0" width="64" height="64" rx="12" fill="#27314a"/>
+  <path d="M32 12 52 20v14c0 14-9 23-20 27-11-4-20-13-20-27V20z" fill="none" stroke="#7c8db5" stroke-width="2"/>
+  <rect x="24" y="32" width="16" height="14" rx="3" fill="#7c8db5"/>
+  <path d="M27 32v-6c0-4 2-7 5-7s5 3 5 7v6" fill="none" stroke="#7c8db5" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
