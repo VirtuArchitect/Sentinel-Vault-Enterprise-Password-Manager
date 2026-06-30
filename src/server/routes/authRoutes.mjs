@@ -4,10 +4,11 @@ import { verifyPassword } from "../crypto/passwords.mjs";
 import { publicUser } from "../rbac/roles.mjs";
 import { createSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
+import { rateLimit } from "../middleware/rateLimit.mjs";
 
 export const authRoutes = express.Router();
 
-authRoutes.post("/login", (req, res) => {
+authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
   const { email, password } = req.body;
   const user = store.findUserByEmail(email);
   if (!user || !verifyPassword(password, user)) return res.status(401).json({ error: "Invalid credentials" });

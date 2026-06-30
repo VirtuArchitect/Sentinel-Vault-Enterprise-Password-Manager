@@ -38,3 +38,16 @@ export const getComplianceReport = () => {
     controls
   };
 };
+
+export const getComplianceEvidencePack = () => {
+  const report = getComplianceReport();
+  return {
+    ...report,
+    evidence: {
+      auditSample: store.state.audit.slice(0, 25),
+      policySnapshot: store.state.policies,
+      accessRequests: store.state.accessRequests.slice(0, 25),
+      generatedBy: "Sentinel Vault compliance reporter"
+    }
+  };
+};

@@ -96,6 +96,41 @@ test("policy validation rejects unsupported or unsafe values", async () => {
   });
 });
 
+test("secret edit, version restore, and delete workflows work", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const create = await jsonFetch(`${baseUrl}/secrets`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        vaultId: "v1",
+        type: "password",
+        name: "Lifecycle Test",
+        username: "svc_lifecycle",
+        password: "LifecycleSecretValue!2026",
+        tags: "test"
+      })
+    });
+    assert.equal(create.status, 201);
+
+    const consoleResponse = await jsonFetch(`${baseUrl}/console`, ada.token);
+    const data = await consoleResponse.json();
+    const secret = data.secrets.find((candidate) => candidate.name === "Lifecycle Test");
+    assert.ok(secret);
+
+    const update = await jsonFetch(`${baseUrl}/secrets/${secret.id}`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ notes: "Updated notes", password: "LifecycleSecretValue!2027" })
+    });
+    assert.equal(update.status, 200);
+
+    const restore = await jsonFetch(`${baseUrl}/secrets/${secret.id}/versions/0/restore`, ada.token, { method: "POST" });
+    assert.equal(restore.status, 200);
+
+    const deleted = await jsonFetch(`${baseUrl}/secrets/${secret.id}`, ada.token, { method: "DELETE" });
+    assert.equal(deleted.status, 200);
+  });
+});
+
 test("secret health report is auditor-only and reuse is blocked", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");
@@ -142,6 +177,19 @@ test("compliance report summarizes implemented controls", async () => {
     assert.ok(body.report.standards.includes("ISO/IEC 27001"));
     assert.ok(body.report.summary.implemented >= 1);
     assert.ok(body.report.controls.some((control) => control.control === "audit_logging"));
+
+    const exportResponse = await jsonFetch(`${baseUrl}/reports/compliance/export`, ada.token);
+    assert.equal(exportResponse.status, 200);
+    assert.match(exportResponse.headers.get("content-disposition"), /sentinel-compliance-evidence/);
+  });
+});
+
+test("devops secret retrieval is disabled unless configured", async () => {
+  await withApi(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/devops/secrets/s1`, {
+      headers: { "X-Sentinel-Service-Token": "not-configured" }
+    });
+    assert.equal(response.status, 404);
   });
 });
 

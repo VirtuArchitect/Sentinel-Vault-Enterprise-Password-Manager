@@ -125,6 +125,7 @@ export const getConsolePayload = (user) => {
   const readableIds = new Set(readableVaults.map((vault) => vault.id));
   const secrets = store.state.secrets
     .filter((secret) => readableIds.has(secret.vaultId) || secret.sharedWith.includes(user.id) || activeGrantFor(user, secret))
+    .filter((secret) => !secret.deletedAt)
     .map((secret) => ({
       id: secret.id,
       vaultId: secret.vaultId,
@@ -209,6 +210,76 @@ export const createSecret = (user, input) => {
   audit(user.id, "CREATE_SECRET", name, `Stored in ${vault.name}`);
 };
 
+export const updateSecret = (user, id, patch) => {
+  const secret = requireSecret(id);
+  requireVaultAccess(user, secret);
+  if (secret.deletedAt) {
+    const error = new Error("Deleted secrets cannot be updated");
+    error.status = 400;
+    throw error;
+  }
+  if (patch.name) secret.name = String(patch.name).trim();
+  if (patch.username) secret.username = String(patch.username).trim();
+  if (patch.url !== undefined) secret.url = String(patch.url || "");
+  if (patch.tags !== undefined) secret.tags = normalizeTags(patch.tags);
+  if (patch.notes !== undefined) secret.notes = String(patch.notes || "");
+  if (patch.type) secret.type = String(patch.type);
+  if (patch.password) {
+    const fingerprint = fingerprintSecret(patch.password);
+    if (store.state.secrets.some((candidate) => candidate.id !== secret.id && candidate.vaultId === secret.vaultId && candidate.fingerprint === fingerprint && !candidate.deletedAt)) {
+      const error = new Error("Secret material has already been used in this vault");
+      error.status = 400;
+      throw error;
+    }
+    secret.history.unshift({
+      rotatedAt: secret.rotatedAt,
+      rotatedBy: user.id,
+      encrypted: secret.encrypted,
+      fingerprint: secret.fingerprint
+    });
+    secret.history = secret.history.slice(0, 10);
+    secret.encrypted = encryptSecret(patch.password);
+    secret.fingerprint = fingerprint;
+    secret.rotatedAt = new Date().toISOString();
+    secret.risk = patch.password.length < store.state.policies.minimumLength ? "high" : "low";
+    secret.approvalsRequired = secret.risk === "high";
+  }
+  audit(user.id, "UPDATE_SECRET", secret.name, "Credential metadata updated");
+  return { ok: true };
+};
+
+export const deleteSecret = (user, id) => {
+  const secret = requireSecret(id);
+  requireVaultAccess(user, secret);
+  secret.deletedAt = new Date().toISOString();
+  audit(user.id, "DELETE_SECRET", secret.name, "Credential moved to deleted state");
+  return { ok: true };
+};
+
+export const restoreSecretVersion = (user, id, index = 0) => {
+  const secret = requireSecret(id);
+  requireVaultAccess(user, secret);
+  const version = secret.history?.[Number(index)];
+  if (!version?.encrypted) {
+    const error = new Error("Secret version not found");
+    error.status = 404;
+    throw error;
+  }
+  secret.history.unshift({
+    rotatedAt: secret.rotatedAt,
+    rotatedBy: user.id,
+    encrypted: secret.encrypted,
+    fingerprint: secret.fingerprint
+  });
+  secret.encrypted = version.encrypted;
+  secret.fingerprint = version.fingerprint;
+  secret.rotatedAt = new Date().toISOString();
+  secret.deletedAt = null;
+  secret.history = secret.history.filter((_, versionIndex) => versionIndex !== Number(index) + 1).slice(0, 10);
+  audit(user.id, "RESTORE_SECRET_VERSION", secret.name, `Restored version ${index}`);
+  return { ok: true };
+};
+
 export const revealSecret = (user, id) => {
   const secret = requireSecret(id);
   requireSecretAccess(user, secret);
@@ -220,7 +291,7 @@ export const rotateSecret = (user, id) => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   const generated = generateCredential();
-  secret.history.unshift({ rotatedAt: secret.rotatedAt, rotatedBy: user.id });
+  secret.history.unshift({ rotatedAt: secret.rotatedAt, rotatedBy: user.id, encrypted: secret.encrypted, fingerprint: secret.fingerprint });
   secret.history = secret.history.slice(0, 10);
   secret.encrypted = encryptSecret(generated);
   secret.fingerprint = fingerprintSecret(generated);
@@ -329,6 +400,22 @@ export const denyAccessRequest = (user, requestId) => {
   request.decidedAt = new Date().toISOString();
   request.expiresAt = null;
   audit(user.id, "ACCESS_DENIED", secret.name, "Temporary access denied");
+  return publicRequest(request);
+};
+
+export const revokeAccessRequest = (user, requestId) => {
+  const request = store.findAccessRequestById(requestId);
+  if (!request) {
+    const error = new Error("Access request not found");
+    error.status = 404;
+    throw error;
+  }
+  const secret = requireSecret(request.secretId);
+  requireVaultAccess(user, secret);
+  request.status = "revoked";
+  request.expiresAt = new Date().toISOString();
+  request.decidedAt = new Date().toISOString();
+  audit(user.id, "ACCESS_REVOKED", secret.name, "Temporary access revoked");
   return publicRequest(request);
 };
 

@@ -132,7 +132,7 @@ export type AccessRequest = {
   requesterId: string;
   requesterName: string;
   reason: string;
-  status: "pending" | "approved" | "denied";
+  status: "pending" | "approved" | "denied" | "revoked";
   requestedAt: string;
   expiresAt: string | null;
   approvedBy: string | null;

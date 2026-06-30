@@ -1,18 +1,22 @@
 import express from "express";
 import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
-import { getComplianceReport } from "../services/complianceService.mjs";
+import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
 import {
   approveAccessRequest,
   createSecret,
+  deleteSecret,
   denyAccessRequest,
   getConsolePayload,
   getSecretHealthReport,
   requestSecretAccess,
   revealSecret,
+  restoreSecretVersion,
+  revokeAccessRequest,
   rotateSecret,
   shareSecret,
+  updateSecret,
   updatePolicies
 } from "../services/vaultService.mjs";
 
@@ -34,10 +38,39 @@ consoleRoutes.get("/reports/compliance", auth, can("audit:read"), (_req, res) =>
   res.json({ report: getComplianceReport() });
 });
 
+consoleRoutes.get("/reports/compliance/export", auth, can("audit:read"), (_req, res) => {
+  res.setHeader("Content-Disposition", "attachment; filename=sentinel-compliance-evidence.json");
+  res.json({ report: getComplianceEvidencePack() });
+});
+
 consoleRoutes.post("/secrets", auth, can("vault:write"), (req, res, next) => {
   try {
     createSecret(req.user, req.body);
     res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.patch("/secrets/:id", auth, can("vault:write"), (req, res, next) => {
+  try {
+    res.json(updateSecret(req.user, req.params.id, req.body));
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.delete("/secrets/:id", auth, can("vault:write"), (req, res, next) => {
+  try {
+    res.json(deleteSecret(req.user, req.params.id));
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/secrets/:id/versions/:index/restore", auth, can("vault:write"), (req, res, next) => {
+  try {
+    res.json(restoreSecretVersion(req.user, req.params.id, req.params.index));
   } catch (err) {
     next(err);
   }
@@ -92,6 +125,14 @@ consoleRoutes.post("/access-requests/:id/approve", auth, can("vault:share"), (re
 consoleRoutes.post("/access-requests/:id/deny", auth, can("vault:share"), (req, res, next) => {
   try {
     res.json({ request: denyAccessRequest(req.user, req.params.id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/access-requests/:id/revoke", auth, can("vault:share"), (req, res, next) => {
+  try {
+    res.json({ request: revokeAccessRequest(req.user, req.params.id) });
   } catch (err) {
     next(err);
   }
