@@ -79,10 +79,13 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
   return (
     <main className="login-shell">
       <section className="unlock-card" aria-label="Open database">
-        <div className="app-badge">
+        <header className="unlock-banner">
           <SentinelLogo size="large" />
-          <span>Sentinel.kdbx</span>
-        </div>
+          <div>
+            <strong>Sentinel Vault</strong>
+            <span>Enterprise Password Manager</span>
+          </div>
+        </header>
         <h1>Open enterprise password database</h1>
         <p>Unlock the multi-user vault workbench with a defence identity and MFA-backed session.</p>
         <form onSubmit={submit} className="unlock-form">
@@ -113,10 +116,13 @@ function SplashState({ title, message }: { title: string; message: string }) {
   return (
     <main className="login-shell">
       <section className="unlock-card splash-card" aria-live="polite">
-        <div className="app-badge">
+        <header className="unlock-banner">
           <SentinelLogo size="large" />
-          <span>Sentinel Vault</span>
-        </div>
+          <div>
+            <strong>Sentinel Vault</strong>
+            <span>Enterprise Password Manager</span>
+          </div>
+        </header>
         <h1>{title}</h1>
         <p>{message}</p>
         <div className="loading-bar"><span /></div>
