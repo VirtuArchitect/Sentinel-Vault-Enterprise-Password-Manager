@@ -15,5 +15,8 @@ export const store = {
   },
   findSecretById(id) {
     return state.secrets.find((secret) => secret.id === id);
+  },
+  findAccessRequestById(id) {
+    return state.accessRequests.find((request) => request.id === id);
   }
 };

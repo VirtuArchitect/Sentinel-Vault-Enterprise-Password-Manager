@@ -22,6 +22,7 @@ export type VaultRecord = {
 export type Secret = {
   id: string;
   vaultId: string;
+  type: string;
   name: string;
   username: string;
   url: string;
@@ -29,6 +30,8 @@ export type Secret = {
   risk: string;
   rotatedAt: string;
   sharedWith: string[];
+  approvalsRequired: boolean;
+  notes: string;
   strength: number;
 };
 
@@ -60,16 +63,19 @@ export type ConsoleData = {
   secrets: Secret[];
   policies: Policies;
   audit: AuditEvent[];
+  accessRequests: AccessRequest[];
   metrics: {
     secrets: number;
     vaults: number;
     stale: number;
     highRisk: number;
+    pendingRequests: number;
   };
 };
 
 export type AddSecret = {
   vaultId: string;
+  type: string;
   name: string;
   username: string;
   password: string;
@@ -86,4 +92,19 @@ export type PasswordGeneratorOptions = {
   digits: boolean;
   symbols: boolean;
   noAmbiguous: boolean;
+};
+
+export type AccessRequest = {
+  id: string;
+  secretId: string;
+  secretName: string;
+  requesterId: string;
+  requesterName: string;
+  reason: string;
+  status: "pending" | "approved" | "denied";
+  requestedAt: string;
+  expiresAt: string | null;
+  approvedBy: string | null;
+  approvedByName: string | null;
+  decidedAt: string | null;
 };

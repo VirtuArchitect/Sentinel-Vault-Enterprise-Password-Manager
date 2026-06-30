@@ -8,10 +8,12 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Multi-user demo identities with role-based access control
 - Server-side RBAC checks for vault read/write/share, audit, users, and policy operations
 - AES-256-GCM encrypted secret payloads in the API layer
-- Add, reveal, rotate, and share credential workflows
+- Add, reveal, rotate, share, request access, and approve temporary access workflows
+- Password, API key, token, certificate, SSH key, directory account, registry token, and connection string secret metadata
 - Password generator with configurable character classes and quality feedback
-- Audit trail for login, reveal, rotate, share, create, and policy actions
-- Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration
+- Audit trail for login, reveal, rotate, share, create, policy, and access approval actions
+- Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
+- Session expiry enforcement and permission-scoped console payloads
 
 ## Demo Accounts
 
@@ -85,6 +87,37 @@ docker compose up --build
 ```
 
 The production container serves the compiled Vite frontend from the Express API.
+
+## Windows Server Package
+
+Build a Windows deployment zip:
+
+```powershell
+pnpm package:windows
+```
+
+The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. See `deployments/windows/README.md`.
+
+## Enterprise Roadmap Status
+
+Implemented in this prototype:
+
+- Encrypted in-memory vault records and secret metadata
+- RBAC-protected API routes with object-level vault checks
+- JIT access request and approval records
+- Temporary reveal access after approval
+- Policy validation and session timeout enforcement
+- Audit events for security-sensitive actions
+
+Still intentionally out of scope for the prototype:
+
+- Persistent database storage
+- AD, Entra ID, LDAP, SAML, OIDC, passkey, or real MFA integration
+- Browser extension autofill
+- SIEM, ITSM, PAM, SOAR, Kubernetes, and CI/CD integrations
+- HA clustering, backup, replication, and disaster recovery
+- HSM/KMS-backed key management and independent cryptographic review
+- Session recording and privileged session brokering
 
 ## Configuration
 

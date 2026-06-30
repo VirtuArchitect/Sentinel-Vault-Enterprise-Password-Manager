@@ -232,6 +232,7 @@ textarea { min-height: 86px; resize: vertical; }
 .entry-row:nth-child(odd) { background: #fbfcfd; }
 .entry-row.selected { background: #0a74d6; color: #fff; }
 .entry-row span:first-child { display: flex; align-items: center; gap: 7px; }
+.entry-row span:first-child small { color: inherit; opacity: .72; text-transform: capitalize; }
 meter { width: 54px; height: 10px; margin-right: 7px; }
 
 .details-pane {
@@ -270,14 +271,18 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
 }
 .table-header.audit, .audit-line { grid-template-columns: 170px 150px 140px 190px minmax(220px, 1fr); }
 .table-header.users, .user-line { grid-template-columns: minmax(160px, 1fr) minmax(210px, 1fr) 150px 90px minmax(150px, 1fr); }
-.audit-line, .user-line {
+.table-header.access, .access-line { grid-template-columns: 170px minmax(180px, 1fr) 150px 170px minmax(260px, 1.3fr); }
+.audit-line, .user-line, .access-line {
   display: grid;
   align-items: center;
   min-height: 32px;
   border-bottom: 1px solid #edf0f4;
 }
-.audit-line span, .audit-line strong, .audit-line small, .user-line span, .user-line strong { padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audit-line span, .audit-line strong, .audit-line small, .user-line span, .user-line strong, .access-line span, .access-line strong, .access-line small { padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .audit-line strong { color: #134f86; }
+.access-line strong { color: #164c35; }
+.row-actions { display: inline-flex; gap: 6px; margin-left: 10px; }
+.row-actions button { min-height: 24px; border: 1px solid #a4adb7; background: #f7f9fb; border-radius: 4px; }
 
 .options-panel {
   padding: 18px;

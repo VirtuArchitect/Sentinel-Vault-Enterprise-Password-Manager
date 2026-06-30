@@ -20,7 +20,7 @@ export const createApp = async () => {
     app.get("/healthz", (_req, res) => res.json({ ok: true }));
   } else if (config.isProduction) {
     app.use(express.static(config.distDir));
-    app.get("*", (_req, res) => res.sendFile(path.join(config.distDir, "index.html")));
+    app.get("/{*splat}", (_req, res) => res.sendFile(path.join(config.distDir, "index.html")));
   } else {
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);

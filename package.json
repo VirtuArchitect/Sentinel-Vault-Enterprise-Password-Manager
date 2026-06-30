@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "node server.mjs",
     "build": "vite build",
-    "preview": "NODE_ENV=production node server.mjs",
+    "preview": "node -e \"process.env.NODE_ENV='production'; import('./server.mjs')\"",
     "typecheck": "tsc --noEmit",
-    "test": "NODE_ENV=test node --test tests/*.test.mjs",
-    "verify": "pnpm typecheck && pnpm test && pnpm build"
+    "test": "node --test tests/*.test.mjs",
+    "verify": "pnpm typecheck && pnpm test && pnpm build",
+    "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1"
   },
   "keywords": [],
   "author": "",

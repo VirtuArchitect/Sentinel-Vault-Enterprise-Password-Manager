@@ -31,11 +31,12 @@ import {
 } from "lucide-react";
 import { api } from "./api/client";
 import { generatePassword as generateCredentialPassword } from "./lib/passwordGenerator";
-import type { AddSecret, AuditEvent, ConsoleData, Policies, Secret, UserRecord } from "./types";
+import type { AccessRequest, AddSecret, AuditEvent, ConsoleData, Policies, Secret, UserRecord } from "./types";
 import "./styles.css";
 
 const blankSecret = (vaultId = ""): AddSecret => ({
   vaultId,
+  type: "password",
   name: "",
   username: "",
   password: "",
@@ -105,7 +106,7 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedSecretId, setSelectedSecretId] = useState("");
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"entries" | "audit" | "users" | "policy">("entries");
+  const [tab, setTab] = useState<"entries" | "access" | "audit" | "users" | "policy">("entries");
   const [reveal, setReveal] = useState<{ name: string; password: string; expiresIn: number } | null>(null);
   const [toast, setToast] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -205,6 +206,12 @@ function App() {
     }, "Policy updated");
   };
 
+  const decideAccessRequest = (request: AccessRequest, decision: "approve" | "deny") => {
+    action(async () => {
+      await api(`/api/access-requests/${request.id}/${decision}`, { method: "POST", body: JSON.stringify({ minutes: 30 }) }, token);
+    }, decision === "approve" ? "Temporary access approved" : "Temporary access denied");
+  };
+
   return (
     <main className={`window-shell ${locked ? "is-locked" : ""}`}>
       <section className="titlebar">
@@ -251,14 +258,15 @@ function App() {
           <TreeButton active={selectedGroup === "shared"} icon={<Users />} label="Shared Entries" meta="delegated" onClick={() => setSelectedGroup("shared")} />
           <TreeButton active={selectedGroup === "risk"} icon={<ShieldCheck />} label="High Risk" meta={`${data.metrics.highRisk} flagged`} onClick={() => setSelectedGroup("risk")} />
           <div className="tree-footer">
-            <strong>{data.policies.clipboardTtl}s</strong>
-            <span>Clipboard auto-clear</span>
+            <strong>{data.metrics.pendingRequests}</strong>
+            <span>Pending access requests</span>
           </div>
         </aside>
 
         <section className="entry-pane">
           <div className="view-tabs">
             <button className={tab === "entries" ? "active" : ""} onClick={() => setTab("entries")}>Entries</button>
+            <button className={tab === "access" ? "active" : ""} onClick={() => setTab("access")}>Access</button>
             <button className={tab === "audit" ? "active" : ""} onClick={() => setTab("audit")}>Audit</button>
             <button className={tab === "users" ? "active" : ""} onClick={() => setTab("users")}>Users</button>
             <button className={tab === "policy" ? "active" : ""} onClick={() => setTab("policy")}>Options</button>
@@ -272,7 +280,7 @@ function App() {
                 </div>
                 {filteredSecrets.map((secret) => (
                   <button className={`entry-row ${selectedSecret?.id === secret.id ? "selected" : ""}`} key={secret.id} onClick={() => setSelectedSecretId(secret.id)} role="row">
-                    <span><Globe size={16} />{secret.name}</span>
+                    <span><Globe size={16} />{secret.name}<small>{secret.type.replace("_", " ")}</small></span>
                     <span>{secret.username}</span>
                     <span>••••••••••••</span>
                     <span>{secret.url}</span>
@@ -295,16 +303,19 @@ function App() {
                   </div>
                   <dl>
                     <div><dt>User Name</dt><dd>{selectedSecret.username}</dd></div>
+                    <div><dt>Type</dt><dd>{selectedSecret.type.replace("_", " ")}</dd></div>
                     <div><dt>URL</dt><dd>{selectedSecret.url}</dd></div>
                     <div><dt>Risk</dt><dd className={`risk ${selectedSecret.risk}`}>{selectedSecret.risk}</dd></div>
+                    <div><dt>Approval</dt><dd>{selectedSecret.approvalsRequired ? "Required" : "Standard"}</dd></div>
                     <div><dt>Shared With</dt><dd>{selectedSecret.sharedWith.length} identities</dd></div>
                   </dl>
-                  <textarea value={`Entry notes\nOwner unit: ${selectedVault?.ownerUnit || "Unknown"}\nRotation policy: ${data.policies.rotationDays} days\nLast modified: ${new Date(selectedSecret.rotatedAt).toLocaleString()}`} readOnly />
+                  <textarea value={`${selectedSecret.notes || "Entry notes"}\nOwner unit: ${selectedVault?.ownerUnit || "Unknown"}\nRotation policy: ${data.policies.rotationDays} days\nLast modified: ${new Date(selectedSecret.rotatedAt).toLocaleString()}`} readOnly />
                 </section>
               )}
             </>
           )}
 
+          {tab === "access" && <AccessTable requests={data.accessRequests} canApprove={can("vault:share")} onDecision={decideAccessRequest} />}
           {tab === "audit" && <AuditTable events={data.audit} />}
           {tab === "users" && <UserTable users={data.users} />}
           {tab === "policy" && <PolicyPanel policies={data.policies} canWrite={can("policy:write")} onChange={updatePolicy} />}
@@ -314,7 +325,7 @@ function App() {
       <section className="statusbar">
         <span>{data.vaults.length} groups / {filteredSecrets.length} entries</span>
         <span>{selectedSecret ? `1 of ${filteredSecrets.length} selected` : "No entry selected"}</span>
-        <span>Ready.</span>
+        <span>{data.policies.clipboardTtl}s clipboard TTL / {data.policies.sessionMinutes}m session</span>
       </section>
 
       {locked && (
@@ -338,6 +349,14 @@ function App() {
             <form onSubmit={submitSecret}>
               <div className="dialog-tabs"><span className="active">Entry</span><span>Advanced</span><span>Auto-Type</span><span>History</span></div>
               <label>Group<select value={addSecret.vaultId} onChange={(event) => setAddSecret({ ...addSecret, vaultId: event.target.value })}>{data.vaults.map((vault) => <option value={vault.id} key={vault.id}>{vault.name}</option>)}</select></label>
+              <label>Secret type<select value={addSecret.type} onChange={(event) => setAddSecret({ ...addSecret, type: event.target.value })}>
+                <option value="password">Password</option>
+                <option value="api_key">API key</option>
+                <option value="ssh_key">SSH key</option>
+                <option value="certificate">Certificate</option>
+                <option value="token">Token</option>
+                <option value="connection_string">Connection string</option>
+              </select></label>
               <label>Title<input value={addSecret.name} onChange={(event) => setAddSecret({ ...addSecret, name: event.target.value })} /></label>
               <label>User name<input value={addSecret.username} onChange={(event) => setAddSecret({ ...addSecret, username: event.target.value })} /></label>
               <label>Password<div className="password-line"><input value={addSecret.password} onChange={(event) => setAddSecret({ ...addSecret, password: event.target.value })} /><button type="button" onClick={generatePassword}><WandSparkles size={16} /></button></div></label>
@@ -381,6 +400,31 @@ function App() {
 
 function TreeButton({ active, icon, label, meta, onClick, inset = false }: { active: boolean; icon: React.ReactNode; label: string; meta: string; onClick: () => void; inset?: boolean }) {
   return <button className={`tree-button ${active ? "active" : ""} ${inset ? "inset" : ""}`} onClick={onClick}>{icon}<span>{label}</span><small>{meta}</small></button>;
+}
+
+function AccessTable({ requests, canApprove, onDecision }: { requests: AccessRequest[]; canApprove: boolean; onDecision: (request: AccessRequest, decision: "approve" | "deny") => void }) {
+  return (
+    <div className="utility-table">
+      <div className="table-header access"><span>Requested</span><span>Secret</span><span>Requester</span><span>Status</span><span>Decision</span></div>
+      {requests.map((request) => (
+        <div className="access-line" key={request.id}>
+          <span>{new Date(request.requestedAt).toLocaleString()}</span>
+          <strong>{request.secretName}</strong>
+          <span>{request.requesterName}</span>
+          <span>{request.status}{request.expiresAt ? ` until ${new Date(request.expiresAt).toLocaleTimeString()}` : ""}</span>
+          <small>
+            {request.reason}
+            {canApprove && request.status === "pending" && (
+              <span className="row-actions">
+                <button onClick={() => onDecision(request, "approve")}>Approve</button>
+                <button onClick={() => onDecision(request, "deny")}>Deny</button>
+              </span>
+            )}
+          </small>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function AuditTable({ events }: { events: AuditEvent[] }) {

@@ -1,7 +1,17 @@
 import express from "express";
 import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
-import { createSecret, getConsolePayload, revealSecret, rotateSecret, shareSecret, updatePolicies } from "../services/vaultService.mjs";
+import {
+  approveAccessRequest,
+  createSecret,
+  denyAccessRequest,
+  getConsolePayload,
+  requestSecretAccess,
+  revealSecret,
+  rotateSecret,
+  shareSecret,
+  updatePolicies
+} from "../services/vaultService.mjs";
 
 export const consoleRoutes = express.Router();
 
@@ -43,6 +53,34 @@ consoleRoutes.post("/secrets/:id/share", auth, can("vault:share"), (req, res, ne
   }
 });
 
-consoleRoutes.patch("/policies", auth, can("policy:write"), (req, res) => {
-  res.json({ policies: updatePolicies(req.user, req.body) });
+consoleRoutes.post("/access-requests", auth, (req, res, next) => {
+  try {
+    res.status(201).json({ request: requestSecretAccess(req.user, req.body.secretId, req.body.reason) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/access-requests/:id/approve", auth, can("vault:share"), (req, res, next) => {
+  try {
+    res.json({ request: approveAccessRequest(req.user, req.params.id, req.body.minutes) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/access-requests/:id/deny", auth, can("vault:share"), (req, res, next) => {
+  try {
+    res.json({ request: denyAccessRequest(req.user, req.params.id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.patch("/policies", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ policies: updatePolicies(req.user, req.body) });
+  } catch (err) {
+    next(err);
+  }
 });

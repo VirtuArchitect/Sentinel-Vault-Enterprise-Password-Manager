@@ -10,7 +10,15 @@ const userSeeds = [
   ["u3", "Iris Chen", "iris@defence.local", "AUDITOR", "Assurance"]
 ];
 
-const seedSecret = (secret) => ({ ...secret, encrypted: encryptSecret(secret.password), password: undefined });
+const seedSecret = (secret) => ({
+  type: "password",
+  notes: "",
+  history: [],
+  approvalsRequired: secret.risk === "high",
+  ...secret,
+  encrypted: encryptSecret(secret.password),
+  password: undefined
+});
 
 export const createSeedState = () => ({
   users: userSeeds.map(([id, name, email, role, unit]) => ({ id, name, email, role, unit, mfa: true, ...hashPassword(seededPassword) })),
@@ -21,9 +29,22 @@ export const createSeedState = () => ({
     { id: "v3", name: "Supplier Access", classification: "OFFICIAL-SENSITIVE", ownerUnit: "Assurance", members: ["u1", "u3"], health: 89 }
   ],
   secrets: [
-    seedSecret({ id: "s1", vaultId: "v1", name: "Satellite Telemetry API", username: "svc_telemetry", password: "E7#hP9!qZ2@Lw8$mV4", url: "https://telemetry.defence.local", tags: ["api", "mission"], risk: "low", rotatedAt: "2026-06-21T09:30:00Z", sharedWith: ["u2"] }),
-    seedSecret({ id: "s2", vaultId: "v2", name: "Privileged Directory Root", username: "adm.root", password: "nK5!vD8@xR2#tY6$pB", url: "ldaps://identity.defence.local", tags: ["identity", "tier-0"], risk: "high", rotatedAt: "2026-06-14T13:10:00Z", sharedWith: ["u1"] }),
-    seedSecret({ id: "s3", vaultId: "v3", name: "Secure Build Registry", username: "robot.deploy", password: "Q4$pL7#cN1@zV9!eH", url: "https://registry.defence.local", tags: ["devsecops"], risk: "medium", rotatedAt: "2026-06-24T06:45:00Z", sharedWith: ["u3"] })
+    seedSecret({ id: "s1", vaultId: "v1", type: "api_key", name: "Satellite Telemetry API", username: "svc_telemetry", password: "E7#hP9!qZ2@Lw8$mV4", url: "https://telemetry.defence.local", tags: ["api", "mission"], risk: "low", rotatedAt: "2026-06-21T09:30:00Z", sharedWith: ["u2"], notes: "Runtime API credential for telemetry ingestion." }),
+    seedSecret({ id: "s2", vaultId: "v2", type: "directory_account", name: "Privileged Directory Root", username: "adm.root", password: "nK5!vD8@xR2#tY6$pB", url: "ldaps://identity.defence.local", tags: ["identity", "tier-0"], risk: "high", rotatedAt: "2026-06-14T13:10:00Z", sharedWith: ["u1"], notes: "Tier-0 identity administration credential.", approvalsRequired: true }),
+    seedSecret({ id: "s3", vaultId: "v3", type: "registry_token", name: "Secure Build Registry", username: "robot.deploy", password: "Q4$pL7#cN1@zV9!eH", url: "https://registry.defence.local", tags: ["devsecops"], risk: "medium", rotatedAt: "2026-06-24T06:45:00Z", sharedWith: ["u3"], notes: "CI/CD deployment token." })
+  ],
+  accessRequests: [
+    {
+      id: "ar1",
+      secretId: "s2",
+      requesterId: "u2",
+      reason: "Emergency identity backbone maintenance window",
+      status: "pending",
+      requestedAt: "2026-06-27T08:15:00Z",
+      expiresAt: null,
+      approvedBy: null,
+      decidedAt: null
+    }
   ],
   audit: [
     { id: crypto.randomUUID(), ts: "2026-06-27T07:42:00Z", actor: "Iris Chen", action: "EXPORT_REVIEW", target: "Audit evidence pack", detail: "Quarterly compliance export opened", source: "10.20.4.18", outcome: "allowed" },
