@@ -19,6 +19,7 @@ const normalizeState = (candidate) => {
     users: candidate?.users || seeded.users,
     vaults: candidate?.vaults || seeded.vaults,
     secrets: candidate?.secrets || seeded.secrets,
+    serviceTokens: candidate?.serviceTokens || seeded.serviceTokens,
     accessRequests: candidate?.accessRequests || seeded.accessRequests,
     integrationOutbox: candidate?.integrationOutbox || seeded.integrationOutbox,
     audit: candidate?.audit || seeded.audit,
@@ -56,6 +57,9 @@ export const store = {
   },
   findSecretById(id) {
     return state.secrets.find((secret) => secret.id === id);
+  },
+  findServiceTokenById(id) {
+    return state.serviceTokens.find((token) => token.id === id);
   },
   findAccessRequestById(id) {
     return state.accessRequests.find((request) => request.id === id);

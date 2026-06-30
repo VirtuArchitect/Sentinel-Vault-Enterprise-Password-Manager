@@ -13,7 +13,8 @@ export const getIntegrationStatus = () => ({
   },
   devopsApi: {
     enabled: config.integrations.devopsApiEnabled,
-    mode: config.integrations.devopsApiEnabled ? "scoped-token-ready" : "disabled"
+    mode: config.integrations.devopsApiEnabled ? "managed-scoped-tokens" : "disabled",
+    tokenCount: store.state.serviceTokens?.filter((token) => !token.revokedAt).length || 0
   },
   outboxDepth: store.state.integrationOutbox?.length || 0
 });

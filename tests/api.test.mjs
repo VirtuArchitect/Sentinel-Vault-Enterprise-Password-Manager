@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 process.env.NODE_ENV = "test";
 const { createApp } = await import("../src/server/app.mjs");
+const { config } = await import("../src/server/config.mjs");
 
 const withApi = async (run) => {
   const app = await createApp();
@@ -203,6 +204,39 @@ test("devops secret retrieval is disabled unless configured", async () => {
     });
     assert.equal(response.status, 404);
   });
+});
+
+test("managed service tokens are scoped to allowed secrets", async () => {
+  const previousEnabled = config.integrations.devopsApiEnabled;
+  config.integrations.devopsApiEnabled = true;
+  try {
+    await withApi(async (baseUrl) => {
+      const ada = await login(baseUrl, "ada@defence.local");
+      const create = await jsonFetch(`${baseUrl}/service-tokens`, ada.token, {
+        method: "POST",
+        body: JSON.stringify({ name: "CI pipeline", allowedSecrets: ["s1"], ttlDays: 7 })
+      });
+      assert.equal(create.status, 201);
+      const body = await create.json();
+      assert.match(body.secret, /^svt_/);
+      assert.equal(body.token.allowedSecrets[0], "s1");
+
+      const allowed = await fetch(`${baseUrl}/devops/secrets/s1`, {
+        headers: { "X-Sentinel-Service-Token": body.secret }
+      });
+      assert.equal(allowed.status, 200);
+
+      const denied = await fetch(`${baseUrl}/devops/secrets/s2`, {
+        headers: { "X-Sentinel-Service-Token": body.secret }
+      });
+      assert.equal(denied.status, 401);
+
+      const revoke = await jsonFetch(`${baseUrl}/service-tokens/${body.token.id}/revoke`, ada.token, { method: "POST" });
+      assert.equal(revoke.status, 200);
+    });
+  } finally {
+    config.integrations.devopsApiEnabled = previousEnabled;
+  }
 });
 
 test("approved access request grants temporary reveal access", async () => {

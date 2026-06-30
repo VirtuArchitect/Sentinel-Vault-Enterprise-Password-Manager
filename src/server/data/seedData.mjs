@@ -34,6 +34,7 @@ export const createSeedState = () => ({
     seedSecret({ id: "s2", vaultId: "v2", type: "directory_account", name: "Privileged Directory Root", username: "adm.root", password: "nK5!vD8@xR2#tY6$pB", url: "ldaps://identity.defence.local", tags: ["identity", "tier-0"], risk: "high", rotatedAt: "2026-06-14T13:10:00Z", sharedWith: ["u1"], notes: "Tier-0 identity administration credential.", approvalsRequired: true }),
     seedSecret({ id: "s3", vaultId: "v3", type: "registry_token", name: "Secure Build Registry", username: "robot.deploy", password: "Q4$pL7#cN1@zV9!eH", url: "https://registry.defence.local", tags: ["devsecops"], risk: "medium", rotatedAt: "2026-06-24T06:45:00Z", sharedWith: ["u3"], notes: "CI/CD deployment token." })
   ],
+  serviceTokens: [],
   accessRequests: [
     {
       id: "ar1",

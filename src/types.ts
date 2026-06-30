@@ -80,7 +80,7 @@ export type ConsoleData = {
 export type IntegrationStatus = {
   siem: { configured: boolean; mode: string };
   itsm: { configured: boolean; mode: string };
-  devopsApi: { enabled: boolean; mode: string };
+  devopsApi: { enabled: boolean; mode: string; tokenCount: number };
   outboxDepth: number;
 };
 

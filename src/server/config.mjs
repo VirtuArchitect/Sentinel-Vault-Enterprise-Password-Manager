@@ -30,7 +30,6 @@ export const config = {
     siemWebhookUrl: process.env.SIEM_WEBHOOK_URL || "",
     itsmBaseUrl: process.env.ITSM_BASE_URL || "",
     devopsApiEnabled: process.env.DEVOPS_API_ENABLED === "true",
-    devopsServiceToken: process.env.DEVOPS_SERVICE_TOKEN || "",
     outboxLimit: Number(process.env.INTEGRATION_OUTBOX_LIMIT || 100)
   },
   distDir: path.join(rootDir, "dist")
@@ -46,9 +45,6 @@ export const validateConfig = () => {
   }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");
-  }
-  if (config.integrations.devopsApiEnabled && config.integrations.devopsServiceToken.length < 24) {
-    issues.push("DEVOPS_SERVICE_TOKEN must be at least 24 characters when DEVOPS_API_ENABLED=true.");
   }
   return issues;
 };

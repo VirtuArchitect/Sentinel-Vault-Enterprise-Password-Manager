@@ -3,6 +3,7 @@ import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
+import { createServiceToken, listServiceTokens, revokeServiceToken } from "../services/serviceTokenService.mjs";
 import {
   approveAccessRequest,
   createSecret,
@@ -32,6 +33,26 @@ consoleRoutes.get("/reports/secret-health", auth, can("audit:read"), (_req, res)
 
 consoleRoutes.get("/integrations/status", auth, can("audit:read"), (_req, res) => {
   res.json({ integrations: getIntegrationStatus() });
+});
+
+consoleRoutes.get("/service-tokens", auth, can("policy:write"), (_req, res) => {
+  res.json({ tokens: listServiceTokens() });
+});
+
+consoleRoutes.post("/service-tokens", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.status(201).json(createServiceToken(req.user, req.body));
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/service-tokens/:id/revoke", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json(revokeServiceToken(req.user, req.params.id));
+  } catch (err) {
+    next(err);
+  }
 });
 
 consoleRoutes.get("/reports/compliance", auth, can("audit:read"), (_req, res) => {
