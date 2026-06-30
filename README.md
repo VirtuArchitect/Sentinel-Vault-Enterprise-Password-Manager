@@ -15,6 +15,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
 - Session expiry enforcement and permission-scoped console payloads
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
+- Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 
 ## Demo Accounts
 
@@ -134,6 +135,9 @@ Copy `.env.example` to `.env` for local development and set:
 ```text
 PORT=5173
 VAULT_ROOT_KEY=your-local-development-root-key
+VAULT_KEY_VERSION=demo-root-v1
+VAULT_KEY_SALT=sentinel-vault
+KMS_PROVIDER=local-root-key
 DATA_DIR=./data
 STATE_FILE=sentinel-state.json
 IDENTITY_PROVIDER=local

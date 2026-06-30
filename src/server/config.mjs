@@ -9,6 +9,8 @@ export const config = {
   isProduction: process.env.NODE_ENV === "production",
   isTest: process.env.NODE_ENV === "test",
   vaultRootKey: process.env.VAULT_ROOT_KEY || "sentinel-demo-root-key",
+  vaultKeyVersion: process.env.VAULT_KEY_VERSION || "demo-root-v1",
+  vaultKeySalt: process.env.VAULT_KEY_SALT || "sentinel-vault",
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
   rootDir,
   dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),

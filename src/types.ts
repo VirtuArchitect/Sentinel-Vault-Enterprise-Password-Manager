@@ -63,6 +63,7 @@ export type ConsoleData = {
   secrets: Secret[];
   policies: Policies;
   identity: IdentityStatus;
+  crypto: CryptoStatus;
   audit: AuditEvent[];
   accessRequests: AccessRequest[];
   metrics: {
@@ -72,6 +73,14 @@ export type ConsoleData = {
     highRisk: number;
     pendingRequests: number;
   };
+};
+
+export type CryptoStatus = {
+  algorithm: string;
+  keyDerivation: string;
+  keyVersion: string;
+  saltConfigured: boolean;
+  kmsMode: string;
 };
 
 export type IdentityStatus = {

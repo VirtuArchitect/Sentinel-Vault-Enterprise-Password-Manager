@@ -56,6 +56,8 @@ test("console payload respects users and audit permissions", async () => {
     assert.deepEqual(consoleData.audit, []);
     assert.equal(consoleData.identity.mode, "local");
     assert.equal(consoleData.identity.configured, true);
+    assert.equal(consoleData.crypto.algorithm, "AES-256-GCM");
+    assert.equal(consoleData.crypto.keyVersion, "demo-root-v1");
   });
 });
 

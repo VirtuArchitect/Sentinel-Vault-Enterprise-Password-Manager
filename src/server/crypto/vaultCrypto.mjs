@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { config } from "../config.mjs";
 
-const vaultKey = crypto.scryptSync(config.vaultRootKey, "sentinel-vault", 32);
+const vaultKey = crypto.scryptSync(config.vaultRootKey, config.vaultKeySalt, 32);
 
 export const encryptSecret = (value) => {
   const iv = crypto.randomBytes(12);
@@ -12,7 +12,7 @@ export const encryptSecret = (value) => {
     iv: iv.toString("base64"),
     tag: cipher.getAuthTag().toString("base64"),
     alg: "AES-256-GCM",
-    keyVersion: "demo-root-v1"
+    keyVersion: config.vaultKeyVersion
   };
 };
 
@@ -22,4 +22,18 @@ export const decryptSecret = (payload) => {
   return Buffer.concat([decipher.update(Buffer.from(payload.value, "base64")), decipher.final()]).toString("utf8");
 };
 
-export const secretStrength = (payload) => Math.min(100, Math.round(decryptSecret(payload).length * 4.6));
+export const secretStrength = (payload) => {
+  try {
+    return Math.min(100, Math.round(decryptSecret(payload).length * 4.6));
+  } catch {
+    return 0;
+  }
+};
+
+export const getCryptoStatus = () => ({
+  algorithm: "AES-256-GCM",
+  keyDerivation: "scrypt",
+  keyVersion: config.vaultKeyVersion,
+  saltConfigured: Boolean(config.vaultKeySalt),
+  kmsMode: process.env.KMS_PROVIDER || "local-root-key"
+});

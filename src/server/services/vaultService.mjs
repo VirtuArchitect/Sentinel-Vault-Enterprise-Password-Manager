@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { encryptSecret, decryptSecret, secretStrength } from "../crypto/vaultCrypto.mjs";
+import { encryptSecret, decryptSecret, getCryptoStatus, secretStrength } from "../crypto/vaultCrypto.mjs";
 import { generateCredential } from "../crypto/passwords.mjs";
 import { store } from "../data/store.mjs";
 import { hasPermission, publicUser } from "../rbac/roles.mjs";
@@ -120,6 +120,7 @@ export const getConsolePayload = (user) => {
     secrets,
     policies: store.state.policies,
     identity: getIdentityStatus(),
+    crypto: getCryptoStatus(),
     audit: hasPermission(user.role, "audit:read") ? store.state.audit.slice(0, 20) : [],
     accessRequests,
     metrics: {
