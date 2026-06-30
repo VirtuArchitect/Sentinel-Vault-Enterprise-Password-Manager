@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { hashPassword } from "../crypto/passwords.mjs";
-import { encryptSecret } from "../crypto/vaultCrypto.mjs";
+import { encryptSecret, fingerprintSecret } from "../crypto/vaultCrypto.mjs";
 
 const seededPassword = "Passw0rd!";
 
@@ -17,6 +17,7 @@ const seedSecret = (secret) => ({
   approvalsRequired: secret.risk === "high",
   ...secret,
   encrypted: encryptSecret(secret.password),
+  fingerprint: fingerprintSecret(secret.password),
   password: undefined
 });
 

@@ -6,6 +6,7 @@ import {
   createSecret,
   denyAccessRequest,
   getConsolePayload,
+  getSecretHealthReport,
   requestSecretAccess,
   revealSecret,
   rotateSecret,
@@ -17,6 +18,10 @@ export const consoleRoutes = express.Router();
 
 consoleRoutes.get("/console", auth, (req, res) => {
   res.json(getConsolePayload(req.user));
+});
+
+consoleRoutes.get("/reports/secret-health", auth, can("audit:read"), (_req, res) => {
+  res.json({ secrets: getSecretHealthReport() });
 });
 
 consoleRoutes.post("/secrets", auth, can("vault:write"), (req, res, next) => {

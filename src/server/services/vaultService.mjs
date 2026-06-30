@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { encryptSecret, decryptSecret, getCryptoStatus, secretStrength } from "../crypto/vaultCrypto.mjs";
+import { encryptSecret, decryptSecret, fingerprintSecret, getCryptoStatus, secretStrength } from "../crypto/vaultCrypto.mjs";
 import { generateCredential } from "../crypto/passwords.mjs";
 import { store } from "../data/store.mjs";
 import { hasPermission, publicUser } from "../rbac/roles.mjs";
@@ -92,6 +92,33 @@ const policyValidators = {
   }
 };
 
+const isStale = (secret) => Date.now() - Date.parse(secret.rotatedAt) > store.state.policies.rotationDays * 86400000;
+
+const reusedFingerprints = () => {
+  const counts = new Map();
+  store.state.secrets.forEach((secret) => {
+    if (!secret.fingerprint) return;
+    const key = `${secret.vaultId}:${secret.fingerprint}`;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  return counts;
+};
+
+export const getSecretHealthReport = () => {
+  const reused = reusedFingerprints();
+  return store.state.secrets.map((secret) => ({
+    id: secret.id,
+    vaultId: secret.vaultId,
+    name: secret.name,
+    type: secret.type,
+    risk: secret.risk,
+    stale: isStale(secret),
+    reused: Boolean(secret.fingerprint && reused.get(`${secret.vaultId}:${secret.fingerprint}`) > 1),
+    rotatedAt: secret.rotatedAt,
+    historyCount: secret.history?.length || 0
+  }));
+};
+
 export const getConsolePayload = (user) => {
   const readableVaults = store.state.vaults.filter((vault) => canAccessVault(user, vault));
   const readableIds = new Set(readableVaults.map((vault) => vault.id));
@@ -130,8 +157,9 @@ export const getConsolePayload = (user) => {
     metrics: {
       secrets: store.state.secrets.length,
       vaults: store.state.vaults.length,
-      stale: store.state.secrets.filter((secret) => Date.now() - Date.parse(secret.rotatedAt) > store.state.policies.rotationDays * 86400000).length,
+      stale: store.state.secrets.filter(isStale).length,
       highRisk: store.state.secrets.filter((secret) => secret.risk === "high").length,
+      reused: getSecretHealthReport().filter((secret) => secret.reused).length,
       pendingRequests: store.state.accessRequests.filter((request) => request.status === "pending").length
     }
   };
@@ -151,6 +179,12 @@ export const createSecret = (user, input) => {
     error.status = 403;
     throw error;
   }
+  const fingerprint = fingerprintSecret(password);
+  if (store.state.secrets.some((secret) => secret.vaultId === vaultId && secret.fingerprint === fingerprint)) {
+    const error = new Error("Secret material has already been used in this vault");
+    error.status = 400;
+    throw error;
+  }
 
   const secret = {
     id: crypto.randomUUID(),
@@ -166,6 +200,7 @@ export const createSecret = (user, input) => {
     approvalsRequired: password.length < store.state.policies.minimumLength,
     notes: notes || "",
     history: [],
+    fingerprint,
     encrypted: encryptSecret(password)
   };
   store.state.secrets.unshift(secret);
@@ -186,6 +221,7 @@ export const rotateSecret = (user, id) => {
   secret.history.unshift({ rotatedAt: secret.rotatedAt, rotatedBy: user.id });
   secret.history = secret.history.slice(0, 10);
   secret.encrypted = encryptSecret(generated);
+  secret.fingerprint = fingerprintSecret(generated);
   secret.rotatedAt = new Date().toISOString();
   secret.risk = "low";
   secret.approvalsRequired = false;

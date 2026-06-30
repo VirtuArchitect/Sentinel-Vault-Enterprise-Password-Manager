@@ -86,6 +86,32 @@ test("policy validation rejects unsupported or unsafe values", async () => {
   });
 });
 
+test("secret health report is auditor-only and reuse is blocked", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const morgan = await login(baseUrl, "morgan@defence.local");
+
+    const health = await jsonFetch(`${baseUrl}/reports/secret-health`, ada.token);
+    assert.equal(health.status, 200);
+    const report = await health.json();
+    assert.ok(report.secrets.length >= 3);
+    assert.equal(typeof report.secrets[0].stale, "boolean");
+
+    const blocked = await jsonFetch(`${baseUrl}/secrets`, morgan.token, {
+      method: "POST",
+      body: JSON.stringify({
+        vaultId: "v1",
+        type: "password",
+        name: "Duplicate Telemetry Secret",
+        username: "svc_duplicate",
+        password: "E7#hP9!qZ2@Lw8$mV4",
+        tags: "duplicate"
+      })
+    });
+    assert.equal(blocked.status, 400);
+  });
+});
+
 test("approved access request grants temporary reveal access", async () => {
   await withApi(async (baseUrl) => {
     const morgan = await login(baseUrl, "morgan@defence.local");

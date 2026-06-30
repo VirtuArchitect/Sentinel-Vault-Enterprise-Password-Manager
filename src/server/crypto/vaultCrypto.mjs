@@ -16,6 +16,11 @@ export const encryptSecret = (value) => {
   };
 };
 
+export const fingerprintSecret = (value) => crypto
+  .createHmac("sha256", config.vaultRootKey)
+  .update(String(value || ""), "utf8")
+  .digest("base64url");
+
 export const decryptSecret = (payload) => {
   const decipher = crypto.createDecipheriv("aes-256-gcm", vaultKey, Buffer.from(payload.iv, "base64"));
   decipher.setAuthTag(Buffer.from(payload.tag, "base64"));

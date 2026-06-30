@@ -10,6 +10,7 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 - AES-256-GCM encrypted secret payloads in the API layer
 - Add, reveal, rotate, share, request access, and approve temporary access workflows
 - Password, API key, token, certificate, SSH key, directory account, registry token, and connection string secret metadata
+- Secret health reporting for stale, reused, high-risk, and rotated records
 - Password generator with configurable character classes and quality feedback
 - Audit trail for login, reveal, rotate, share, create, policy, and access approval actions
 - Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
@@ -119,6 +120,7 @@ Implemented in this prototype:
 - Temporary reveal access after approval
 - Policy validation and session timeout enforcement
 - Audit events for security-sensitive actions
+- Secret fingerprinting for reuse detection without storing plaintext
 
 Still intentionally out of scope for the prototype:
 

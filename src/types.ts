@@ -71,6 +71,7 @@ export type ConsoleData = {
     vaults: number;
     stale: number;
     highRisk: number;
+    reused: number;
     pendingRequests: number;
   };
 };
