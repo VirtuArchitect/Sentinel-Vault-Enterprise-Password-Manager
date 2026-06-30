@@ -13,5 +13,12 @@ export const config = {
   rootDir,
   dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),
   stateFile: process.env.STATE_FILE || "sentinel-state.json",
+  identityProvider: {
+    mode: process.env.IDENTITY_PROVIDER || "local",
+    issuer: process.env.OIDC_ISSUER || "",
+    clientId: process.env.OIDC_CLIENT_ID || "",
+    tenantId: process.env.ENTRA_TENANT_ID || "",
+    groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups"
+  },
   distDir: path.join(rootDir, "dist")
 };

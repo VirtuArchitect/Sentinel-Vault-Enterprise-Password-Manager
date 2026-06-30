@@ -325,7 +325,7 @@ function App() {
       <section className="statusbar">
         <span>{data.vaults.length} groups / {filteredSecrets.length} entries</span>
         <span>{selectedSecret ? `1 of ${filteredSecrets.length} selected` : "No entry selected"}</span>
-        <span>{data.policies.clipboardTtl}s clipboard TTL / {data.policies.sessionMinutes}m session</span>
+        <span>{data.identity.name} / {data.policies.sessionMinutes}m session</span>
       </section>
 
       {locked && (

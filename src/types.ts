@@ -62,6 +62,7 @@ export type ConsoleData = {
   vaults: VaultRecord[];
   secrets: Secret[];
   policies: Policies;
+  identity: IdentityStatus;
   audit: AuditEvent[];
   accessRequests: AccessRequest[];
   metrics: {
@@ -71,6 +72,18 @@ export type ConsoleData = {
     highRisk: number;
     pendingRequests: number;
   };
+};
+
+export type IdentityStatus = {
+  mode: string;
+  name: string;
+  configured: boolean;
+  issuer: string;
+  clientId: string;
+  tenantId: string;
+  groupClaim: string;
+  mfaSource: string;
+  roleMapping: Record<Role, string>;
 };
 
 export type AddSecret = {

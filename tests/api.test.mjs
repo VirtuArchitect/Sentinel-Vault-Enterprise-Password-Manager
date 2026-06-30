@@ -54,6 +54,8 @@ test("console payload respects users and audit permissions", async () => {
     const consoleData = await response.json();
     assert.deepEqual(consoleData.users, []);
     assert.deepEqual(consoleData.audit, []);
+    assert.equal(consoleData.identity.mode, "local");
+    assert.equal(consoleData.identity.configured, true);
   });
 });
 
