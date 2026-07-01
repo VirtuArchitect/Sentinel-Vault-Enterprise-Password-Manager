@@ -62,6 +62,7 @@ Implemented:
 - Tenant-aware vault creation and update.
 - Tenant isolation model and broader cross-tenant negative authorization tests for reveal, update, delete, restore, rotate, share, and access approval operations.
 - Tenant isolation evidence template and validator for deployment-specific cross-tenant control gates.
+- Tenant isolation evidence generator for scope counts, cross-tenant negative-test summaries, secret/session-token redaction checks, tenant identifier scoping, and approvals.
 - Safe bulk administration metadata export for tenants, vaults, users, and policies.
 - Safe bulk administration metadata import for tenants and vaults.
 - Bulk secret import with encrypted escrow, duplicate detection, and independent approval.

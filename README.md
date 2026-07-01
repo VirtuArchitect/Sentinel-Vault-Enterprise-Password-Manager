@@ -135,6 +135,8 @@ pnpm release:device-trust -- --device-inventory ".\artifacts\security\device-inv
 pnpm validate:device-trust -- docs/templates/device-trust-evidence.json
 pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.json"
 pnpm validate:brute-force -- docs/templates/brute-force-evidence.json
+pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation-tests.json"
+pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
 ```
 
 ## Project Structure
