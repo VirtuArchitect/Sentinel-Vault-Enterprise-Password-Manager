@@ -17,7 +17,7 @@ const requireDevopsEnabled = (_req, res, next) => {
 devopsRoutes.get("/devops/secrets/:id", requireDevopsEnabled, (req, res) => {
   const secret = store.findSecretById(req.params.id);
   if (!secret || secret.deletedAt) return res.status(404).json({ error: "Secret not found" });
-  const serviceToken = resolveServiceToken(req.headers["x-sentinel-service-token"], secret);
+  const serviceToken = resolveServiceToken(req.headers["x-sentinel-service-token"], secret, req.ip);
   if (!serviceToken) return res.status(401).json({ error: "Scoped service token required" });
   audit(null, "DEVOPS_SECRET_RETRIEVAL", secret.name, `Secret retrieved through service token ${serviceToken.name}`, req.ip);
   res.json({

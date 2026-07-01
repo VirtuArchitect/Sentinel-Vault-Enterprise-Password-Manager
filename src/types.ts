@@ -63,6 +63,7 @@ export type ConsoleData = {
   secrets: Secret[];
   policies: Policies;
   identity: IdentityStatus;
+  session: SessionStatus;
   crypto: CryptoStatus;
   integrations: IntegrationStatus;
   storage: StorageStatus;
@@ -84,6 +85,11 @@ export type StorageStatus = {
   stateVersion: number;
   exists: boolean;
   backups: Array<{ file: string; size: number; createdAt: string }>;
+};
+
+export type SessionStatus = {
+  activeSessions: number;
+  ttlMinutes: number;
 };
 
 export type IntegrationStatus = {

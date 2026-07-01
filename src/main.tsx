@@ -180,6 +180,7 @@ function App() {
   };
 
   const signOut = () => {
+    api("/api/logout", { method: "POST" }, token).catch(() => undefined);
     localStorage.removeItem("sentinel-token");
     setToken("");
     setData(null);
@@ -509,6 +510,7 @@ function ManagementPanel({ data }: { data: ConsoleData }) {
       <h2><Settings size={18} />Management</h2>
       <dl>
         <div><dt>Identity</dt><dd>{data.identity.name} ({data.identity.mode})</dd></div>
+        <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.ttlMinutes} min TTL</dd></div>
         <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion}</dd></div>
         <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
         <div><dt>Backups</dt><dd>{data.storage.backups.length} retained</dd></div>

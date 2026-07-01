@@ -6,6 +6,7 @@ import { hasPermission, publicUser } from "../rbac/roles.mjs";
 import { audit } from "./auditService.mjs";
 import { getIdentityStatus } from "./identityService.mjs";
 import { getIntegrationStatus } from "./integrationService.mjs";
+import { getSessionStatus } from "./sessionService.mjs";
 
 export const canAccessVault = (user, vault) => Boolean(vault && (vault.members.includes(user.id) || user.role === "SECURITY_ADMIN"));
 
@@ -153,6 +154,7 @@ export const getConsolePayload = (user) => {
     secrets,
     policies: store.state.policies,
     identity: getIdentityStatus(),
+    session: getSessionStatus(),
     crypto: getCryptoStatus(),
     integrations: getIntegrationStatus(),
     storage: store.getStorageStatus(),

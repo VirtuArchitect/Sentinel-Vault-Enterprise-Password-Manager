@@ -40,8 +40,8 @@ Out of scope until implemented:
 | Compromised root key | Production requires non-demo key | KMS/HSM integration and key rotation |
 | Audit tampering | Audit events are stored | Append-only storage and signing |
 | Backup exposure | Admin-only backup endpoint | Backup encryption and restore validation |
-| Session replay | Expiring in-memory sessions | Logout invalidation, device review, refresh-token design |
-| Service-token abuse | Scoped token retrieval and audit | Rotation, last-used metadata, token hashing review |
+| Session replay | Expiring in-memory sessions and logout invalidation | Device review, forced admin revocation, refresh-token design |
+| Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Supply-chain compromise | Lockfile and CI verify | Dependency audit and secret scanning in CI |
 | Misconfigured IIS/TLS | IIS guidance exists | TLS automation, headers review, deployment checklist |
 
@@ -49,13 +49,13 @@ Out of scope until implemented:
 
 1. Add dependency and secret scanning to CI.
 2. Add production CSP review and environment-specific security headers.
-3. Add server-side logout and session invalidation endpoint.
-4. Add account lockout and MFA verification.
-5. Add append-only or signed audit log strategy.
-6. Add encrypted backup and restore validation.
-7. Add KMS/HSM key-management design.
-8. Add OIDC/Entra token-validation review before implementation.
-9. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
+3. Add account lockout and MFA verification.
+4. Add append-only or signed audit log strategy.
+5. Add encrypted backup and restore validation.
+6. Add KMS/HSM key-management design.
+7. Add OIDC/Entra token-validation review before implementation.
+8. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
+9. Add session/device review and forced admin revocation.
 10. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test

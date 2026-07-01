@@ -94,6 +94,9 @@ Implemented:
 - Security headers.
 - Config validation.
 - Login rate limiting.
+- Server-side logout and session invalidation.
+- Active session count and TTL surfaced in the Management panel.
+- Service-token last-used source, last-used secret, and use-count metadata.
 - Threat model.
 - Security review checklist.
 
@@ -104,7 +107,7 @@ Remaining:
 - Append-only or signed audit log strategy.
 - Encrypted backup and restore validation.
 - KMS/HSM design and implementation.
-- Logout invalidation and session/device review.
+- Full session/device review and forced admin revocation.
 
 ## Phase 8: Browser and Desktop Extensions
 

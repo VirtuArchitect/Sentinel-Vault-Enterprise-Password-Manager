@@ -83,6 +83,22 @@ test("console payload respects users and audit permissions", async () => {
     assert.equal(consoleData.crypto.algorithm, "AES-256-GCM");
     assert.equal(consoleData.crypto.keyVersion, "demo-root-v1");
     assert.equal(consoleData.integrations.siem.mode, "outbox");
+    assert.equal(typeof consoleData.session.activeSessions, "number");
+    assert.equal(consoleData.session.ttlMinutes, 15);
+  });
+});
+
+test("logout revokes the active session token", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const beforeLogout = await jsonFetch(`${baseUrl}/console`, ada.token);
+    assert.equal(beforeLogout.status, 200);
+
+    const logout = await jsonFetch(`${baseUrl}/logout`, ada.token, { method: "POST" });
+    assert.equal(logout.status, 200);
+
+    const afterLogout = await jsonFetch(`${baseUrl}/console`, ada.token);
+    assert.equal(afterLogout.status, 401);
   });
 });
 
@@ -227,6 +243,15 @@ test("managed service tokens are scoped to allowed secrets", async () => {
         headers: { "X-Sentinel-Service-Token": body.secret }
       });
       assert.equal(allowed.status, 200);
+
+      const listed = await jsonFetch(`${baseUrl}/service-tokens`, ada.token);
+      assert.equal(listed.status, 200);
+      const listedBody = await listed.json();
+      const usedToken = listedBody.tokens.find((token) => token.id === body.token.id);
+      assert.equal(usedToken.useCount, 1);
+      assert.equal(usedToken.lastUsedSecretId, "s1");
+      assert.ok(usedToken.lastUsedAt);
+      assert.ok(usedToken.lastUsedSource);
 
       const denied = await fetch(`${baseUrl}/devops/secrets/s2`, {
         headers: { "X-Sentinel-Service-Token": body.secret }

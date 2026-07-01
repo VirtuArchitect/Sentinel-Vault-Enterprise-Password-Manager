@@ -14,7 +14,9 @@ const publicToken = (token) => ({
   revokedAt: token.revokedAt || null,
   createdAt: token.createdAt,
   lastUsedAt: token.lastUsedAt || null,
-  lastUsedSecretId: token.lastUsedSecretId || null
+  lastUsedSecretId: token.lastUsedSecretId || null,
+  lastUsedSource: token.lastUsedSource || null,
+  useCount: token.useCount || 0
 });
 
 export const listServiceTokens = () => store.state.serviceTokens.map(publicToken);
@@ -44,7 +46,9 @@ export const createServiceToken = (user, input = {}) => {
     createdAt: new Date().toISOString(),
     revokedAt: null,
     lastUsedAt: null,
-    lastUsedSecretId: null
+    lastUsedSecretId: null,
+    lastUsedSource: null,
+    useCount: 0
   };
   store.state.serviceTokens.unshift(token);
   audit(user.id, "SERVICE_TOKEN_CREATE", name, "Created scoped DevOps service token");
@@ -63,7 +67,7 @@ export const revokeServiceToken = (user, id) => {
   return { token: publicToken(token) };
 };
 
-export const resolveServiceToken = (rawToken, secret) => {
+export const resolveServiceToken = (rawToken, secret, source = "127.0.0.1") => {
   const hash = hashToken(String(rawToken || ""));
   const token = store.state.serviceTokens.find((candidate) => candidate.tokenHash === hash);
   if (!token || token.revokedAt || Date.parse(token.expiresAt) <= Date.now()) return null;
@@ -72,6 +76,8 @@ export const resolveServiceToken = (rawToken, secret) => {
   if (!token.allowedSecrets.length && !token.allowedVaults.length) return null;
   token.lastUsedAt = new Date().toISOString();
   token.lastUsedSecretId = secret.id;
+  token.lastUsedSource = source;
+  token.useCount = Number(token.useCount || 0) + 1;
   store.save();
   return token;
 };
