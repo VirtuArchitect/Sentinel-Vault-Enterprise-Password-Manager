@@ -18,6 +18,7 @@
     "deviceTrust": "docs/templates/device-trust-evidence.json",
     "siemReceiverRotation": "docs/templates/siem-receiver-rotation-evidence.json",
     "storageMigration": "docs/templates/storage-migration-evidence.json",
+    "releaseAttestation": "docs/templates/release-attestation-evidence.json",
     "releaseProvenance": "docs/templates/release-provenance-template.json"
   },
   "approvals": {

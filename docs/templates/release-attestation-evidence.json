@@ -1,0 +1,51 @@
+{
+  "format": "sentinel-release-attestation-evidence-v1",
+  "status": "planned",
+  "releaseVersion": "replace-with-version",
+  "generatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "source": {
+    "commit": "replace-with-git-sha",
+    "branch": "main",
+    "remote": "https://github.com/VirtuArchitect/Sentinel-Vault-Enterprise-Password-Manager.git",
+    "dirty": false
+  },
+  "provenance": {
+    "path": "artifacts/release/release-provenance.json",
+    "sha256": "replace-with-sha256",
+    "lockfileSha256": "replace-with-sha256"
+  },
+  "checks": {
+    "pnpmVerify": "planned",
+    "secretScan": "planned",
+    "dependencyAudit": "planned",
+    "windowsSignatureVerification": "planned",
+    "provenanceMatchesArtifacts": "planned"
+  },
+  "attestation": {
+    "type": "replace-with-sigstore-gpg-or-certificate",
+    "statementPath": "replace-with-attestation-path",
+    "statementSha256": "replace-with-sha256",
+    "signaturePath": "replace-with-signature-path",
+    "signatureSha256": "replace-with-sha256",
+    "signerIdentity": "replace-with-signer",
+    "certificateThumbprint": "replace-with-thumbprint",
+    "transparencyLogUrl": "replace-with-url-or-not-applicable"
+  },
+  "artifacts": [
+    {
+      "name": "replace-with-artifact-name",
+      "sha256": "replace-with-sha256",
+      "size": 0
+    }
+  ],
+  "redaction": {
+    "privateKeysFound": false,
+    "tokensFound": false,
+    "secretValuesFound": false
+  },
+  "approvals": {
+    "releaseOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsReviewer": "replace-with-reviewer"
+  }
+}

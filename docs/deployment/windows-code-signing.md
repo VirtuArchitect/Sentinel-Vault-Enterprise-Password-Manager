@@ -22,14 +22,15 @@ Use this checklist before publishing a Sentinel Vault Windows package outside a 
 
 1. Run `pnpm verify`.
 2. Run `pnpm scan:secrets`.
-3. Run `pnpm audit:deps`.
-4. Build the package with `pnpm package:windows`.
-5. Optionally build the setup executable with `pnpm package:windows:installer`.
-6. Optionally validate or build MSI authoring with `pnpm package:windows:msi -ValidateOnly` or `pnpm package:windows:msi`.
-7. Optionally validate or build MSIX authoring with `pnpm package:windows:msix -ValidateOnly` or `pnpm package:windows:msix`.
-8. Generate release provenance with `pnpm release:provenance -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"`.
-9. Sign the release artifacts with `pnpm sign:windows`.
-10. Verify the signature on a clean Windows host before publishing.
+3. Generate or attach release attestation evidence and validate it with `pnpm validate:release-attestation -- docs/templates/release-attestation-evidence.json`.
+4. Run `pnpm audit:deps`.
+5. Build the package with `pnpm package:windows`.
+6. Optionally build the setup executable with `pnpm package:windows:installer`.
+7. Optionally validate or build MSI authoring with `pnpm package:windows:msi -ValidateOnly` or `pnpm package:windows:msi`.
+8. Optionally validate or build MSIX authoring with `pnpm package:windows:msix -ValidateOnly` or `pnpm package:windows:msix`.
+9. Generate release provenance with `pnpm release:provenance -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"`.
+10. Sign the release artifacts with `pnpm sign:windows`.
+11. Verify the signature on a clean Windows host before publishing.
 
 Validate signing inputs without accessing a certificate:
 

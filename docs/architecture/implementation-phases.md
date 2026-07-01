@@ -117,6 +117,7 @@ Implemented:
 - Signed-EXE-ready Inno Setup authoring and build script.
 - Windows release signature verification helper and release evidence template.
 - Windows release evidence validator for signed MSI/MSIX/EXE artifacts and rollback evidence.
+- Release attestation evidence template and validator for provenance, artifact hashes, signer identity, redaction, and approvals.
 - Deployment evidence bundle validator that includes Windows release evidence with the wider production gate.
 - Windows artifact signing helper with certificate-store and PFX support.
 - MSI WiX authoring scaffold and WiX build/validation script.
