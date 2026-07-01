@@ -125,6 +125,8 @@ pnpm release:sast -- --report ".\artifacts\security\sast-report.json"
 pnpm validate:sast -- docs/templates/sast-evidence.json
 pnpm release:log-redaction -- --samples ".\artifacts\security\log-samples"
 pnpm validate:log-redaction -- docs/templates/log-redaction-evidence.json
+pnpm release:pentest-scope -- --report ".\artifacts\security\pentest-findings.json"
+pnpm validate:pentest-scope -- docs/templates/pentest-scope-evidence.json
 ```
 
 ## Project Structure

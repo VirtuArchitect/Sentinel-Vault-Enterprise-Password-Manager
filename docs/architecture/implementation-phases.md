@@ -165,6 +165,7 @@ Implemented:
 - Log-redaction evidence generator for local or receiver sample review, synthetic secret/token counts, parser failures, leaked-value detection, retention, controls, and approvals.
 - Release provenance generator for source commit, lockfile, dependency inventory, and artifact hashes.
 - Penetration-test scope evidence template and validator for authorized scope, required abuse cases, redaction requirements, remediation, retest, and approvals.
+- Penetration-test scope evidence generator for finding severity summaries, required Sentinel surfaces, abuse-case dispositions, evidence requirements, remediation, and approvals.
 - Tamper-evident audit hash chaining.
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
 - Audit WORM evidence template and validator for external signing, immutable retention, object lock, legal hold, readback verification, redaction, and approvals.

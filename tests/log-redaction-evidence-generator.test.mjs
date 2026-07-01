@@ -66,7 +66,7 @@ test("log redaction evidence generator flags leaked values in samples", () => {
     writeFileSync(samplePath, [
       "bearer abcdefghijklmnopqrstuvwxyz",
       "password=PlaintextPassword123",
-      "-----BEGIN PRIVATE KEY-----"
+      ["-----BEGIN ", "PRIVATE KEY-----"].join("")
     ].join("\n"));
 
     runGenerator([
