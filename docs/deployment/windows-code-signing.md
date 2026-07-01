@@ -74,6 +74,12 @@ Generate artifact hashes and a planned Windows release evidence file from built 
 pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip" --out ".\artifacts\release\windows-release-evidence.json"
 ```
 
+Generate local install hardening evidence from an installed layout:
+
+```powershell
+pnpm release:windows-hardening -- --install-path "C:\Program Files\Sentinel Vault" --sentinel-env "C:\Program Files\Sentinel Vault\sentinel.env" --out ".\artifacts\windows\windows-install-hardening-evidence.json"
+```
+
 Validate planned or completed release evidence with:
 
 ```powershell

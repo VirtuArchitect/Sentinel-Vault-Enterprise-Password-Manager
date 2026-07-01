@@ -222,6 +222,12 @@ Generate Windows release evidence from built artifacts:
 pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"
 ```
 
+Generate Windows install hardening evidence from an installed layout:
+
+```powershell
+pnpm release:windows-hardening -- --install-path "C:\Program Files\Sentinel Vault" --sentinel-env "C:\Program Files\Sentinel Vault\sentinel.env"
+```
+
 ## Enterprise Roadmap Status
 
 Implemented in this prototype:

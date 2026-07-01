@@ -238,6 +238,7 @@ The installer restricts `sentinel.env` to Administrators and SYSTEM because it c
 Record Windows install hardening evidence with:
 
 ```powershell
+pnpm release:windows-hardening -- --install-path "C:\Program Files\Sentinel Vault" --sentinel-env "C:\Program Files\Sentinel Vault\sentinel.env"
 pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evidence.json
 ```
 
