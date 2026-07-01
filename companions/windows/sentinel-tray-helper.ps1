@@ -2,6 +2,11 @@ param(
   [string]$ConsoleUrl = "http://127.0.0.1:5173",
   [int]$ClipboardTtlSeconds = 30,
   [string]$Value = "",
+  [switch]$AutoType,
+  [string]$WindowTitle = "",
+  [string]$Username = "",
+  [string]$Password = "",
+  [switch]$IUnderstandAutotypeRisk,
   [switch]$Watch,
   [switch]$ClearNow,
   [switch]$SelfTest
@@ -92,10 +97,60 @@ function Set-SentinelClipboard {
   Write-Host "Copied Sentinel-owned value. Expires at $($marker.expiresAt)."
 }
 
+function ConvertTo-SendKeysLiteral {
+  param([Parameter(Mandatory = $true)][string]$Text)
+  $builder = [System.Text.StringBuilder]::new()
+  foreach ($char in $Text.ToCharArray()) {
+    switch ($char) {
+      "{" { [void]$builder.Append("{{}") }
+      "}" { [void]$builder.Append("{}}") }
+      "+" { [void]$builder.Append("{+}") }
+      "^" { [void]$builder.Append("{^}") }
+      "%" { [void]$builder.Append("{%}") }
+      "~" { [void]$builder.Append("{~}") }
+      "(" { [void]$builder.Append("{(}") }
+      ")" { [void]$builder.Append("{)}") }
+      "[" { [void]$builder.Append("{[}") }
+      "]" { [void]$builder.Append("{]}") }
+      default { [void]$builder.Append($char) }
+    }
+  }
+  return $builder.ToString()
+}
+
+function Invoke-SentinelAutoType {
+  param(
+    [Parameter(Mandatory = $true)][string]$TargetWindowTitle,
+    [Parameter(Mandatory = $true)][string]$UserNameValue,
+    [Parameter(Mandatory = $true)][string]$PasswordValue
+  )
+
+  if (!$IUnderstandAutotypeRisk) {
+    throw "Autotype requires -IUnderstandAutotypeRisk because it sends keystrokes to the active desktop."
+  }
+  if ($TargetWindowTitle.Trim().Length -lt 3) {
+    throw "Autotype requires a target -WindowTitle of at least 3 characters."
+  }
+
+  Add-Type -AssemblyName Microsoft.VisualBasic
+  Add-Type -AssemblyName System.Windows.Forms
+  $activated = [Microsoft.VisualBasic.Interaction]::AppActivate($TargetWindowTitle)
+  if (!$activated) {
+    throw "Could not activate a window matching '$TargetWindowTitle'."
+  }
+
+  Start-Sleep -Milliseconds 250
+  [System.Windows.Forms.SendKeys]::SendWait((ConvertTo-SendKeysLiteral -Text $UserNameValue))
+  [System.Windows.Forms.SendKeys]::SendWait("{TAB}")
+  [System.Windows.Forms.SendKeys]::SendWait((ConvertTo-SendKeysLiteral -Text $PasswordValue))
+  Write-Host "Autotype completed for target window '$TargetWindowTitle'."
+}
+
 if ($SelfTest) {
   $sample = "sentinel-self-test"
   $hash = Get-SentinelHash -Text $sample
   if ($hash.Length -ne 64) { throw "SHA-256 marker hash failed self-test." }
+  if ("Invoke-SentinelAutoType".Length -lt 1) { throw "Autotype function self-test failed." }
   Write-Host "Sentinel Vault companion self-test passed."
   exit 0
 }
@@ -108,6 +163,11 @@ if ($ClearNow) {
   exit 0
 }
 
+if ($AutoType) {
+  Invoke-SentinelAutoType -TargetWindowTitle $WindowTitle -UserNameValue $Username -PasswordValue $Password
+  exit 0
+}
+
 if ($Value) {
   Set-SentinelClipboard -SecretValue $Value
 }
@@ -115,5 +175,5 @@ if ($Value) {
 if ($Watch) {
   Watch-SentinelClipboard
 } elseif (!$Value) {
-  Write-Host "Use -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, or -ClearNow to clear the current Sentinel-owned value."
+  Write-Host "Use -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
 }

@@ -140,6 +140,19 @@ Clipboard companion:
 
 The companion clears only a clipboard value it wrote itself. If the user copies something else before the TTL expires, the helper leaves the clipboard unchanged.
 
+Guarded autotype proof of concept:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 `
+  -AutoType `
+  -WindowTitle "Target Login Window" `
+  -Username "user@example.test" `
+  -Password "temporary-secret" `
+  -IUnderstandAutotypeRisk
+```
+
+Autotype sends keystrokes to the active desktop, so it requires an explicit target window title and acknowledgement switch.
+
 Runtime configuration:
 
 ```text

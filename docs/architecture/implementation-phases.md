@@ -133,6 +133,7 @@ Implemented:
 - Windows clipboard/tray helper PowerShell prototype.
 - Clipboard auto-clear companion implementation with Sentinel-owned marker hashes.
 - Encrypted read-only offline cache export and verification APIs.
+- Guarded native autotype proof of concept in the Windows companion.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
 
@@ -141,4 +142,4 @@ Remaining:
 - Browser extension packaging, enterprise policy deployment, and store review.
 - Windows tray UI.
 - Windows DPAPI/native offline cache unlock helper.
-- Native autotype or credential-provider proof of concept.
+- Credential-provider proof of concept and formal autotype security review.

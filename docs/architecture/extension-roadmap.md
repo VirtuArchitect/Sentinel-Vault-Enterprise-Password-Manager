@@ -30,3 +30,4 @@
 - Do not inject into elevated windows from a non-elevated process.
 - Log target application metadata without logging typed secrets.
 - Require separate security review before implementing credential provider or UI automation hooks.
+- The PowerShell companion now includes a guarded autotype proof of concept that requires a target window title and `-IUnderstandAutotypeRisk` before sending username, tab, and password keystrokes.
