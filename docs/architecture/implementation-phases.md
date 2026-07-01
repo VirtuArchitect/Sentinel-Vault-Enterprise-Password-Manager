@@ -150,6 +150,7 @@ Implemented:
 - Login rate limiting.
 - Temporary account lockout after repeated failed login attempts.
 - Brute-force and IP/source rate-limit evidence template and validator for lockout drills, proxy/WAF controls, alerts, and redaction.
+- Brute-force evidence generator for lockout drill summaries, failed-attempt/source/alert counts, leaked password/token detection, network-control status, and deployment approvals.
 - Server-side logout and session invalidation.
 - Active session count and TTL surfaced in the Management panel.
 - Admin session review and forced active-session revocation APIs.

@@ -133,6 +133,8 @@ pnpm release:backup-recovery -- --restore-evidence ".\artifacts\storage\encrypte
 pnpm validate:backup-recovery -- docs/templates/backup-recovery-evidence.json
 pnpm release:device-trust -- --device-inventory ".\artifacts\security\device-inventory.json"
 pnpm validate:device-trust -- docs/templates/device-trust-evidence.json
+pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.json"
+pnpm validate:brute-force -- docs/templates/brute-force-evidence.json
 ```
 
 ## Project Structure
