@@ -92,6 +92,7 @@ Status: Started
 Implemented:
 
 - Security headers.
+- Environment-aware CSP with production HSTS and stricter browser isolation headers.
 - Config validation.
 - Login rate limiting.
 - Temporary account lockout after repeated failed login attempts.

@@ -7,6 +7,7 @@ const { config } = await import("../src/server/config.mjs");
 const { store } = await import("../src/server/data/store.mjs");
 const { hashPassword } = await import("../src/server/crypto/passwords.mjs");
 const { verifyAuditChain } = await import("../src/server/services/auditService.mjs");
+const { buildContentSecurityPolicy, buildSecurityHeaders } = await import("../src/server/middleware/securityHeaders.mjs");
 
 let nextPort = 18100;
 
@@ -47,9 +48,21 @@ test("health endpoint is available without authentication", async () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("x-frame-options"), "DENY");
     assert.match(response.headers.get("content-security-policy"), /default-src 'self'/);
+    assert.match(response.headers.get("content-security-policy"), /object-src 'none'/);
+    assert.equal(response.headers.get("cross-origin-resource-policy"), "same-origin");
     const health = await response.json();
     assert.equal(health.ok, true);
   });
+});
+
+test("security headers are environment aware", () => {
+  const developmentCsp = buildContentSecurityPolicy({ ...config, isProduction: false, host: "127.0.0.1", port: 5173 });
+  assert.match(developmentCsp, /ws:\/\/127\.0\.0\.1:5173/);
+  assert.doesNotMatch(developmentCsp, /upgrade-insecure-requests/);
+
+  const productionHeaders = buildSecurityHeaders({ ...config, isProduction: true, host: "127.0.0.1", port: 5173 });
+  assert.match(productionHeaders["Content-Security-Policy"], /upgrade-insecure-requests/);
+  assert.equal(productionHeaders["Strict-Transport-Security"], "max-age=31536000; includeSubDomains");
 });
 
 test("cors allows configured origins and rejects unexpected origins", async () => {

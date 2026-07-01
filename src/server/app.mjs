@@ -17,7 +17,7 @@ export const createApp = async () => {
 
   const app = express();
 
-  app.use(securityHeaders);
+  app.use(securityHeaders(config));
   app.use(cors({
     origin(origin, callback) {
       if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);

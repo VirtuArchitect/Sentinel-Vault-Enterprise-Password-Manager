@@ -43,19 +43,18 @@ Out of scope until implemented:
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, and forced revocation | Persistent device inventory and refresh-token design |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Supply-chain compromise | Lockfile, CI verify, secret scanning, and high-severity dependency audit | Broader SAST and release provenance |
-| Misconfigured IIS/TLS | IIS guidance exists | TLS automation, headers review, deployment checklist |
+| Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
 
 ## Security Backlog
 
-1. Add production CSP review and environment-specific security headers.
-2. Add MFA verification.
-3. Add append-only audit storage and external signing.
-4. Add encrypted backup and restore workflow validation.
-5. Add KMS/HSM key-management design.
-6. Add OIDC/Entra token-validation review before implementation.
-7. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
-8. Add persistent session/device inventory for future refresh-token workflows.
-9. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
+1. Add MFA verification.
+2. Add append-only audit storage and external signing.
+3. Add encrypted backup and restore workflow validation.
+4. Add KMS/HSM key-management design.
+5. Add OIDC/Entra token-validation review before implementation.
+6. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
+7. Add persistent session/device inventory for future refresh-token workflows.
+8. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test
 

@@ -35,7 +35,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Startup configuration validation, login rate limiting, and temporary account lockout
 - CI dependency audit gate for high-severity advisories
 - CI secret scanning gate for private keys and common committed token formats
-- Configurable CORS allowlist and baseline browser security headers
+- Configurable CORS allowlist with environment-aware browser security headers and production HSTS
 
 ## Demo Accounts
 
