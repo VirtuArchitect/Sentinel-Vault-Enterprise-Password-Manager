@@ -40,10 +40,9 @@
   },
   "migrationTables": [
     "users",
-    "devices",
+    "device_inventory",
     "tenants",
     "vaults",
-    "vault_members",
     "secrets",
     "secret_imports",
     "access_requests",

@@ -28,6 +28,7 @@ const requiredCollections = [
   "integrationOutbox",
   "audit"
 ];
+const originallyMissingCollections = requiredCollections.filter((collection) => !Array.isArray(state[collection]));
 const defaultedCollections = [];
 for (const collection of requiredCollections) {
   if (!Array.isArray(state[collection])) {
@@ -36,7 +37,6 @@ for (const collection of requiredCollections) {
   }
 }
 
-const missingCollections = requiredCollections.filter((collection) => !Array.isArray(state[collection]));
 const transientCollectionsPresent = ["sessions", "loginFailures"].filter((collection) => Object.hasOwn(state, collection));
 const plaintextSecretFields = (state.secrets || []).flatMap((secret) => (
   Object.hasOwn(secret, "password") && secret.password ? [{ id: secret.id, field: "password" }] : []
@@ -60,7 +60,7 @@ const evidence = {
   providerTargets: ["sqlite", "postgres"],
   counts: Object.fromEntries(requiredCollections.map((collection) => [collection, state[collection]?.length || 0])),
   checks: {
-    requiredCollectionsPresent: missingCollections.length === 0,
+    requiredCollectionsPresent: originallyMissingCollections.length === 0,
     transientCollectionsExcluded: transientCollectionsPresent.length === 0,
     plaintextSecretsAbsent: plaintextSecretFields.length === 0,
     encryptedSecretPayloadsPresent: unencryptedSecrets.length === 0,
@@ -68,7 +68,7 @@ const evidence = {
     orphanVaultMembersAbsent: orphanVaultMembers.length === 0
   },
   findings: {
-    missingCollections,
+    missingCollections: originallyMissingCollections,
     defaultedCollections,
     transientCollectionsPresent,
     plaintextSecretFields,
@@ -79,10 +79,9 @@ const evidence = {
   },
   migrationTables: [
     "users",
-    "devices",
+    "device_inventory",
     "tenants",
     "vaults",
-    "vault_members",
     "secrets",
     "secret_imports",
     "access_requests",

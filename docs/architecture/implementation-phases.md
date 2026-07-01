@@ -21,6 +21,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - JSON state migration-readiness inspector and evidence template exist.
 - SQLite provider persists normalized state using Node's built-in SQLite runtime for Windows and single-node production prototypes.
 - SQLite mode mirrors normalized entities into relational tables in the same transaction as the canonical state snapshot for inspection, reporting, and migration readiness.
+- JSON-to-SQLite cutover enforces migration-readiness checks and writes the same relational mirror tables as the runtime provider.
 - JSON-to-SQLite migration script writes the current normalized state snapshot and redacted migration evidence.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.

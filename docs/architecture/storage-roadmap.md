@@ -40,6 +40,7 @@ Implemented:
 - Mirror users, device inventory, tenants, vaults, secrets, service tokens, imports, access requests, integration outbox records, audit events, and policies into relational SQLite tables in the same transaction as the canonical snapshot.
 - Preserve the same encrypted secret payloads, audit records, tenant metadata, access requests, integrations, policies, and service-token metadata as JSON mode.
 - Include SQLite database copies in the existing backup manifest flow.
+- Enforce migration-readiness evidence before JSON-to-SQLite cutover and write the same relational mirror tables during migration.
 - Migrate an existing JSON state file into a SQLite database with redacted migration evidence:
 
 ```powershell
@@ -50,7 +51,6 @@ pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sen
 
 Remaining:
 
-- Use `scripts/inspect-storage-state.mjs` to prove source state readiness before migration.
 - Move secret lifecycle operations to narrower repository-level transactions instead of whole-state commits.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 - Add tests that run the same API suite against JSON and SQLite modes.

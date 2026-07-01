@@ -78,6 +78,32 @@ const toPersistedState = (state) => {
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("base64url");
 const hasEncryptedPayload = (secret) => secret.encrypted?.iv && secret.encrypted?.tag && (secret.encrypted?.ciphertext || secret.encrypted?.value);
 
+const replaceJsonRows = (db, table, rows, columns = {}) => {
+  db.prepare(`DELETE FROM ${table}`).run();
+  const columnNames = ["id", ...Object.keys(columns), "data"];
+  const placeholders = columnNames.map(() => "?").join(", ");
+  const insert = db.prepare(`INSERT INTO ${table} (${columnNames.join(", ")}) VALUES (${placeholders})`);
+  for (const row of rows || []) {
+    const id = row.id || sha256(JSON.stringify(row));
+    insert.run(id, ...Object.values(columns).map((column) => row[column] ?? null), JSON.stringify(row));
+  }
+};
+
+const syncMirrorTables = (db, persisted) => {
+  replaceJsonRows(db, "users", persisted.users);
+  replaceJsonRows(db, "device_inventory", persisted.deviceInventory);
+  replaceJsonRows(db, "tenants", persisted.tenants);
+  replaceJsonRows(db, "vaults", persisted.vaults, { tenant_id: "tenantId" });
+  replaceJsonRows(db, "secrets", persisted.secrets, { vault_id: "vaultId", risk: "risk", deleted_at: "deletedAt" });
+  replaceJsonRows(db, "service_tokens", persisted.serviceTokens, { revoked_at: "revokedAt" });
+  replaceJsonRows(db, "secret_imports", persisted.secretImports, { status: "status" });
+  replaceJsonRows(db, "access_requests", persisted.accessRequests, { secret_id: "secretId", requester_id: "requesterId", status: "status" });
+  replaceJsonRows(db, "integration_outbox", persisted.integrationOutbox, { target: "target", status: "status" });
+  replaceJsonRows(db, "audit_events", persisted.audit, { ts: "ts", action: "action", actor: "actor" });
+  db.prepare("DELETE FROM policies").run();
+  db.prepare("INSERT INTO policies (id, data) VALUES ('main', ?)").run(JSON.stringify(persisted.policies));
+};
+
 assert.ok(existsSync(statePath), `State file not found: ${statePath}`);
 if (existsSync(sqlitePath) && !force) {
   throw new Error(`SQLite target already exists: ${sqlitePath}. Pass --force to overwrite it.`);
@@ -86,7 +112,8 @@ if (existsSync(sqlitePath) && !force) {
 const raw = readFileSync(statePath, "utf8");
 const parsed = JSON.parse(raw);
 const normalized = normalizeState(parsed);
-const missingCollections = requiredCollections.filter((collection) => !Array.isArray(normalized[collection]));
+const missingCollections = requiredCollections.filter((collection) => !Array.isArray(parsed[collection]));
+const transientCollectionsPresent = ["sessions", "loginFailures"].filter((collection) => Object.hasOwn(parsed, collection));
 const plaintextSecretFields = (normalized.secrets || []).flatMap((secret) => (
   Object.hasOwn(secret, "password") && secret.password ? [{ id: secret.id, field: "password" }] : []
 ));
@@ -100,6 +127,7 @@ const orphanVaultMembers = (normalized.vaults || []).flatMap((vault) => (
 
 const checks = {
   requiredCollectionsPresent: missingCollections.length === 0,
+  transientCollectionsExcluded: transientCollectionsPresent.length === 0,
   plaintextSecretsAbsent: plaintextSecretFields.length === 0,
   encryptedSecretPayloadsPresent: unencryptedSecretIds.length === 0,
   orphanSecretsAbsent: orphanSecrets.length === 0,
@@ -119,6 +147,9 @@ try {
   db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA synchronous = FULL;
+  `);
+  db.exec("BEGIN IMMEDIATE TRANSACTION");
+  db.exec(`
     DROP TABLE IF EXISTS sentinel_state;
     CREATE TABLE sentinel_state (
       id TEXT PRIMARY KEY,
@@ -126,12 +157,28 @@ try {
       data TEXT NOT NULL,
       saved_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS device_inventory (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS tenants (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS vaults (id TEXT PRIMARY KEY, tenant_id TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS secrets (id TEXT PRIMARY KEY, vault_id TEXT, risk TEXT, deleted_at TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS service_tokens (id TEXT PRIMARY KEY, revoked_at TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS secret_imports (id TEXT PRIMARY KEY, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS access_requests (id TEXT PRIMARY KEY, secret_id TEXT, requester_id TEXT, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS integration_outbox (id TEXT PRIMARY KEY, target TEXT, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, ts TEXT, action TEXT, actor TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS policies (id TEXT PRIMARY KEY, data TEXT NOT NULL);
   `);
   db.prepare(`
     INSERT INTO sentinel_state (id, version, data, saved_at)
     VALUES ('main', ?, ?, ?)
   `).run(stateVersion, payload, persisted.metadata.migratedAt);
+  syncMirrorTables(db, persisted);
+  db.exec("COMMIT");
   db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+} catch (err) {
+  db.exec("ROLLBACK");
+  throw err;
 } finally {
   db.close();
 }
@@ -145,9 +192,23 @@ const evidence = {
   targetPayloadSha256: sha256(payload),
   stateVersion,
   counts: Object.fromEntries(requiredCollections.map((collection) => [collection, normalized[collection]?.length || 0])),
+  migrationTables: [
+    "users",
+    "device_inventory",
+    "tenants",
+    "vaults",
+    "secrets",
+    "secret_imports",
+    "access_requests",
+    "service_tokens",
+    "integration_outbox",
+    "audit_events",
+    "policies"
+  ],
   checks,
   findings: {
     missingCollections,
+    transientCollectionsPresent,
     plaintextSecretFields,
     unencryptedSecretIds,
     orphanSecrets,
