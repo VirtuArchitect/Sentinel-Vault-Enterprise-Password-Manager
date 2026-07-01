@@ -246,6 +246,8 @@ pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```
 
+Use the `--fail-on-blockers` readiness command as the release or CI gate for a completed deployment bundle. It is expected to fail for newly generated placeholder workspaces until the deployment-specific evidence is replaced and approved.
+
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
 ```powershell

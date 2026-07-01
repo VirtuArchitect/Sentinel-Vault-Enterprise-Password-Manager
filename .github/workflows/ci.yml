@@ -50,6 +50,19 @@ jobs:
           node -e "import('./src/server/data/seedData.mjs').then(({ createSeedState }) => { const { sessions, loginFailures, ...state } = createSeedState(); require('node:fs').writeFileSync(process.argv[1], JSON.stringify({ ...state, metadata: { version: 2 } }, null, 2)); })" "${RUNNER_TEMP}/sentinel-state.json"
           pnpm plan:postgres -- --state "${RUNNER_TEMP}/sentinel-state.json" --out "${RUNNER_TEMP}/postgres-migration-plan.json"
 
+      - name: Validate deployment readiness tooling
+        run: |
+          pnpm prepare:deployment-evidence -- --environment "ci" --owner "CI" --out-dir "${RUNNER_TEMP}/deployment-evidence"
+          pnpm report:external-evidence -- --environment "ci" --owner "CI" --out "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.md"
+          pnpm validate:external-evidence -- --requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --strict
+          pnpm report:deployment-evidence -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --out "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-status.json"
+          pnpm report:phase-readiness -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --out "${RUNNER_TEMP}/deployment-evidence/phase-readiness.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/phase-readiness.md"
+          if pnpm report:phase-readiness -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --target "pilot" --fail-on-blockers > "${RUNNER_TEMP}/deployment-evidence/phase-readiness-gate.json"; then
+            echo "Expected fail-on-blockers to reject placeholder deployment evidence"
+            exit 1
+          fi
+          echo "fail-on-blockers rejected placeholder deployment evidence as expected"
+
       - name: Secret scan
         run: pnpm scan:secrets
 
