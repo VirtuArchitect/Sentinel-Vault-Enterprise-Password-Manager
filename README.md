@@ -34,7 +34,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Key-provider boundary for local root key, external KMS, and HSM readiness
 - Integration status, signed SIEM webhook delivery with retries, ITSM ticket validation, configuration controls, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
-- Browser extension and Windows companion scaffolds for autofill, clipboard, offline cache, and autotype research
+- Browser extension and Windows companion scaffolds for autofill, clipboard auto-clear, offline cache, and autotype research
 - Startup configuration validation, login rate limiting, and temporary account lockout
 - CI dependency audit gate for high-severity advisories
 - CI secret scanning gate for private keys and common committed token formats

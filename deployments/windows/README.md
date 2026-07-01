@@ -33,6 +33,12 @@ artifacts/windows/SentinelVault-Windows.zip
 
 The zip also includes `assets/sentinel-vault-app-icon.svg` for installer shortcuts, MSI/WiX authoring, or IIS site branding.
 
+The zip includes the Windows companion helper at:
+
+```text
+companions/windows/sentinel-tray-helper.ps1
+```
+
 ## Install Without IIS
 
 Extract the zip on the target server, then run:
@@ -102,6 +108,15 @@ Health check:
 ```powershell
 .\healthcheck.ps1 -Url "http://127.0.0.1:5173/healthz"
 ```
+
+Clipboard companion:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 -Value "temporary-secret" -ClipboardTtlSeconds 30
+.\companions\windows\sentinel-tray-helper.ps1 -Watch -ClipboardTtlSeconds 30
+```
+
+The companion clears only a clipboard value it wrote itself. If the user copies something else before the TTL expires, the helper leaves the clipboard unchanged.
 
 Runtime configuration:
 

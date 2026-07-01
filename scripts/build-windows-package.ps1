@@ -50,6 +50,7 @@ Copy-Item -Path (Join-Path $root "deployments\windows\run-sentinel.ps1") -Destin
 Copy-Item -Path (Join-Path $root "deployments\windows\healthcheck.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\README.md") -Destination $stageRoot
 Copy-Tree -Source (Join-Path $root "deployments\windows\assets") -Destination (Join-Path $stageRoot "assets")
+Copy-Tree -Source (Join-Path $root "companions\windows") -Destination (Join-Path $stageRoot "companions\windows")
 
 if (Test-Path $zipPath) {
   Remove-Item -LiteralPath $zipPath -Force

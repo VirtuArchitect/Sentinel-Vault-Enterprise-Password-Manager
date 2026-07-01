@@ -128,13 +128,13 @@ Implemented:
 
 - Browser extension Manifest V3 scaffold.
 - Windows clipboard/tray helper PowerShell prototype.
+- Clipboard auto-clear companion implementation with Sentinel-owned marker hashes.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
 
 Remaining:
 
 - Production browser autofill implementation.
-- Clipboard auto-clear companion implementation.
 - Windows tray UI.
 - Offline read-only cache implementation.
 - Native autotype or credential-provider proof of concept.

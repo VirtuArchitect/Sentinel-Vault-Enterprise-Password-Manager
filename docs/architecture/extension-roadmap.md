@@ -13,6 +13,7 @@
 - Windows companion owns clipboard auto-clear timers and records local clear events.
 - Clipboard writes should be opt-in from a reveal or fill action.
 - Clear only values written by Sentinel Vault, using a marker hash to avoid destroying unrelated clipboard content.
+- The PowerShell companion prototype writes Sentinel-owned clipboard markers and clears only matching values after the TTL expires.
 
 ## Offline Read-Only Cache
 
