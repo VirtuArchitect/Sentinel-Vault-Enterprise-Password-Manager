@@ -61,6 +61,7 @@ Implemented:
 - Tenant hierarchy metadata with cycle prevention.
 - Tenant-aware vault creation and update.
 - Tenant isolation model and broader cross-tenant negative authorization tests for reveal, update, delete, restore, rotate, share, and access approval operations.
+- Tenant isolation evidence template and validator for deployment-specific cross-tenant control gates.
 - Safe bulk administration metadata export for tenants, vaults, users, and policies.
 - Safe bulk administration metadata import for tenants and vaults.
 - Bulk secret import with encrypted escrow, duplicate detection, and independent approval.
@@ -70,7 +71,7 @@ Implemented:
 - Configurable mapped-CSV source export adapter and column-map template for proprietary migration exports without code changes.
 
 Remaining:
-- Deployment-specific proprietary source column maps and migration evidence files.
+- Deployment-specific proprietary source column maps, migration evidence files, and completed tenant-isolation evidence for each deployment.
 
 ## Phase 5: Enterprise Integrations
 

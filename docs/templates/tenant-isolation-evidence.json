@@ -1,0 +1,45 @@
+{
+  "format": "sentinel-tenant-isolation-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "testedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "scope": {
+    "tenantCount": 0,
+    "vaultCount": 0,
+    "userCount": 0,
+    "sampledTenantPairs": 0,
+    "testCadence": "per-release"
+  },
+  "controls": {
+    "serviceLayerObjectChecks": "planned",
+    "routeRbacChecks": "planned",
+    "consolePayloadFiltering": "planned",
+    "offlineCacheScoping": "planned",
+    "adminMetadataExportRestricted": "planned",
+    "jitGrantTenantBoundary": "planned"
+  },
+  "negativeTests": {
+    "reveal": "planned",
+    "update": "planned",
+    "delete": "planned",
+    "restore": "planned",
+    "versionRestore": "planned",
+    "rotate": "planned",
+    "share": "planned",
+    "approveAccess": "planned",
+    "denyAccess": "planned",
+    "revokeAccess": "planned",
+    "consoleVaultEnumeration": "planned",
+    "offlineCacheEnumeration": "planned"
+  },
+  "redaction": {
+    "secretValuesFound": false,
+    "sessionTokensFound": false,
+    "tenantIdentifiersScoped": "planned"
+  },
+  "approvals": {
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

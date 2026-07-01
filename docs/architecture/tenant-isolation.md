@@ -21,3 +21,11 @@ Production deployments should attach negative authorization evidence showing tha
 - obtain another tenant vault through console or offline-cache payloads.
 
 This evidence should be included with penetration-test and SAST evidence in the deployment evidence bundle.
+
+Use `docs/templates/tenant-isolation-evidence.json` and validate it with:
+
+```powershell
+pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
+```
+
+Production or pilot evidence cannot contain placeholders. It must include at least two tenants, two vaults, two users, a sampled cross-tenant pair, passing API negative tests, console/offline-cache enumeration checks, redaction results, and security/operations approval.

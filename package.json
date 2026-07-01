@@ -37,6 +37,7 @@
     "validate:audit-worm": "node scripts/validate-audit-worm-evidence.mjs",
     "validate:backup-recovery": "node scripts/validate-backup-recovery-evidence.mjs",
     "validate:device-trust": "node scripts/validate-device-trust-evidence.mjs",
+    "validate:tenant-isolation": "node scripts/validate-tenant-isolation-evidence.mjs",
     "validate:siem-rotation": "node scripts/validate-siem-receiver-rotation-evidence.mjs",
     "validate:release-attestation": "node scripts/validate-release-attestation-evidence.mjs",
     "validate:sast": "node scripts/validate-sast-evidence.mjs",

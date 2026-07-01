@@ -22,6 +22,7 @@ const validators = {
   auditWorm: ["scripts/validate-audit-worm-evidence.mjs"],
   backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"],
   deviceTrust: ["scripts/validate-device-trust-evidence.mjs"],
+  tenantIsolation: ["scripts/validate-tenant-isolation-evidence.mjs"],
   siemReceiverRotation: ["scripts/validate-siem-receiver-rotation-evidence.mjs"],
   releaseAttestation: ["scripts/validate-release-attestation-evidence.mjs"],
   sast: ["scripts/validate-sast-evidence.mjs"]

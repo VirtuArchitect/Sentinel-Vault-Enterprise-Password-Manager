@@ -17,6 +17,7 @@
     "auditWorm": "docs/templates/audit-worm-evidence.json",
     "backupRecovery": "docs/templates/backup-recovery-evidence.json",
     "deviceTrust": "docs/templates/device-trust-evidence.json",
+    "tenantIsolation": "docs/templates/tenant-isolation-evidence.json",
     "siemReceiverRotation": "docs/templates/siem-receiver-rotation-evidence.json",
     "sast": "docs/templates/sast-evidence.json",
     "storageMigration": "docs/templates/storage-migration-evidence.json",

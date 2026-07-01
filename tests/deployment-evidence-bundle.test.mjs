@@ -33,6 +33,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     auditWorm: "audit-worm-evidence.json",
     backupRecovery: "backup-recovery-evidence.json",
     deviceTrust: "device-trust-evidence.json",
+    tenantIsolation: "tenant-isolation-evidence.json",
     siemReceiverRotation: "siem-receiver-rotation-evidence.json",
     sast: "sast-evidence.json",
     storageMigration: "storage-migration-evidence.json",
@@ -79,6 +80,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.auditWorm.validated, true);
     assert.equal(validation.results.backupRecovery.validated, true);
     assert.equal(validation.results.deviceTrust.validated, true);
+    assert.equal(validation.results.tenantIsolation.validated, true);
     assert.equal(validation.results.siemReceiverRotation.validated, true);
     assert.equal(validation.results.sast.validated, true);
     assert.equal(validation.results.releaseAttestation.validated, true);
@@ -105,6 +107,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         auditWorm: "evidence/audit-worm-evidence.json",
         backupRecovery: "evidence/backup-recovery-evidence.json",
         deviceTrust: "evidence/device-trust-evidence.json",
+        tenantIsolation: "evidence/tenant-isolation-evidence.json",
         siemReceiverRotation: "evidence/siem-receiver-rotation-evidence.json",
         sast: "evidence/sast-evidence.json",
         storageMigration: "evidence/storage-migration-evidence.json",
