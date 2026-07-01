@@ -30,6 +30,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     windowsInstallHardening: "windows-install-hardening-evidence.json",
     pentestScope: "pentest-scope-evidence.json",
     auditWorm: "audit-worm-evidence.json",
+    backupRecovery: "backup-recovery-evidence.json",
     storageMigration: "storage-migration-evidence.json",
     releaseProvenance: "release-provenance-template.json"
   };
@@ -70,6 +71,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.windowsInstallHardening.validated, true);
     assert.equal(validation.results.pentestScope.validated, true);
     assert.equal(validation.results.auditWorm.validated, true);
+    assert.equal(validation.results.backupRecovery.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -90,6 +92,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         windowsInstallHardening: "evidence/windows-install-hardening-evidence.json",
         pentestScope: "evidence/pentest-scope-evidence.json",
         auditWorm: "evidence/audit-worm-evidence.json",
+        backupRecovery: "evidence/backup-recovery-evidence.json",
         storageMigration: "evidence/storage-migration-evidence.json",
         releaseProvenance: "evidence/release-provenance-template.json"
       }

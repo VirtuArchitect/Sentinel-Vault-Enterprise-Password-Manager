@@ -14,6 +14,7 @@
     "windowsInstallHardening": "docs/templates/windows-install-hardening-evidence.json",
     "pentestScope": "docs/templates/pentest-scope-evidence.json",
     "auditWorm": "docs/templates/audit-worm-evidence.json",
+    "backupRecovery": "docs/templates/backup-recovery-evidence.json",
     "storageMigration": "docs/templates/storage-migration-evidence.json",
     "releaseProvenance": "docs/templates/release-provenance-template.json"
   },

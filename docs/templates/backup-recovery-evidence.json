@@ -1,0 +1,54 @@
+{
+  "format": "sentinel-backup-recovery-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "schedule": {
+    "encryptedBackupFrequency": "daily",
+    "restoreDrillFrequency": "quarterly",
+    "lastRestoreDrillAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "nextRestoreDrillDue": "YYYY-MM-DD"
+  },
+  "ceremony": {
+    "breakGlassOwner": "replace-with-owner",
+    "recoveryOperator": "replace-with-operator",
+    "securityApprover": "replace-with-approver",
+    "recordsOwner": "replace-with-owner",
+    "twoPersonControl": "planned",
+    "offlineRunbook": "replace-with-runbook-link"
+  },
+  "escrow": {
+    "rootKeyEscrowed": "planned",
+    "escrowLocation": "replace-with-escrow-location",
+    "accessReviewCurrent": "planned",
+    "sealedCopyTested": "planned",
+    "noSinglePersonRecovery": "planned"
+  },
+  "restoreDrill": {
+    "evidencePath": "artifacts/storage/encrypted-backup-restore-evidence.json",
+    "checksumVerified": "planned",
+    "decryptedAndParsed": "planned",
+    "requiredCollectionsPresent": "planned",
+    "transientCollectionsExcluded": "planned",
+    "encryptedSecretPayloadsPresent": "planned",
+    "orphanReferencesAbsent": "planned",
+    "rpoMinutes": 60,
+    "rtoMinutes": 240
+  },
+  "retention": {
+    "backupRetentionDays": 90,
+    "offsiteCopyEnabled": "planned",
+    "immutabilityEnabled": "planned",
+    "expiredBackupPurgeReviewed": "planned"
+  },
+  "redaction": {
+    "secretValuesFound": false,
+    "rootKeyValuesFound": false,
+    "tokenValuesFound": false
+  },
+  "approvals": {
+    "securityOwner": "replace-with-owner",
+    "operationsOwner": "replace-with-owner",
+    "businessOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

@@ -35,6 +35,7 @@
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "validate:pentest-scope": "node scripts/validate-pentest-scope-evidence.mjs",
     "validate:audit-worm": "node scripts/validate-audit-worm-evidence.mjs",
+    "validate:backup-recovery": "node scripts/validate-backup-recovery-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
     "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",

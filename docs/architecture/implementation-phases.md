@@ -150,6 +150,7 @@ Implemented:
 - Audit WORM evidence template and validator for external signing, immutable retention, object lock, legal hold, readback verification, redaction, and approvals.
 - Backup SHA-256 manifests and admin verification API.
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
+- Backup recovery evidence template and validator for restore cadence, break-glass roles, key escrow, two-person control, retention, offsite copy, immutability, RPO/RTO, and redaction.
 - Key-provider boundary for local root key, external KMS, and HSM readiness.
 - KMS/HSM key ceremony runbook and provider evidence template.
 - KMS/HSM provider evidence validator.
