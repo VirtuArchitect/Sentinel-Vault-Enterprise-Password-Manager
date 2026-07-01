@@ -19,6 +19,8 @@ const validators = {
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
+  windowsRelease: ["scripts/validate-windows-release-evidence.mjs"],
+  windowsSigning: ["scripts/validate-windows-signing-execution-evidence.mjs"],
   windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"],
   sourceMigration: ["scripts/validate-source-migration-evidence.mjs"],
   tlsIis: ["scripts/validate-tls-iis-evidence.mjs"],
@@ -35,7 +37,6 @@ const validators = {
 };
 
 const artifactFormats = {
-  windowsRelease: "sentinel-windows-release-evidence-v1",
   storageMigration: "sentinel-storage-migration-evidence-v1",
   releaseProvenance: "sentinel-release-provenance-v1"
 };

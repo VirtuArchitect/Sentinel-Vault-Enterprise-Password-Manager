@@ -14,6 +14,7 @@
     "identityProvider": "docs/templates/identity-provider-evidence.json",
     "kmsHsm": "docs/templates/kms-hsm-provider-evidence.json",
     "windowsRelease": "docs/templates/windows-release-evidence.json",
+    "windowsSigning": "docs/templates/windows-signing-execution-evidence.json",
     "windowsInstallHardening": "docs/templates/windows-install-hardening-evidence.json",
     "sourceMigration": "docs/templates/source-migration-evidence.json",
     "tlsIis": "docs/templates/tls-iis-evidence.json",

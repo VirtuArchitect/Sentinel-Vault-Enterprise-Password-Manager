@@ -293,6 +293,8 @@ Generate Windows release evidence from built artifacts:
 
 ```powershell
 pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"
+pnpm release:windows-signing -- --status signed --report ".\artifacts\windows\signing-report.json" --out ".\artifacts\windows\windows-signing-execution-evidence.json"
+pnpm validate:windows-signing -- ".\artifacts\windows\windows-signing-execution-evidence.json"
 ```
 
 Generate Windows install hardening evidence from an installed layout:

@@ -30,6 +30,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     identityProvider: "identity-provider-evidence.json",
     kmsHsm: "kms-hsm-provider-evidence.json",
     windowsRelease: "windows-release-evidence.json",
+    windowsSigning: "windows-signing-execution-evidence.json",
     windowsInstallHardening: "windows-install-hardening-evidence.json",
     sourceMigration: "source-migration-evidence.json",
     tlsIis: "tls-iis-evidence.json",
@@ -83,6 +84,8 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.postgresHa.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
     assert.equal(validation.results.nativeCompanion.validated, true);
+    assert.equal(validation.results.windowsRelease.validated, true);
+    assert.equal(validation.results.windowsSigning.validated, true);
     assert.equal(validation.results.windowsInstallHardening.validated, true);
     assert.equal(validation.results.tlsIis.validated, true);
     assert.equal(validation.results.pentestScope.validated, true);
@@ -95,7 +98,6 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.sast.validated, true);
     assert.equal(validation.results.logRedaction.validated, true);
     assert.equal(validation.results.releaseAttestation.validated, true);
-    assert.equal(validation.results.windowsRelease.validated, true);
     assert.equal(validation.results.sourceMigration.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -116,6 +118,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         identityProvider: "evidence/identity-provider-evidence.json",
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
         windowsRelease: "evidence/windows-release-evidence.json",
+        windowsSigning: "evidence/windows-signing-execution-evidence.json",
         windowsInstallHardening: "evidence/windows-install-hardening-evidence.json",
         sourceMigration: "evidence/source-migration-evidence.json",
         tlsIis: "evidence/tls-iis-evidence.json",

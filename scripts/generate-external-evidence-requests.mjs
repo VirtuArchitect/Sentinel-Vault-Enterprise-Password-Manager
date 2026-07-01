@@ -115,6 +115,7 @@ const requests = [
     ],
     evidenceTemplates: [
       "docs/templates/windows-release-evidence.json",
+      "docs/templates/windows-signing-execution-evidence.json",
       "docs/templates/windows-install-hardening-evidence.json",
       "docs/templates/release-attestation-evidence.json"
     ],
@@ -123,6 +124,8 @@ const requests = [
       "pnpm package:windows:msix",
       "pnpm sign:windows -- -ArtifactPath <artifact-path> -CertificateThumbprint <thumbprint>",
       "pnpm verify:windows:signatures -- -ArtifactPath <artifact-path>",
+      "pnpm release:windows-signing -- --status signed --report <signing-report.json> --out <windows-signing-execution-evidence.json>",
+      "pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>",
       "pnpm release:windows-evidence -- --artifact <signed-artifact> --out <windows-release-evidence.json>",
       "pnpm validate:windows-release -- <windows-release-evidence.json>"
     ],

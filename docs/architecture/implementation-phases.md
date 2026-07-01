@@ -167,10 +167,11 @@ Implemented:
 - MSIX manifest authoring scaffold and Windows SDK build/validation script.
 - Windows install hardening evidence template and validator for ACL, service identity, IIS/TLS, health check, upgrade, rollback, and uninstall gates.
 - Windows install hardening evidence generator for local install layout checks, runtime-secret review, log redaction review, and supplied installer drill results.
+- Windows signing execution evidence template, generator, validator, and deployment-bundle gate for MSI/MSIX signing on an approved certificate-backed release host.
 
 Remaining:
 
-- MSI/MSIX signing execution evidence from an approved certificate-backed release host.
+- Completed MSI/MSIX signing execution evidence from an approved certificate-backed release host for each release environment.
 
 ## Phase 7: Security Hardening
 

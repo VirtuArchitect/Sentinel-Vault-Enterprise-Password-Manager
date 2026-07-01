@@ -77,7 +77,7 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.ok(manifest.artifacts.deploymentWorkspaceManifest);
     assert.match(manifest.artifacts.phaseReadiness.sha256, /^[a-f0-9]{64}$/);
     assert.ok(manifest.artifacts.phaseHandoffChecklist.bytes > 0);
-    assert.equal(manifest.deploymentEvidenceSummary.total, 24);
+    assert.equal(manifest.deploymentEvidenceSummary.total, 25);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

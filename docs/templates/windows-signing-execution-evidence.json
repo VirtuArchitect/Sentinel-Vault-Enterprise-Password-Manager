@@ -1,0 +1,51 @@
+{
+  "format": "sentinel-windows-signing-execution-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "releaseVersion": "replace-with-version",
+  "signedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "releaseHost": {
+    "hostnameHash": "replace-with-sha256",
+    "osBuild": "replace-with-os-build",
+    "runnerIdentity": "replace-with-runner",
+    "certificateSource": "certificate-store",
+    "approvedHost": "planned"
+  },
+  "certificate": {
+    "subject": "replace-with-subject",
+    "thumbprint": "replace-with-thumbprint",
+    "issuer": "replace-with-issuer",
+    "validFrom": "YYYY-MM-DD",
+    "validTo": "YYYY-MM-DD",
+    "timestampAuthority": "replace-with-url"
+  },
+  "artifacts": [
+    {
+      "type": "msi",
+      "path": "replace-with-artifact",
+      "sha256": "replace-with-sha256",
+      "signatureStatus": "planned",
+      "timestampStatus": "planned",
+      "authenticodeStatus": "planned"
+    }
+  ],
+  "checks": {
+    "packageBuiltOnReleaseHost": "planned",
+    "signaturesVerified": "planned",
+    "timestampsVerified": "planned",
+    "hashesRecorded": "planned",
+    "rollbackArtifactSigned": "planned",
+    "uninstallDrillCovered": "planned"
+  },
+  "approvals": {
+    "releaseOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  },
+  "redaction": {
+    "containsPfxPassword": "planned",
+    "containsPrivateKeyMaterial": "planned",
+    "containsSigningToken": "planned"
+  }
+}

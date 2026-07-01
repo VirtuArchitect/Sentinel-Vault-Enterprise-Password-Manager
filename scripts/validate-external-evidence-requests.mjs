@@ -39,6 +39,7 @@ const requiredValidatorCommands = [
   "pnpm validate:connector-evidence",
   "pnpm validate:siem-rotation",
   "pnpm validate:windows-release",
+  "pnpm validate:windows-signing",
   "pnpm validate:kms-hsm-evidence",
   "pnpm validate:browser-rollout",
   "pnpm validate:native-companion"
@@ -101,6 +102,7 @@ for (const command of requiredValidatorCommands) {
 }
 
 assert.ok(templatePaths.has("docs/templates/windows-release-evidence.json"), "Windows release evidence template is required");
+assert.ok(templatePaths.has("docs/templates/windows-signing-execution-evidence.json"), "Windows signing execution evidence template is required");
 assert.ok(templatePaths.has("docs/templates/kms-hsm-provider-evidence.json"), "KMS/HSM evidence template is required");
 assert.ok(templatePaths.has("docs/templates/browser-extension-rollout-evidence.json"), "Browser rollout evidence template is required");
 assert.ok(templatePaths.has("docs/templates/native-companion-evidence.json"), "Native companion evidence template is required");
