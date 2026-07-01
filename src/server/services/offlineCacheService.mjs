@@ -81,6 +81,26 @@ export const createOfflineCache = (user) => {
     keyVersion: config.vaultKeyVersion,
     vaults: payload.vaults.length,
     secrets: payload.secrets.length,
+    index: {
+      vaults: payload.vaults.map((vault) => ({
+        id: vault.id,
+        name: vault.name,
+        classification: vault.classification,
+        ownerUnit: vault.ownerUnit
+      })),
+      secrets: payload.secrets.map((secret) => ({
+        id: secret.id,
+        vaultId: secret.vaultId,
+        type: secret.type,
+        name: secret.name,
+        username: secret.username,
+        url: secret.url,
+        tags: secret.tags,
+        risk: secret.risk,
+        rotatedAt: secret.rotatedAt,
+        approvalsRequired: secret.approvalsRequired
+      }))
+    },
     plaintextIncluded: false
   };
   const cache = {

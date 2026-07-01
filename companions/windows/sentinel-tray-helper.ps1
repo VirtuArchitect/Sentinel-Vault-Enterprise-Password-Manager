@@ -11,6 +11,7 @@ param(
   [string]$OfflineCachePath = "",
   [switch]$ProtectOfflineCache,
   [switch]$ShowOfflineCache,
+  [switch]$BrowseOfflineCache,
   [switch]$RemoveExpiredOfflineCache,
   [switch]$InstallOfflineCacheCleanupTask,
   [switch]$RemoveOfflineCacheCleanupTask,
@@ -260,6 +261,59 @@ function Show-SentinelOfflineCache {
   } | ConvertTo-Json
 }
 
+function Open-SentinelOfflineCacheBrowser {
+  Add-Type -AssemblyName System.Windows.Forms
+  Add-Type -AssemblyName System.Drawing
+
+  $cache = Read-SentinelOfflineCache
+  $manifest = $cache.cache.manifest
+  $expired = [DateTimeOffset]::Parse($manifest.expiresAt) -le [DateTimeOffset]::UtcNow
+  $vaults = @{}
+  foreach ($vault in @($manifest.index.vaults)) {
+    $vaults[$vault.id] = $vault
+  }
+
+  $form = [System.Windows.Forms.Form]::new()
+  $form.Text = "Sentinel Vault Offline Cache"
+  $form.Width = 900
+  $form.Height = 540
+  $form.StartPosition = "CenterScreen"
+
+  $summary = [System.Windows.Forms.Label]::new()
+  $summary.Dock = "Top"
+  $summary.Height = 48
+  $summary.Padding = [System.Windows.Forms.Padding]::new(10)
+  $summary.Text = "Read-only cache / Exported $($manifest.exportedAt) / Expires $($manifest.expiresAt) / Expired: $expired / Secrets: $($manifest.secrets)"
+  $form.Controls.Add($summary)
+
+  $list = [System.Windows.Forms.ListView]::new()
+  $list.Dock = "Fill"
+  $list.View = "Details"
+  $list.FullRowSelect = $true
+  $list.GridLines = $true
+  [void]$list.Columns.Add("Name", 220)
+  [void]$list.Columns.Add("User name", 160)
+  [void]$list.Columns.Add("Vault", 160)
+  [void]$list.Columns.Add("Risk", 80)
+  [void]$list.Columns.Add("URL", 240)
+  [void]$list.Columns.Add("Rotated", 130)
+
+  foreach ($secret in @($manifest.index.secrets)) {
+    $vaultName = if ($vaults.ContainsKey($secret.vaultId)) { $vaults[$secret.vaultId].name } else { $secret.vaultId }
+    $item = [System.Windows.Forms.ListViewItem]::new($secret.name)
+    [void]$item.SubItems.Add($secret.username)
+    [void]$item.SubItems.Add($vaultName)
+    [void]$item.SubItems.Add($secret.risk)
+    [void]$item.SubItems.Add($secret.url)
+    [void]$item.SubItems.Add($secret.rotatedAt)
+    [void]$list.Items.Add($item)
+  }
+  $form.Controls.Add($list)
+
+  [void]$form.ShowDialog()
+  $form.Dispose()
+}
+
 function Remove-ExpiredSentinelOfflineCache {
   $cache = Read-SentinelOfflineCache
   $expiresAt = [DateTimeOffset]::Parse($cache.cache.manifest.expiresAt)
@@ -329,6 +383,11 @@ if ($ShowOfflineCache) {
   exit 0
 }
 
+if ($BrowseOfflineCache) {
+  Open-SentinelOfflineCacheBrowser
+  exit 0
+}
+
 if ($RemoveExpiredOfflineCache) {
   Remove-ExpiredSentinelOfflineCache
   exit 0
@@ -356,5 +415,5 @@ if ($Value) {
 if ($Watch) {
   Watch-SentinelClipboard
 } elseif (!$Value) {
-  Write-Host "Use -Tray for the desktop helper UI, -ProtectOfflineCache to store an exported cache with DPAPI, -ShowOfflineCache to inspect its manifest, -InstallOfflineCacheCleanupTask to schedule expiry cleanup, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
+  Write-Host "Use -Tray for the desktop helper UI, -ProtectOfflineCache to store an exported cache with DPAPI, -ShowOfflineCache or -BrowseOfflineCache to inspect its read-only metadata, -InstallOfflineCacheCleanupTask to schedule expiry cleanup, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
 }

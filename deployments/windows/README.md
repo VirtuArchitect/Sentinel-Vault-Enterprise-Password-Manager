@@ -148,6 +148,7 @@ DPAPI-protect an exported offline cache for the current Windows user:
 ```powershell
 .\companions\windows\sentinel-tray-helper.ps1 -ProtectOfflineCache -OfflineCachePath ".\sentinel-offline-cache.json"
 .\companions\windows\sentinel-tray-helper.ps1 -ShowOfflineCache
+.\companions\windows\sentinel-tray-helper.ps1 -BrowseOfflineCache
 .\companions\windows\sentinel-tray-helper.ps1 -InstallOfflineCacheCleanupTask
 ```
 

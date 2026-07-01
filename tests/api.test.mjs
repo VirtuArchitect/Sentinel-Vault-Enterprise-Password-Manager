@@ -740,6 +740,8 @@ test("offline cache export is encrypted, read-only, and scoped to the user", asy
     assert.equal(exported.cache.manifest.readOnly, true);
     assert.equal(exported.cache.manifest.plaintextIncluded, false);
     assert.ok(exported.cache.manifest.secrets >= 3);
+    assert.equal(exported.cache.manifest.index.secrets.length, exported.cache.manifest.secrets);
+    assert.equal(exported.cache.manifest.index.secrets.some((secret) => Object.hasOwn(secret, "encrypted") || Object.hasOwn(secret, "password")), false);
     assert.ok(exported.cache.encrypted.ciphertext);
     assert.equal(JSON.stringify(exported.cache).includes("E7#hP9!qZ2@Lw8$mV4"), false);
 

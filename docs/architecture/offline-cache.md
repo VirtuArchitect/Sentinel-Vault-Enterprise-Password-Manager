@@ -37,6 +37,12 @@ Inspect the DPAPI-protected cache manifest without exposing secret payloads:
 .\companions\windows\sentinel-tray-helper.ps1 -ShowOfflineCache
 ```
 
+Open the read-only native metadata browser:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 -BrowseOfflineCache
+```
+
 Remove an expired protected cache:
 
 ```powershell
@@ -52,4 +58,4 @@ Install or remove hourly cleanup for the current Windows user:
 
 ## Remaining Native Work
 
-A production offline reader should add a dedicated read-only UI for browsing decrypted records after online verification and use an approved enterprise KMS/HSM flow where DPAPI alone is not sufficient.
+A production offline reader should add online rehydration for encrypted secret bodies when a Sentinel Vault server is reachable and use an approved enterprise KMS/HSM flow where DPAPI alone is not sufficient.

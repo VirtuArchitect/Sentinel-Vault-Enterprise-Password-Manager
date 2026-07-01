@@ -41,6 +41,8 @@ assert.match(companion, /function Clear-SentinelClipboard/);
 assert.match(companion, /function Invoke-SentinelAutoType/);
 assert.match(companion, /function Start-SentinelTray/);
 assert.match(companion, /function Protect-SentinelOfflineCache/);
+assert.match(companion, /function Open-SentinelOfflineCacheBrowser/);
+assert.match(companion, /BrowseOfflineCache/);
 assert.match(companion, /function Install-SentinelOfflineCacheCleanupTask/);
 assert.match(companion, /SentinelVaultOfflineCacheCleanup/);
 assert.match(companion, /ProtectedData/);
