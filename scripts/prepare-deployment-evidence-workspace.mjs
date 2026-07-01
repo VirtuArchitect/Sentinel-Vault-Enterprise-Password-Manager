@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -13,6 +14,7 @@ const environment = args.get("--environment") || args.get("--env") || "replace-w
 const owner = args.get("--owner") || "replace-with-owner";
 const status = args.get("--status") || "planned";
 const outputDir = path.resolve(args.get("--out-dir") || path.join("artifacts", "deployment", environment));
+const manifestPath = path.resolve(args.get("--manifest") || path.join(outputDir, "deployment-evidence-workspace-manifest.json"));
 const bundleTemplatePath = path.join(rootDir, "docs", "templates", "deployment-evidence-bundle.json");
 const allowedStatuses = new Set(["planned", "pilot", "production", "retired"]);
 
@@ -25,6 +27,7 @@ mkdirSync(evidenceDir, { recursive: true });
 const templateBundle = JSON.parse(readFileSync(bundleTemplatePath, "utf8"));
 const evidence = {};
 const checklist = [];
+const copiedEvidence = {};
 
 for (const [name, templatePath] of Object.entries(templateBundle.evidence || {})) {
   const sourcePath = path.resolve(rootDir, templatePath);
@@ -33,6 +36,7 @@ for (const [name, templatePath] of Object.entries(templateBundle.evidence || {})
   const targetPath = path.join(evidenceDir, fileName);
   copyFileSync(sourcePath, targetPath);
   evidence[name] = path.join("evidence", fileName).replaceAll("\\", "/");
+  copiedEvidence[name] = targetPath;
   checklist.push(`- [ ] Replace placeholders and validate \`${evidence[name]}\`.`);
 }
 
@@ -75,6 +79,28 @@ ${checklist.join("\n")}
 
 writeFileSync(path.join(outputDir, "README.md"), readme);
 
+const hashFile = (filePath) => {
+  const buffer = readFileSync(filePath);
+  return {
+    path: path.relative(outputDir, filePath).replaceAll("\\", "/"),
+    bytes: buffer.length,
+    sha256: createHash("sha256").update(buffer).digest("hex")
+  };
+};
+
+const manifest = {
+  format: "sentinel-deployment-evidence-workspace-manifest-v1",
+  generatedAt: new Date().toISOString(),
+  environment,
+  status,
+  owner,
+  outputDir,
+  bundle: hashFile(bundlePath),
+  readme: hashFile(path.join(outputDir, "README.md")),
+  evidence: Object.fromEntries(Object.entries(copiedEvidence).map(([name, filePath]) => [name, hashFile(filePath)]))
+};
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
 console.log(JSON.stringify({
   format: "sentinel-deployment-evidence-workspace-v1",
   environment,
@@ -82,5 +108,6 @@ console.log(JSON.stringify({
   owner,
   outputDir,
   bundlePath,
+  manifestPath,
   evidenceCount: Object.keys(evidence).length
 }, null, 2));

@@ -53,6 +53,7 @@ jobs:
       - name: Validate deployment readiness tooling
         run: |
           pnpm prepare:deployment-evidence -- --environment "ci" --owner "CI" --out-dir "${RUNNER_TEMP}/deployment-evidence"
+          pnpm validate:deployment-workspace -- --manifest "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-workspace-manifest.json" --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json"
           pnpm report:external-evidence -- --environment "ci" --owner "CI" --out "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.md"
           pnpm validate:external-evidence -- --requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --strict
           pnpm report:deployment-evidence -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --out "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-status.json"

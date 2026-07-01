@@ -105,6 +105,7 @@ Implemented:
 - SIEM receiver signing-key rotation evidence generator for receiver metadata, key-window checks, replay rejection, delivery samples, redaction review, and approvals.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
+- Deployment evidence workspace manifest and validator that hash the copied bundle, README, and evidence templates before operator edits.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
 - External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.

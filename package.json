@@ -42,6 +42,7 @@
     "release:devops-token-response": "node scripts/generate-devops-token-response-evidence.mjs",
     "validate:devops-token-response": "node scripts/validate-devops-token-response-evidence.mjs",
     "prepare:deployment-evidence": "node scripts/prepare-deployment-evidence-workspace.mjs",
+    "validate:deployment-workspace": "node scripts/validate-deployment-evidence-workspace.mjs",
     "report:deployment-evidence": "node scripts/report-deployment-evidence-status.mjs",
     "validate:deployment-evidence": "node scripts/validate-deployment-evidence-bundle.mjs",
     "report:external-evidence": "node scripts/generate-external-evidence-requests.mjs",
