@@ -250,6 +250,8 @@ pnpm validate:phase-handoff -- --checklist ".\artifacts\deployment\pilot\phase-h
 pnpm package:phase-evidence -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-evidence-pack-manifest.json"
 pnpm validate:phase-evidence -- --manifest ".\artifacts\deployment\pilot\phase-evidence-pack-manifest.json"
 pnpm validate:phase-gate -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-gate-validation.json" --markdown-out ".\artifacts\deployment\pilot\phase-gate-validation.md"
+pnpm prepare:phase-actions -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-action-register.json" --markdown-out ".\artifacts\deployment\pilot\phase-action-register.md"
+pnpm validate:phase-actions -- --register ".\artifacts\deployment\pilot\phase-action-register.json" --phase-gate ".\artifacts\deployment\pilot\phase-gate-validation.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json"
 pnpm package:phase-review -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm validate:phase-review -- --manifest ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers

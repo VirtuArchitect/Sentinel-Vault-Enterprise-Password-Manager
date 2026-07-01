@@ -55,6 +55,8 @@
     "package:phase-evidence": "node scripts/package-phase-evidence.mjs",
     "validate:phase-evidence": "node scripts/validate-phase-evidence-pack.mjs",
     "validate:phase-gate": "node scripts/validate-phase-gate.mjs",
+    "prepare:phase-actions": "node scripts/prepare-phase-action-register.mjs",
+    "validate:phase-actions": "node scripts/validate-phase-action-register.mjs",
     "package:phase-review": "node scripts/package-phase-review-bundle.mjs",
     "validate:phase-review": "node scripts/validate-phase-review-bundle.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",

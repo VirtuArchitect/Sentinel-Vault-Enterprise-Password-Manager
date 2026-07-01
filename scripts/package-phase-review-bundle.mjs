@@ -24,7 +24,9 @@ const outputPath = path.resolve(args.get("--out") || path.join(evidenceDir, "pha
 const artifactMap = {
   phaseEvidenceManifest: args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json"),
   phaseGateValidation: args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json"),
-  phaseGateValidationMarkdown: args.get("--phase-gate-markdown") || path.join(evidenceDir, "phase-gate-validation.md")
+  phaseGateValidationMarkdown: args.get("--phase-gate-markdown") || path.join(evidenceDir, "phase-gate-validation.md"),
+  phaseActionRegister: args.get("--phase-actions") || path.join(evidenceDir, "phase-action-register.json"),
+  phaseActionRegisterMarkdown: args.get("--phase-actions-markdown") || path.join(evidenceDir, "phase-action-register.md")
 };
 
 const hashFile = (filePath) => {
@@ -42,10 +44,13 @@ for (const [name, filePath] of Object.entries(artifactMap)) {
 
 const phaseEvidence = JSON.parse(readFileSync(artifactMap.phaseEvidenceManifest, "utf8"));
 const phaseGate = JSON.parse(readFileSync(artifactMap.phaseGateValidation, "utf8"));
+const phaseActions = JSON.parse(readFileSync(artifactMap.phaseActionRegister, "utf8"));
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
+assert.equal(phaseActions.format, "sentinel-phase-action-register-v1");
 assert.equal(phaseGate.paths.phaseEvidenceManifest, path.resolve(artifactMap.phaseEvidenceManifest), "phase gate does not reference selected phase evidence manifest");
+assert.equal(phaseActions.phaseGatePath, path.resolve(artifactMap.phaseGateValidation), "phase action register does not reference selected phase gate report");
 
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 const manifest = {

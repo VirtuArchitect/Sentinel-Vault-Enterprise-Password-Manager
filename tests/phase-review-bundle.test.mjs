@@ -72,6 +72,16 @@ const createReviewWorkspace = (dir) => {
     "--out", path.join(dir, "phase-gate-validation.json"),
     "--markdown-out", path.join(dir, "phase-gate-validation.md")
   ]);
+  runScript("scripts/prepare-phase-action-register.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-action-register.json"),
+    "--markdown-out", path.join(dir, "phase-action-register.md")
+  ]);
+  runScript("scripts/validate-phase-action-register.mjs", [
+    "--register", path.join(dir, "phase-action-register.json"),
+    "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json")
+  ]);
 };
 
 test("phase review bundle hashes final review artifacts", () => {
@@ -85,22 +95,23 @@ test("phase review bundle hashes final review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-review-bundle-result-v1");
-    assert.equal(result.artifactCount, 3);
+    assert.equal(result.artifactCount, 5);
     assert.equal(result.validated, true);
     assert.equal(result.ready, false);
     assert.ok(existsSync(manifestPath));
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     assert.equal(manifest.format, "sentinel-phase-review-bundle-manifest-v1");
-    assert.equal(Object.keys(manifest.artifacts).length, 3);
+    assert.equal(Object.keys(manifest.artifacts).length, 5);
     assert.match(manifest.artifacts.phaseGateValidation.sha256, /^[a-f0-9]{64}$/);
+    assert.match(manifest.artifacts.phaseActionRegister.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath
     ]));
     assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 3);
+    assert.equal(validation.artifactCount, 5);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
