@@ -7,12 +7,12 @@ Sentinel Vault currently uses a JSON-backed prototype store. That keeps the demo
 | Mode | Purpose | Status |
 | --- | --- | --- |
 | `json` | Local demo and development state | Implemented |
-| `sqlite` | Single-node production prototype and Windows installer default | Planned |
-| `postgres` | Multi-node and HA deployment target | Planned |
+| `sqlite` | Single-node production prototype and Windows installer default | Provider config ready; runtime planned |
+| `postgres` | Multi-node and HA deployment target | Provider config ready; runtime planned |
 
 ## Store Boundary
 
-The current `store` module should become an adapter boundary with these responsibilities:
+The current `store` module exposes an explicit provider boundary through `STORAGE_PROVIDER`. JSON remains the only active runtime provider in this build until a database dependency is approved. The eventual adapter boundary has these responsibilities:
 
 - Load and normalize state.
 - Persist users, vaults, secrets, audit events, access requests, service tokens, policies, integrations, and metadata.
@@ -26,8 +26,7 @@ SQLite is the recommended next implementation step because it fits the Windows i
 
 Planned work:
 
-- Add a `STORAGE_PROVIDER=sqlite` configuration option.
-- Add `DATABASE_URL` or `SQLITE_PATH` configuration.
+- Use the implemented `STORAGE_PROVIDER=sqlite` and `SQLITE_PATH` configuration.
 - Create migration scripts for the current JSON entities.
 - Add import/export from the existing JSON state file.
 - Use transactions for secret lifecycle operations.
@@ -42,6 +41,7 @@ Postgres should follow once the store adapter and migration model are proven.
 
 Planned work:
 
+- Use the implemented `STORAGE_PROVIDER=postgres` and `DATABASE_URL` configuration.
 - Add connection pooling.
 - Add migration locking.
 - Add row-level ownership checks where appropriate.

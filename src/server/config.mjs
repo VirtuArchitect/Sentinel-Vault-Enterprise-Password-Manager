@@ -24,8 +24,19 @@ export const config = {
     .map((origin) => origin.trim())
     .filter(Boolean),
   rootDir,
-  dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),
-  stateFile: process.env.STATE_FILE || "sentinel-state.json",
+  storage: {
+    provider: process.env.STORAGE_PROVIDER || "json",
+    dataDir: process.env.DATA_DIR || path.join(rootDir, "data"),
+    stateFile: process.env.STATE_FILE || "sentinel-state.json",
+    sqlitePath: process.env.SQLITE_PATH || "",
+    databaseUrl: process.env.DATABASE_URL || ""
+  },
+  get dataDir() {
+    return this.storage.dataDir;
+  },
+  get stateFile() {
+    return this.storage.stateFile;
+  },
   identityProvider: {
     mode: process.env.IDENTITY_PROVIDER || "local",
     issuer: process.env.OIDC_ISSUER || "",
@@ -59,6 +70,18 @@ export const validateConfig = () => {
   }
   if (config.kms.provider !== "local-root-key" && !config.kms.keyId) {
     issues.push("KMS_KEY_ID is required when KMS_PROVIDER is external-kms or hsm.");
+  }
+  if (!["json", "sqlite", "postgres"].includes(config.storage.provider)) {
+    issues.push("STORAGE_PROVIDER must be one of json, sqlite, or postgres.");
+  }
+  if (config.storage.provider !== "json") {
+    issues.push(`${config.storage.provider} storage is planned but not available until the database dependency is approved and installed.`);
+  }
+  if (config.storage.provider === "sqlite" && !config.storage.sqlitePath) {
+    issues.push("SQLITE_PATH is required when STORAGE_PROVIDER is sqlite.");
+  }
+  if (config.storage.provider === "postgres" && !config.storage.databaseUrl) {
+    issues.push("DATABASE_URL is required when STORAGE_PROVIDER is postgres.");
   }
   if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535) {
     issues.push("PORT must be an integer between 1 and 65535.");

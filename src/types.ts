@@ -105,6 +105,7 @@ export type ConsoleData = {
 
 export type StorageStatus = {
   mode: string;
+  provider: string;
   statePath: string;
   stateVersion: number;
   exists: boolean;

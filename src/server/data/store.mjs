@@ -5,8 +5,8 @@ import { config } from "../config.mjs";
 import { createSeedState } from "./seedData.mjs";
 
 const stateVersion = 2;
-const statePath = path.join(config.dataDir, config.stateFile);
-const backupDir = path.join(config.dataDir, "backups");
+const statePath = path.join(config.storage.dataDir, config.storage.stateFile);
+const backupDir = path.join(config.storage.dataDir, "backups");
 
 const toPersistedState = (state) => {
   const { sessions: _sessions, loginFailures: _loginFailures, ...persisted } = state;
@@ -193,7 +193,7 @@ const validateEncryptedBackups = () => {
 
 const save = () => {
   if (config.isTest) return;
-  fs.mkdirSync(config.dataDir, { recursive: true });
+  fs.mkdirSync(config.storage.dataDir, { recursive: true });
   createBackup();
   const tempPath = `${statePath}.${process.pid}.tmp`;
   fs.writeFileSync(tempPath, JSON.stringify(toPersistedState(state), null, 2));
@@ -213,6 +213,7 @@ export const store = {
   getStorageStatus() {
     return {
       mode: "json",
+      provider: config.storage.provider,
       statePath,
       stateVersion,
       exists: fs.existsSync(statePath),
