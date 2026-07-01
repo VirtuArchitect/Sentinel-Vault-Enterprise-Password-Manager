@@ -87,9 +87,10 @@ Implemented:
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
+- Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:
-- Completed live receiver evidence files for each deployment environment.
+- Completed production live receiver evidence files for each deployment environment.
 
 ## Phase 6: Windows Installer Hardening
 

@@ -22,6 +22,14 @@ Use `docs/templates/connector-certification-evidence.json` and validate it with:
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 ```
 
+Generate live non-production receiver evidence with:
+
+```powershell
+pnpm preflight:connectors -- --siem-url "https://siem.example/webhook" --siem-secret "replace-with-secret" --itsm-url "https://itsm.example" --ticket-ref "INC-12345"
+```
+
+The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance/replay evidence, validates an ITSM ticket lookup, and writes redacted evidence to `artifacts/integrations/connector-live-preflight.json`.
+
 ## SIEM Connectors
 
 - Verify `X-Sentinel-Signature` with the timestamp, nonce, and raw body envelope.
