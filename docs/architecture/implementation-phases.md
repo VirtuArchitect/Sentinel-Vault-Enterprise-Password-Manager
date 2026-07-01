@@ -88,6 +88,7 @@ Implemented:
 - Keyed HMAC service-token hashing with public hash-version metadata and legacy SHA-256 hash migration on successful scoped use.
 - DevOps service-token compromise-response preflight evidence for revoked-token rejection, replacement-token retrieval, scope enforcement, and redacted output.
 - DevOps service-token compromise-response evidence template and validator included in deployment evidence bundles.
+- DevOps service-token compromise-response evidence generator for preflight enrichment, deployment status, owner metadata, approvals, and incident/change ticket binding.
 - SIEM webhook delivery worker with bounded retries.
 - HMAC signing for SIEM webhook payloads.
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.

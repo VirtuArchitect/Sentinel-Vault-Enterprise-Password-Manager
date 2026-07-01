@@ -139,6 +139,8 @@ pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation
 pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
 pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
+pnpm release:devops-token-response -- --preflight ".\artifacts\integrations\devops-token-response-evidence.json"
+pnpm validate:devops-token-response -- docs/templates/devops-token-response-evidence.json
 pnpm release:identity-evidence -- --preflight ".\artifacts\identity\identity-provider-preflight.json"
 pnpm validate:identity-evidence -- docs/templates/identity-provider-evidence.json
 pnpm release:kms-hsm -- --preflight ".\artifacts\security\kms-hsm-gateway-preflight.json"
