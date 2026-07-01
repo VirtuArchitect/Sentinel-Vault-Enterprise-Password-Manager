@@ -37,7 +37,7 @@ Out of scope until implemented:
 | Brute-force login | Login rate limit and temporary account lockout | MFA and IP/device review |
 | Direct-object access | Role, vault, and tenant metadata checks in service layer | Broader negative tests and production tenant isolation model |
 | Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
-| Compromised root key | Production requires non-demo key and key-provider boundary supports external KMS/HSM modes | Provider SDK integration and key rotation ceremony |
+| Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, and key ceremony evidence templates exist | Provider SDK integration and completed provider evidence |
 | Audit tampering | Tamper-evident audit hash chaining, signed ledger export, and append-only JSONL ledger for file-backed deployments | External signing service and WORM storage |
 | Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, and restore-validation dry runs | Offline recovery ceremony and scheduled restore drills |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, forced revocation, and persistent device inventory metadata | Refresh-token design and device trust policy |

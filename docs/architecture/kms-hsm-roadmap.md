@@ -8,6 +8,11 @@ Sentinel Vault now exposes a key-provider boundary with three configured modes:
 - `external-kms`: envelope-key mode for future cloud or enterprise KMS SDK integration.
 - `hsm`: envelope-key mode for future hardware security module integration.
 
+Operational evidence templates:
+
+- `docs/operations/kms-hsm-key-ceremony.md`
+- `docs/templates/kms-hsm-provider-evidence.json`
+
 The current implementation does not add provider SDK dependencies. Non-local modes require `KMS_KEY_ID` so deployments cannot silently claim external key management without a key reference.
 
 ## Required Production Follow-Up

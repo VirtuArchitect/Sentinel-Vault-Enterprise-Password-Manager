@@ -1,0 +1,32 @@
+{
+  "format": "sentinel-kms-hsm-provider-evidence-v1",
+  "provider": "external-kms-or-hsm",
+  "providerName": "replace-with-provider",
+  "environment": "replace-with-environment",
+  "keyId": "replace-with-key-id",
+  "keyVersion": "replace-with-vault-key-version",
+  "endpoint": "replace-with-endpoint-or-empty",
+  "region": "replace-with-region",
+  "keyExportDisabled": true,
+  "auditLoggingEnabled": true,
+  "serviceIdentity": "replace-with-service-identity",
+  "policyHash": "replace-with-policy-hash",
+  "rotation": {
+    "createdAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "activatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "previousKeyId": "replace-with-previous-key-id",
+    "previousKeyRetireAfter": "YYYY-MM-DD"
+  },
+  "checks": {
+    "configValidation": "passed",
+    "complianceEndpoint": "passed",
+    "auditLedgerExport": "passed",
+    "encryptedBackupValidation": "passed",
+    "restoreDryRun": "passed"
+  },
+  "approvals": {
+    "securityOwner": "replace-with-owner",
+    "platformOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

@@ -174,6 +174,7 @@ Windows deployment hardening guides:
 - `docs/operations/bulk-secret-import-runbook.md`
 - `docs/security/autotype-credential-provider-review.md`
 - `docs/deployment/browser-extension-enterprise-policy.md`
+- `docs/operations/kms-hsm-key-ceremony.md`
 
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
