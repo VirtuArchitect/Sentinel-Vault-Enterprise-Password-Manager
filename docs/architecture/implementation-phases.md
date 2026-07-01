@@ -24,6 +24,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - JSON-to-SQLite cutover enforces migration-readiness checks and writes the same relational mirror tables as the runtime provider.
 - JSON-to-SQLite migration script writes the current normalized state snapshot and redacted migration evidence.
 - `pnpm test:sqlite` runs the API and service suite against the SQLite provider, and CI executes it on Node.js 24.
+- Secret lifecycle operations use a repository-level transaction boundary with rollback for state, audit, integration outbox, and deferred commit hooks.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 

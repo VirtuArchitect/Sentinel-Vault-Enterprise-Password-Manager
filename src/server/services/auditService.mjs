@@ -107,7 +107,7 @@ export const audit = (actorId, action, target, detail = "", source = "127.0.0.1"
   event.signature = auditSignature(event);
   event.signatureAlgorithm = "HMAC-SHA256";
   store.state.audit.unshift(event);
-  appendAuditLedger(event);
+  store.afterCommit(() => appendAuditLedger(event));
   enqueueIntegrationEvent(event);
   store.save();
 };

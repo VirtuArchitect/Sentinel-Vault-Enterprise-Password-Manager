@@ -196,6 +196,10 @@ const loadState = () => {
 };
 
 const state = loadState();
+let transactionDepth = 0;
+let transactionSnapshot = null;
+let transactionSaveRequested = false;
+let transactionAfterCommit = [];
 
 const sha256File = (filePath) => crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("base64url");
 const backupKey = () => crypto.createHash("sha256").update(config.vaultRootKey, "utf8").digest();
@@ -352,7 +356,18 @@ const validateEncryptedBackups = () => {
     });
 };
 
+const cloneState = (candidate) => structuredClone(candidate);
+
+const restoreState = (snapshot) => {
+  for (const key of Object.keys(state)) delete state[key];
+  Object.assign(state, cloneState(snapshot));
+};
+
 const save = () => {
+  if (transactionDepth > 0) {
+    transactionSaveRequested = true;
+    return;
+  }
   if (config.storage.provider === "sqlite") {
     persistSqliteState(state);
     if (!config.isTest) createBackup();
@@ -366,9 +381,73 @@ const save = () => {
   fs.renameSync(tempPath, statePath);
 };
 
+const commitTransaction = () => {
+  const callbacks = transactionAfterCommit;
+  const shouldSave = transactionSaveRequested;
+  const snapshot = transactionSnapshot;
+  transactionSaveRequested = false;
+  transactionAfterCommit = [];
+  try {
+    if (shouldSave) save();
+  } catch (err) {
+    if (snapshot) restoreState(snapshot);
+    transactionSnapshot = null;
+    throw err;
+  }
+  transactionSnapshot = null;
+  for (const callback of callbacks) callback();
+};
+
+const rollbackTransaction = () => {
+  if (transactionSnapshot) restoreState(transactionSnapshot);
+  transactionSnapshot = null;
+  transactionSaveRequested = false;
+  transactionAfterCommit = [];
+};
+
+const withTransaction = (callback) => {
+  if (transactionDepth === 0) {
+    transactionSnapshot = cloneState(state);
+    transactionSaveRequested = false;
+    transactionAfterCommit = [];
+  }
+  transactionDepth += 1;
+
+  const finish = (result) => {
+    transactionDepth -= 1;
+    if (transactionDepth === 0) commitTransaction();
+    return result;
+  };
+  const fail = (err) => {
+    transactionDepth -= 1;
+    if (transactionDepth === 0) rollbackTransaction();
+    throw err;
+  };
+
+  try {
+    const result = callback();
+    if (result && typeof result.then === "function") {
+      return result.then(finish, fail);
+    }
+    return finish(result);
+  } catch (err) {
+    return fail(err);
+  }
+};
+
+const afterCommit = (callback) => {
+  if (transactionDepth > 0) {
+    transactionAfterCommit.push(callback);
+    return;
+  }
+  callback();
+};
+
 export const store = {
   state,
   save,
+  withTransaction,
+  afterCommit,
   createBackup,
   createEncryptedBackup,
   validateBackups() {

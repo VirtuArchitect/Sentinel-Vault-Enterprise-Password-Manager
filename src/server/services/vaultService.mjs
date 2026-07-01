@@ -194,7 +194,7 @@ export const getConsolePayload = (user) => {
   };
 };
 
-export const createSecret = (user, input) => {
+export const createSecret = (user, input) => store.withTransaction(() => {
   const { vaultId, name, username, password, url, tags, notes, type } = input;
   if (!vaultId || !name || !username || !password) {
     const error = new Error("Vault, name, username, and password are required");
@@ -234,9 +234,9 @@ export const createSecret = (user, input) => {
   };
   store.state.secrets.unshift(secret);
   audit(user.id, "CREATE_SECRET", name, `Stored in ${vault.name}`);
-};
+});
 
-export const updateSecret = (user, id, patch) => {
+export const updateSecret = (user, id, patch) => store.withTransaction(() => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   if (secret.deletedAt) {
@@ -272,17 +272,17 @@ export const updateSecret = (user, id, patch) => {
   }
   audit(user.id, "UPDATE_SECRET", secret.name, "Credential metadata updated");
   return { ok: true };
-};
+});
 
-export const deleteSecret = (user, id) => {
+export const deleteSecret = (user, id) => store.withTransaction(() => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   secret.deletedAt = new Date().toISOString();
   audit(user.id, "DELETE_SECRET", secret.name, "Credential moved to deleted state");
   return { ok: true };
-};
+});
 
-export const restoreDeletedSecret = (user, id) => {
+export const restoreDeletedSecret = (user, id) => store.withTransaction(() => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   if (!secret.deletedAt) {
@@ -293,9 +293,9 @@ export const restoreDeletedSecret = (user, id) => {
   secret.deletedAt = null;
   audit(user.id, "RESTORE_DELETED_SECRET", secret.name, "Credential restored from deleted state");
   return { ok: true };
-};
+});
 
-export const restoreSecretVersion = (user, id, index = 0) => {
+export const restoreSecretVersion = (user, id, index = 0) => store.withTransaction(() => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   const version = secret.history?.[Number(index)];
@@ -317,7 +317,7 @@ export const restoreSecretVersion = (user, id, index = 0) => {
   secret.history = secret.history.filter((_, versionIndex) => versionIndex !== Number(index) + 1).slice(0, 10);
   audit(user.id, "RESTORE_SECRET_VERSION", secret.name, `Restored version ${index}`);
   return { ok: true };
-};
+});
 
 export const revealSecret = (user, id) => {
   const secret = requireSecret(id);
@@ -326,7 +326,7 @@ export const revealSecret = (user, id) => {
   return { password: decryptSecret(secret.encrypted), expiresIn: store.state.policies.clipboardTtl };
 };
 
-export const rotateSecret = (user, id) => {
+export const rotateSecret = (user, id) => store.withTransaction(() => {
   const secret = requireSecret(id);
   requireVaultAccess(user, secret);
   const generated = generateCredential();
@@ -339,9 +339,9 @@ export const rotateSecret = (user, id) => {
   secret.approvalsRequired = false;
   audit(user.id, "ROTATE_SECRET", secret.name, "Generated 170-bit replacement credential");
   return generated;
-};
+});
 
-export const shareSecret = (user, id, userId) => {
+export const shareSecret = (user, id, userId) => store.withTransaction(() => {
   const secret = requireSecret(id);
   const target = store.findUserById(userId);
   if (!target) {
@@ -352,9 +352,9 @@ export const shareSecret = (user, id, userId) => {
   requireVaultAccess(user, secret);
   if (!secret.sharedWith.includes(target.id)) secret.sharedWith.push(target.id);
   audit(user.id, "SHARE_SECRET", secret.name, `Granted to ${target.name}`);
-};
+});
 
-export const requestSecretAccess = async (user, secretId, reason, options = {}) => {
+export const requestSecretAccess = async (user, secretId, reason, options = {}) => store.withTransaction(async () => {
   const secret = requireSecret(secretId);
   if (canAccessSecret(user, secret)) {
     const error = new Error("User already has access to this secret");
@@ -400,9 +400,9 @@ export const requestSecretAccess = async (user, secretId, reason, options = {}) 
   store.state.accessRequests.unshift(request);
   audit(user.id, "ACCESS_REQUEST", secret.name, text);
   return publicRequest(request);
-};
+});
 
-export const approveAccessRequest = (user, requestId, minutes = 30) => {
+export const approveAccessRequest = (user, requestId, minutes = 30) => store.withTransaction(() => {
   const request = store.findAccessRequestById(requestId);
   if (!request) {
     const error = new Error("Access request not found");
@@ -435,9 +435,9 @@ export const approveAccessRequest = (user, requestId, minutes = 30) => {
   }
   audit(user.id, "ACCESS_APPROVED", secret.name, `Approval ${request.approvals.length}/${request.requiredApprovals}; temporary access for ${ttl} minutes`);
   return publicRequest(request);
-};
+});
 
-export const denyAccessRequest = (user, requestId) => {
+export const denyAccessRequest = (user, requestId) => store.withTransaction(() => {
   const request = store.findAccessRequestById(requestId);
   if (!request) {
     const error = new Error("Access request not found");
@@ -452,9 +452,9 @@ export const denyAccessRequest = (user, requestId) => {
   request.expiresAt = null;
   audit(user.id, "ACCESS_DENIED", secret.name, "Temporary access denied");
   return publicRequest(request);
-};
+});
 
-export const revokeAccessRequest = (user, requestId) => {
+export const revokeAccessRequest = (user, requestId) => store.withTransaction(() => {
   const request = store.findAccessRequestById(requestId);
   if (!request) {
     const error = new Error("Access request not found");
@@ -468,9 +468,9 @@ export const revokeAccessRequest = (user, requestId) => {
   request.decidedAt = new Date().toISOString();
   audit(user.id, "ACCESS_REVOKED", secret.name, "Temporary access revoked");
   return publicRequest(request);
-};
+});
 
-export const updatePolicies = (user, patch) => {
+export const updatePolicies = (user, patch) => store.withTransaction(() => {
   const next = {};
   for (const [key, value] of Object.entries(patch || {})) {
     const validator = policyValidators[key];
@@ -484,4 +484,4 @@ export const updatePolicies = (user, patch) => {
   store.state.policies = { ...store.state.policies, ...next };
   audit(user.id, "POLICY_UPDATE", "Enterprise policy", "Policy controls updated");
   return store.state.policies;
-};
+});

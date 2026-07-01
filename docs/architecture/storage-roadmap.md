@@ -41,6 +41,7 @@ Implemented:
 - Preserve the same encrypted secret payloads, audit records, tenant metadata, access requests, integrations, policies, and service-token metadata as JSON mode.
 - Include SQLite database copies in the existing backup manifest flow.
 - Enforce migration-readiness evidence before JSON-to-SQLite cutover and write the same relational mirror tables during migration.
+- Use repository-level transaction helpers so secret lifecycle mutations, audit events, integration outbox records, and persistence commits succeed or roll back together.
 - Migrate an existing JSON state file into a SQLite database with redacted migration evidence:
 
 ```powershell
@@ -52,7 +53,6 @@ pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sen
 
 Remaining:
 
-- Move secret lifecycle operations to narrower repository-level transactions instead of whole-state commits.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 
 No SQLite npm dependency has been added. SQLite mode requires a Node.js runtime that exposes `node:sqlite`.
