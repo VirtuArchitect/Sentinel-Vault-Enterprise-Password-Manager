@@ -164,6 +164,7 @@ Windows deployment hardening guides:
 
 - `docs/deployment/windows-code-signing.md`
 - `docs/deployment/tls-iis-checklist.md`
+- `docs/architecture/connector-certification.md`
 
 Build a signed-EXE-ready setup package with Inno Setup installed:
 

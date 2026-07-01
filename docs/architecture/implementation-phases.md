@@ -67,9 +67,10 @@ Implemented:
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
 - ITSM ticket validation.
 - Integration configuration UI.
+- Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 
 Remaining:
-- Production connector certification.
+- Live receiver certification evidence for each deployment environment.
 
 ## Phase 6: Windows Installer Hardening
 
