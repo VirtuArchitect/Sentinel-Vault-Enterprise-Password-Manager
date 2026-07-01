@@ -24,11 +24,14 @@ const requests = [
       "Cutover plan from SQLite or JSON state with restore, rollback, and migration-readiness evidence"
     ],
     evidenceTemplates: [
+      "docs/templates/postgres-ha-approval-evidence.json",
       "docs/templates/storage-migration-evidence.json",
       "docs/architecture/postgres-schema.sql"
     ],
     commands: [
       "pnpm plan:postgres -- --state <deployment-state.json> --out <postgres-migration-plan.json>",
+      "pnpm release:postgres-ha -- --status approved --migration-plan <postgres-migration-plan.json> --storage-migration-evidence <storage-migration-evidence.json> --out <postgres-ha-approval-evidence.json>",
+      "pnpm validate:postgres-ha -- <postgres-ha-approval-evidence.json>",
       "pnpm inspect:storage -- --state <deployment-state.json> --out <storage-readiness.json>",
       "pnpm validate:storage-migration -- <storage-migration-evidence.json>"
     ],

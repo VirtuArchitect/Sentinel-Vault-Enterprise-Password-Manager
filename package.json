@@ -36,6 +36,8 @@
     "validate:storage-migration": "node scripts/validate-storage-migration-evidence.mjs",
     "migrate:sqlite": "node scripts/migrate-json-to-sqlite.mjs",
     "plan:postgres": "node scripts/plan-postgres-migration.mjs",
+    "release:postgres-ha": "node scripts/generate-postgres-ha-approval-evidence.mjs",
+    "validate:postgres-ha": "node scripts/validate-postgres-ha-approval-evidence.mjs",
     "release:tenant-isolation": "node scripts/generate-tenant-isolation-evidence.mjs",
     "release:connector-evidence": "node scripts/generate-connector-certification-evidence.mjs",
     "validate:connector-evidence": "node scripts/validate-connector-evidence.mjs",

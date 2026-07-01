@@ -66,6 +66,8 @@ Implemented planning artifacts:
 
 - `docs/architecture/postgres-schema.sql` defines the target JSONB mirror schema, generated columns, indexes, and schema migration table.
 - `pnpm plan:postgres` validates a source state file against migration-readiness checks and writes a cutover plan with source and schema hashes.
+- `pnpm release:postgres-ha` writes Postgres HA approval evidence for dependency, target environment, cutover, rollback, and redaction review.
+- `pnpm validate:postgres-ha` validates the Postgres HA approval evidence and rejects completed evidence with failed controls, leaked connection details, or missing referenced migration artifacts.
 
 Planned work:
 

@@ -28,6 +28,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - `pnpm validate:restore-drill` performs encrypted-backup restore dry runs and writes restore evidence without changing live state.
 - `pnpm validate:storage-migration` validates storage migration-readiness evidence before cutover or deployment bundle assembly.
 - Postgres target schema and `pnpm plan:postgres` migration-planning evidence are available without adding a runtime database dependency.
+- Postgres HA approval evidence template, generator, validator, and deployment-bundle gate for dependency, environment, cutover, rollback, and redaction approvals.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 

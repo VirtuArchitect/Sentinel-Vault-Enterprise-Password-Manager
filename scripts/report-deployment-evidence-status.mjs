@@ -17,6 +17,7 @@ const placeholder = /replace-with|YYYY-MM-DD|YYYY-MM-DDTHH:mm:ssZ/gi;
 const validators = {
   connector: ["scripts/validate-connector-evidence.mjs"],
   devopsTokenResponse: ["scripts/validate-devops-token-response-evidence.mjs"],
+  postgresHa: ["scripts/validate-postgres-ha-approval-evidence.mjs"],
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],

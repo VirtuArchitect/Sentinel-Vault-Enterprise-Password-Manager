@@ -133,6 +133,8 @@ pnpm release:backup-recovery -- --restore-evidence ".\artifacts\storage\encrypte
 pnpm validate:backup-recovery -- docs/templates/backup-recovery-evidence.json
 pnpm inspect:storage -- --state ".\data\sentinel-state.json"
 pnpm validate:storage-migration -- docs/templates/storage-migration-evidence.json
+pnpm release:postgres-ha -- --status planned --out ".\artifacts\storage\postgres-ha-approval-evidence.json"
+pnpm validate:postgres-ha -- docs/templates/postgres-ha-approval-evidence.json
 pnpm release:device-trust -- --device-inventory ".\artifacts\security\device-inventory.json"
 pnpm validate:device-trust -- docs/templates/device-trust-evidence.json
 pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.json"

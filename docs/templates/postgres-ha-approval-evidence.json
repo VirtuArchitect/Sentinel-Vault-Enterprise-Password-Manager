@@ -1,0 +1,41 @@
+{
+  "format": "sentinel-postgres-ha-approval-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "reviewedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "dependencyApproval": {
+    "packageName": "replace-with-postgres-client-package",
+    "packageVersion": "replace-with-version",
+    "license": "replace-with-license",
+    "supplyChainReview": "planned",
+    "securityReview": "planned",
+    "approvalReference": "replace-with-approval-ticket"
+  },
+  "targetEnvironment": {
+    "clusterName": "replace-with-cluster-name",
+    "haMode": "replace-with-ha-mode",
+    "networkIsolation": "planned",
+    "tlsRequired": "planned",
+    "leastPrivilegeRole": "planned",
+    "backupPolicy": "planned",
+    "restoreDrill": "planned",
+    "monitoringAlerts": "planned"
+  },
+  "cutover": {
+    "migrationPlanPath": "replace-with-postgres-migration-plan.json",
+    "storageMigrationEvidencePath": "replace-with-storage-migration-evidence.json",
+    "rollbackPlan": "planned",
+    "maintenanceWindow": "replace-with-window",
+    "ownerApproval": "planned"
+  },
+  "approvals": {
+    "platformDataOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner"
+  },
+  "redaction": {
+    "containsCredentials": "planned",
+    "containsConnectionStrings": "planned",
+    "containsCustomerData": "planned"
+  }
+}
