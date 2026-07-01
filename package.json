@@ -15,6 +15,7 @@
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "release:provenance": "node scripts/generate-release-provenance.mjs",
     "release:windows-evidence": "node scripts/generate-windows-release-evidence.mjs",
+    "release:native-companion": "node scripts/generate-native-companion-evidence.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
     "package:extension": "node scripts/package-browser-extension.mjs",
     "release:browser-rollout": "node scripts/generate-browser-rollout-evidence.mjs",

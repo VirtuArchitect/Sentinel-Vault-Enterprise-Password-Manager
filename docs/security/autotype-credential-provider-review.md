@@ -58,6 +58,7 @@ Native autotype or credential-provider code must not be released until:
 Record the release gate with `docs/templates/native-companion-evidence.json` and validate it with:
 
 ```powershell
+pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe" --out ".\artifacts\native\native-companion-evidence.json"
 pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
 ```
 

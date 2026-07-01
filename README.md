@@ -198,6 +198,7 @@ Windows deployment hardening guides:
 Validate native companion and credential-provider release evidence:
 
 ```powershell
+pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe"
 pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
 ```
 
