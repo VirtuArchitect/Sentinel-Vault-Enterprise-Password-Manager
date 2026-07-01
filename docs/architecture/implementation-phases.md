@@ -66,9 +66,10 @@ Implemented:
 - Bulk import runbook and source-system mapping templates.
 - CSV source-export adapter with redacted migration evidence output.
 - Bitwarden, Dashlane, LastPass, and 1Password CSV source-export adapters that normalize into the escrow import pipeline with redacted evidence.
+- Configurable mapped-CSV source export adapter and column-map template for proprietary migration exports without code changes.
 
 Remaining:
-- Deployment-specific proprietary source export adapters beyond the shipped CSV adapters.
+- Deployment-specific proprietary source column maps and migration evidence files.
 
 ## Phase 5: Enterprise Integrations
 

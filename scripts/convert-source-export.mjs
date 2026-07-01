@@ -14,11 +14,13 @@ const format = String(args.get("--format") || "").toLowerCase();
 const vaultId = args.get("--vault-id");
 const outputPath = args.get("--out") || "artifacts/import/source-export-normalized.csv";
 const evidencePath = args.get("--evidence") || "artifacts/import/source-export-adapter-evidence.json";
-const allowedFormats = new Set(["bitwarden-csv", "dashlane-csv", "lastpass-csv", "onepassword-csv", "sentinel-csv"]);
+const mappingPath = args.get("--mapping");
+const allowedFormats = new Set(["bitwarden-csv", "dashlane-csv", "lastpass-csv", "mapped-csv", "onepassword-csv", "sentinel-csv"]);
 
-assert.ok(sourcePath, "Usage: node scripts/convert-source-export.mjs --source <file> --format <bitwarden-csv|dashlane-csv|lastpass-csv|onepassword-csv|sentinel-csv> --vault-id <vault-id>");
+assert.ok(sourcePath, "Usage: node scripts/convert-source-export.mjs --source <file> --format <bitwarden-csv|dashlane-csv|lastpass-csv|mapped-csv|onepassword-csv|sentinel-csv> --vault-id <vault-id>");
 assert.ok(allowedFormats.has(format), "Unsupported --format");
 assert.ok(vaultId, "--vault-id is required");
+if (format === "mapped-csv") assert.ok(mappingPath, "--mapping is required for mapped-csv");
 
 const parseCsv = (text) => {
   const rows = [];
@@ -70,6 +72,35 @@ const first = (row, names) => {
   return "";
 };
 
+const resolveMappedValue = (row, spec = {}) => {
+  if (typeof spec === "string") return first(row, [spec]);
+  if (Array.isArray(spec)) return first(row, spec);
+  if (spec.constant !== undefined) return String(spec.constant);
+  return first(row, spec.columns || []);
+};
+
+const resolveMappedTags = (row, spec = {}) => {
+  if (typeof spec === "string" || Array.isArray(spec)) return normalizeTags(resolveMappedValue(row, spec));
+  const values = [
+    ...(spec.columns || []).map((column) => first(row, [column])),
+    ...(spec.constants || [])
+  ];
+  return normalizeTags(...values);
+};
+
+const loadSourceMap = () => {
+  if (format !== "mapped-csv") return null;
+  const mapping = JSON.parse(readFileSync(mappingPath, "utf8"));
+  assert.equal(mapping.format, "sentinel-source-export-column-map-v1");
+  assert.ok(mapping.sourceSystem, "mapping.sourceSystem is required");
+  for (const name of ["name", "username", "password"]) {
+    assert.ok(mapping.fields?.[name], `mapping.fields.${name} is required`);
+  }
+  return mapping;
+};
+
+const sourceMap = loadSourceMap();
+
 const adapters = {
   "sentinel-csv": (row) => ({
     type: first(row, ["type"]) || "password",
@@ -111,6 +142,16 @@ const adapters = {
     risk: first(row, ["risk"]) || "medium",
     notes: first(row, ["extra", "notes"])
   }),
+  "mapped-csv": (row) => ({
+    type: resolveMappedValue(row, sourceMap.fields.type) || "password",
+    name: resolveMappedValue(row, sourceMap.fields.name),
+    username: resolveMappedValue(row, sourceMap.fields.username),
+    password: resolveMappedValue(row, sourceMap.fields.password),
+    url: resolveMappedValue(row, sourceMap.fields.url),
+    tags: resolveMappedTags(row, sourceMap.fields.tags),
+    risk: resolveMappedValue(row, sourceMap.fields.risk) || "medium",
+    notes: resolveMappedValue(row, sourceMap.fields.notes)
+  }),
   "onepassword-csv": (row) => ({
     type: first(row, ["type", "category"]) || "password",
     name: first(row, ["title", "name"]),
@@ -148,6 +189,8 @@ const evidence = {
   rowCount: rows.length,
   convertedCount: normalized.length,
   targetVaultId: vaultId,
+  mappingSourceSystem: sourceMap?.sourceSystem,
+  mappingFile: mappingPath ? path.resolve(mappingPath) : undefined,
   passwordValuesIncluded: false,
   outputCsv: path.resolve(outputPath),
   entries: normalized.map((entry) => ({

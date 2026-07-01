@@ -1,0 +1,56 @@
+{
+  "format": "sentinel-source-export-column-map-v1",
+  "sourceSystem": "replace-with-source-system",
+  "fields": {
+    "type": {
+      "constant": "password"
+    },
+    "name": {
+      "columns": [
+        "title",
+        "name"
+      ]
+    },
+    "username": {
+      "columns": [
+        "username",
+        "user",
+        "login"
+      ]
+    },
+    "password": {
+      "columns": [
+        "password",
+        "secret"
+      ]
+    },
+    "url": {
+      "columns": [
+        "url",
+        "website"
+      ]
+    },
+    "tags": {
+      "columns": [
+        "folder",
+        "collection"
+      ],
+      "constants": [
+        "migrated"
+      ]
+    },
+    "risk": {
+      "constant": "medium"
+    },
+    "notes": {
+      "columns": [
+        "notes",
+        "description"
+      ]
+    }
+  },
+  "redaction": {
+    "evidenceIncludesPasswordValues": false,
+    "evidenceIncludesOtpValues": false
+  }
+}

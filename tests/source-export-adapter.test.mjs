@@ -122,6 +122,65 @@ test("lastpass csv export converts to Sentinel import csv with redacted evidence
   }
 });
 
+test("mapped csv export converts proprietary columns with redacted evidence", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-mapped-export-"));
+  try {
+    const sourcePath = path.join(dir, "proprietary.csv");
+    const mappingPath = path.join(dir, "source-map.json");
+    const outPath = path.join(dir, "normalized.csv");
+    const evidencePath = path.join(dir, "evidence.json");
+    writeFileSync(sourcePath, [
+      "Record Title,Login ID,Secret Value,Endpoint,Folder,Description,Internal OTP",
+      "Privileged Console,root,Map-Secret-Value,https://console.example.test,Privileged,\"Emergency admin\",mapped-otp-value"
+    ].join("\n"));
+    writeFileSync(mappingPath, JSON.stringify({
+      format: "sentinel-source-export-column-map-v1",
+      sourceSystem: "Acme Proprietary Vault",
+      fields: {
+        type: { constant: "password" },
+        name: { columns: ["Record Title"] },
+        username: { columns: ["Login ID"] },
+        password: { columns: ["Secret Value"] },
+        url: { columns: ["Endpoint"] },
+        tags: { columns: ["Folder"], constants: ["migrated"] },
+        risk: { constant: "high" },
+        notes: { columns: ["Description"] }
+      },
+      redaction: {
+        evidenceIncludesPasswordValues: false,
+        evidenceIncludesOtpValues: false
+      }
+    }, null, 2));
+
+    execFileSync(process.execPath, [
+      "scripts/convert-source-export.mjs",
+      "--source", sourcePath,
+      "--format", "mapped-csv",
+      "--mapping", mappingPath,
+      "--vault-id", "v-import",
+      "--out", outPath,
+      "--evidence", evidencePath
+    ], {
+      cwd: rootDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    const csv = readFileSync(outPath, "utf8");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+
+    assert.match(csv, /v-import,password,Privileged Console,root,Map-Secret-Value,https:\/\/console.example.test,Privileged;migrated,high,Emergency admin/);
+    assert.equal(evidence.sourceFormat, "mapped-csv");
+    assert.equal(evidence.mappingSourceSystem, "Acme Proprietary Vault");
+    assert.equal(evidence.convertedCount, 1);
+    assert.equal(evidence.passwordValuesIncluded, false);
+    assert.equal(JSON.stringify(evidence).includes("Map-Secret-Value"), false);
+    assert.equal(JSON.stringify(evidence).includes("mapped-otp-value"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("source export adapter rejects rows missing required fields", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-source-export-fail-"));
   try {

@@ -25,6 +25,12 @@ pnpm convert:source-export -- --source ".\secure-work\lastpass-export.csv" --for
 pnpm convert:source-export -- --source ".\secure-work\1password-export.csv" --format onepassword-csv --vault-id "v1" --out ".\secure-work\source-export.csv"
 ```
 
+For a proprietary CSV export, copy `docs/templates/source-export-column-map.json`, map the source columns, and run:
+
+```powershell
+pnpm convert:source-export -- --source ".\secure-work\vendor-export.csv" --format mapped-csv --mapping ".\secure-work\source-export-column-map.json" --vault-id "v1" --out ".\secure-work\source-export.csv"
+```
+
 Default outputs:
 
 ```text
@@ -37,6 +43,7 @@ artifacts/import/bulk-secret-import-evidence.json
 - Confirm `vaultId` exists and is the intended target vault.
 - Confirm each row has `name`, `username`, and `password`.
 - Confirm source adapter evidence has `passwordValuesIncluded=false`.
+- For `mapped-csv`, confirm the source map excludes OTP, token seed, recovery-code, and attachment fields unless they are intentionally imported through approved notes.
 - Confirm duplicate detection results are reviewed.
 - Confirm high-risk records are flagged with `risk=high`.
 - Confirm import rows do not contain expired, disabled, or test-only credentials.
