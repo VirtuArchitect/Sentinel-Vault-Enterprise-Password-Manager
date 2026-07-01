@@ -128,6 +128,7 @@ Implemented:
 - Release-mode phase review and closure validation that rejects proposed, expired, placeholder, or control-free waivers before final archive approval.
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.
+- Composite production release gate that validates deployment evidence, readiness, approved waivers, final review, closure archive provenance, and clean source state in one command.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:

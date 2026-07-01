@@ -73,6 +73,7 @@
     "validate:phase-review": "node scripts/validate-phase-review-bundle.mjs",
     "package:phase-closure": "node scripts/package-phase-closure-archive.mjs",
     "validate:phase-closure": "node scripts/validate-phase-closure-archive.mjs",
+    "validate:release-gate": "node scripts/validate-production-release-gate.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",

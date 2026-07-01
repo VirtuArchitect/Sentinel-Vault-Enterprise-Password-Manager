@@ -270,11 +270,12 @@ pnpm package:phase-closure -- --dir ".\artifacts\deployment\pilot" --out ".\arti
 pnpm validate:phase-closure -- --manifest ".\artifacts\deployment\pilot\phase-closure-archive-manifest.json" --phase-review ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm validate:phase-review -- --manifest ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json" --require-approved-waivers
 pnpm validate:phase-closure -- --manifest ".\artifacts\deployment\pilot\phase-closure-archive-manifest.json" --phase-review ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json" --require-approved-waivers --require-clean
+pnpm validate:release-gate -- --dir ".\artifacts\deployment\pilot" --target "production" --require-clean --out ".\artifacts\deployment\pilot\production-release-gate.json"
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```
 
-Use the `--fail-on-blockers` readiness command as the release or CI gate for a completed deployment bundle. Use the `--require-approved-waivers` review and closure commands only after every missing or redaction-flagged evidence item has an approved waiver, future expiry date, approval reference, and compensating control. These commands are expected to fail for newly generated placeholder workspaces until the deployment-specific evidence is replaced or explicitly approved.
+Use the `--fail-on-blockers` readiness command as the release or CI gate for a completed deployment bundle. Use the `--require-approved-waivers` review and closure commands only after every missing or redaction-flagged evidence item has an approved waiver, future expiry date, approval reference, and compensating control. Use `validate:release-gate` as the final production gate that composes deployment evidence validation, phase readiness, final review, closure archive provenance, approved waivers, and clean source-state checks. These commands are expected to fail for newly generated placeholder workspaces until the deployment-specific evidence is replaced or explicitly approved.
 
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
