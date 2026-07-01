@@ -256,6 +256,8 @@ pnpm prepare:phase-gaps -- --dir ".\artifacts\deployment\pilot" --out ".\artifac
 pnpm validate:phase-gaps -- --matrix ".\artifacts\deployment\pilot\phase-gap-matrix.json" --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json"
 pnpm prepare:phase-decision -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-decision-record.json" --markdown-out ".\artifacts\deployment\pilot\phase-decision-record.md"
 pnpm validate:phase-decision -- --record ".\artifacts\deployment\pilot\phase-decision-record.json" --phase-gate ".\artifacts\deployment\pilot\phase-gate-validation.json" --phase-actions ".\artifacts\deployment\pilot\phase-action-register.json" --phase-gaps ".\artifacts\deployment\pilot\phase-gap-matrix.json"
+pnpm prepare:phase-signoffs -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-signoff-matrix.json" --markdown-out ".\artifacts\deployment\pilot\phase-signoff-matrix.md"
+pnpm validate:phase-signoffs -- --matrix ".\artifacts\deployment\pilot\phase-signoff-matrix.json" --phase-decision ".\artifacts\deployment\pilot\phase-decision-record.json" --phase-actions ".\artifacts\deployment\pilot\phase-action-register.json"
 pnpm package:phase-review -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm validate:phase-review -- --manifest ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers

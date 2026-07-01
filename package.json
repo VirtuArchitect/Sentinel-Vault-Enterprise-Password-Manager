@@ -61,6 +61,8 @@
     "validate:phase-gaps": "node scripts/validate-phase-gap-matrix.mjs",
     "prepare:phase-decision": "node scripts/prepare-phase-decision-record.mjs",
     "validate:phase-decision": "node scripts/validate-phase-decision-record.mjs",
+    "prepare:phase-signoffs": "node scripts/prepare-phase-signoff-matrix.mjs",
+    "validate:phase-signoffs": "node scripts/validate-phase-signoff-matrix.mjs",
     "package:phase-review": "node scripts/package-phase-review-bundle.mjs",
     "validate:phase-review": "node scripts/validate-phase-review-bundle.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",

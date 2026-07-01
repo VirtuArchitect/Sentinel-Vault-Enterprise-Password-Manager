@@ -121,6 +121,7 @@ Implemented:
 - Phase action register generator and validator that turn the validated gate and external evidence requests into owner-specific action records.
 - Phase gap matrix generator and validator that map every remaining blocker to deployment-bundle evidence and supporting artifacts.
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.
+- Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
