@@ -557,10 +557,21 @@ test("storage status and backup endpoints are admin-only", async () => {
     const backup = await jsonFetch(`${baseUrl}/storage/backup`, ada.token, { method: "POST" });
     assert.equal(backup.status, 200);
 
+    const encryptedBackup = await jsonFetch(`${baseUrl}/storage/backup/encrypted`, ada.token, { method: "POST" });
+    assert.equal(encryptedBackup.status, 200);
+    const encryptedBody = await encryptedBackup.json();
+    assert.equal(encryptedBody.backup.algorithm, "AES-256-GCM");
+    assert.equal(encryptedBody.backup.verified, true);
+
     const verification = await jsonFetch(`${baseUrl}/storage/backups/verify`, ada.token);
     assert.equal(verification.status, 200);
     const verificationBody = await verification.json();
     assert.ok(Array.isArray(verificationBody.backups));
+
+    const restoreValidation = await jsonFetch(`${baseUrl}/storage/backups/restore-validate`, ada.token);
+    assert.equal(restoreValidation.status, 200);
+    const restoreBody = await restoreValidation.json();
+    assert.ok(Array.isArray(restoreBody.backups));
   });
 });
 

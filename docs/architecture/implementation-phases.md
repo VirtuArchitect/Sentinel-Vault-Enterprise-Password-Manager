@@ -104,13 +104,13 @@ Implemented:
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - Tamper-evident audit hash chaining.
 - Backup SHA-256 manifests and admin verification API.
+- AES-GCM encrypted backup artifacts and restore-validation dry run API.
 - Threat model.
 - Security review checklist.
 
 Remaining:
 
 - Append-only audit storage and external signing.
-- Encrypted backup and restore workflow validation.
 - KMS/HSM design and implementation.
 - Persistent session/device inventory for future refresh-token workflows.
 

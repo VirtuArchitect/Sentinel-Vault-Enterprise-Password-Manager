@@ -39,7 +39,7 @@ Out of scope until implemented:
 | Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
 | Compromised root key | Production requires non-demo key | KMS/HSM integration and key rotation |
 | Audit tampering | Tamper-evident audit hash chaining | Append-only storage and external signing |
-| Backup exposure | Admin-only backup endpoint with SHA-256 manifests | Backup encryption and restore workflow validation |
+| Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, and restore-validation dry runs | Offline recovery ceremony and scheduled restore drills |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, and forced revocation | Persistent device inventory and refresh-token design |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Webhook spoofing | SIEM payload HMAC signing and bounded delivery retries | Key rotation and receiver-side replay-window guidance |

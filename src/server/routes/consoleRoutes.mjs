@@ -62,8 +62,16 @@ consoleRoutes.post("/storage/backup", auth, can("policy:write"), (_req, res) => 
   res.json({ backup: store.createBackup() });
 });
 
+consoleRoutes.post("/storage/backup/encrypted", auth, can("policy:write"), (_req, res) => {
+  res.json({ backup: store.createEncryptedBackup() });
+});
+
 consoleRoutes.get("/storage/backups/verify", auth, can("policy:write"), (_req, res) => {
   res.json({ backups: store.validateBackups() });
+});
+
+consoleRoutes.get("/storage/backups/restore-validate", auth, can("policy:write"), (_req, res) => {
+  res.json({ backups: store.validateEncryptedBackups() });
 });
 
 consoleRoutes.get("/sessions", auth, can("policy:write"), (_req, res) => {
