@@ -2,6 +2,12 @@
 
 Use this checklist when exposing Sentinel Vault through Windows Web Services/IIS.
 
+Validate deployment evidence with:
+
+```powershell
+pnpm validate:tls-iis -- docs/templates/tls-iis-evidence.json
+```
+
 ## Certificate
 
 - Bind IIS to HTTPS with a certificate issued for the console hostname.

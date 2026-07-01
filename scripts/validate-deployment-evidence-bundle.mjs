@@ -17,6 +17,7 @@ const validators = {
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
   windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"],
+  tlsIis: ["scripts/validate-tls-iis-evidence.mjs"],
   pentestScope: ["scripts/validate-pentest-scope-evidence.mjs"],
   auditWorm: ["scripts/validate-audit-worm-evidence.mjs"],
   backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"],

@@ -40,6 +40,7 @@
     "validate:siem-rotation": "node scripts/validate-siem-receiver-rotation-evidence.mjs",
     "validate:release-attestation": "node scripts/validate-release-attestation-evidence.mjs",
     "validate:sast": "node scripts/validate-sast-evidence.mjs",
+    "validate:tls-iis": "node scripts/validate-tls-iis-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
     "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",

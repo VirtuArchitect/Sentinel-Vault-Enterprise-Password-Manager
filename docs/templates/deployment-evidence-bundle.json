@@ -12,6 +12,7 @@
     "kmsHsm": "docs/templates/kms-hsm-provider-evidence.json",
     "windowsRelease": "docs/templates/windows-release-evidence.json",
     "windowsInstallHardening": "docs/templates/windows-install-hardening-evidence.json",
+    "tlsIis": "docs/templates/tls-iis-evidence.json",
     "pentestScope": "docs/templates/pentest-scope-evidence.json",
     "auditWorm": "docs/templates/audit-worm-evidence.json",
     "backupRecovery": "docs/templates/backup-recovery-evidence.json",

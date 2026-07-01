@@ -1,0 +1,52 @@
+{
+  "format": "sentinel-tls-iis-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "hostname": "replace-with-hostname",
+  "reviewedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "iis": {
+    "siteName": "Sentinel Vault",
+    "httpsBinding": "planned",
+    "httpRedirect": "planned",
+    "arrProxyEnabled": "planned",
+    "urlRewriteEnabled": "planned",
+    "apiProxyValidated": "planned",
+    "staticAssetCachingReviewed": "planned"
+  },
+  "certificate": {
+    "issuer": "replace-with-issuer",
+    "subject": "replace-with-subject",
+    "thumbprint": "replace-with-thumbprint",
+    "notBefore": "YYYY-MM-DD",
+    "notAfter": "YYYY-MM-DD",
+    "autoRenewal": "planned",
+    "privateKeyAclRestricted": "planned",
+    "chainTrusted": "planned",
+    "revocationCheck": "planned"
+  },
+  "headers": {
+    "hsts": "planned",
+    "contentSecurityPolicy": "planned",
+    "xContentTypeOptions": "planned",
+    "referrerPolicy": "planned",
+    "frameAncestors": "planned"
+  },
+  "healthChecks": {
+    "httpsHealthz": "not-run",
+    "loginThroughIis": "not-run",
+    "apiConsoleThroughIis": "not-run",
+    "httpToHttpsRedirect": "not-run",
+    "tlsProtocolReview": "not-run"
+  },
+  "redaction": {
+    "privateKeysFound": false,
+    "certificatePasswordsFound": false,
+    "runtimeSecretsFound": false
+  },
+  "approvals": {
+    "windowsOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

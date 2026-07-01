@@ -28,6 +28,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     kmsHsm: "kms-hsm-provider-evidence.json",
     windowsRelease: "windows-release-evidence.json",
     windowsInstallHardening: "windows-install-hardening-evidence.json",
+    tlsIis: "tls-iis-evidence.json",
     pentestScope: "pentest-scope-evidence.json",
     auditWorm: "audit-worm-evidence.json",
     backupRecovery: "backup-recovery-evidence.json",
@@ -73,6 +74,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.browserRollout.validated, true);
     assert.equal(validation.results.nativeCompanion.validated, true);
     assert.equal(validation.results.windowsInstallHardening.validated, true);
+    assert.equal(validation.results.tlsIis.validated, true);
     assert.equal(validation.results.pentestScope.validated, true);
     assert.equal(validation.results.auditWorm.validated, true);
     assert.equal(validation.results.backupRecovery.validated, true);
@@ -98,6 +100,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
         windowsRelease: "evidence/windows-release-evidence.json",
         windowsInstallHardening: "evidence/windows-install-hardening-evidence.json",
+        tlsIis: "evidence/tls-iis-evidence.json",
         pentestScope: "evidence/pentest-scope-evidence.json",
         auditWorm: "evidence/audit-worm-evidence.json",
         backupRecovery: "evidence/backup-recovery-evidence.json",

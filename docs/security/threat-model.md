@@ -47,7 +47,7 @@ Out of scope until implemented:
 | Webhook spoofing | SIEM payload HMAC signing, signing key IDs, previous-key rotation metadata, delivery IDs, nonces, timestamps, bounded delivery retries, and replay-window guidance | Completed receiver rotation evidence |
 | Unapproved privileged work | Live ITSM ticket lookup rejects invalid or inactive tickets before access requests are created | Provider-specific approval-state lookup and work-note updates |
 | Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, generated release provenance, SAST evidence gate, release attestation evidence gate, Windows signing helper, and penetration-test scope evidence | Completed signed release attestations from a certificate-backed host |
-| Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
+| Misconfigured IIS/TLS | IIS guidance, production HSTS, environment-aware CSP, and TLS/IIS deployment evidence gate exist | Deployment-specific TLS/IIS evidence |
 
 ## Security Backlog
 

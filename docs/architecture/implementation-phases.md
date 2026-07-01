@@ -114,6 +114,7 @@ Implemented:
 - Upgrade backup and rollback script.
 - Code-signing documentation.
 - TLS/IIS setup checklist with certificate guidance.
+- TLS/IIS deployment evidence template and validator for certificate, redirect, HSTS, reverse proxy, health checks, and redaction.
 - Signed-EXE-ready Inno Setup authoring and build script.
 - Windows release signature verification helper and release evidence template.
 - Windows release evidence validator for signed MSI/MSIX/EXE artifacts and rollback evidence.
