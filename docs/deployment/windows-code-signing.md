@@ -28,8 +28,28 @@ Use this checklist before publishing a Sentinel Vault Windows package outside a 
 6. Optionally validate or build MSI authoring with `pnpm package:windows:msi -ValidateOnly` or `pnpm package:windows:msi`.
 7. Optionally validate or build MSIX authoring with `pnpm package:windows:msix -ValidateOnly` or `pnpm package:windows:msix`.
 8. Generate release provenance with `pnpm release:provenance -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"`.
-9. Sign the release artifact.
+9. Sign the release artifacts with `pnpm sign:windows`.
 10. Verify the signature on a clean Windows host before publishing.
+
+Validate signing inputs without accessing a certificate:
+
+```powershell
+pnpm sign:windows -ValidateOnly
+```
+
+Sign with a certificate in the Windows certificate store:
+
+```powershell
+pnpm sign:windows -CertificateThumbprint "replace-with-thumbprint"
+```
+
+Sign with a PFX on an approved release host:
+
+```powershell
+pnpm sign:windows `
+  -CertificatePath "D:\secure\sentinel-vault-code-signing.pfx" `
+  -CertificatePassword "replace-with-secure-secret"
+```
 
 Example verification:
 

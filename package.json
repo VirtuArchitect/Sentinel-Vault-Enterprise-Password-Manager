@@ -28,6 +28,7 @@
     "package:windows:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1",
     "package:windows:msi": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-msi.ps1",
     "package:windows:msix": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-msix.ps1",
+    "sign:windows": "powershell -ExecutionPolicy Bypass -File scripts/sign-windows-artifacts.ps1",
     "verify:windows:signatures": "powershell -ExecutionPolicy Bypass -File scripts/verify-windows-signatures.ps1"
   },
   "keywords": [],
