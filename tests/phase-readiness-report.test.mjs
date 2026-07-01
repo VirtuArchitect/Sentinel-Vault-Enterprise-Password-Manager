@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -13,6 +13,8 @@ const runScript = (script, args) => execFileSync(process.execPath, [script, ...a
   stdio: ["ignore", "pipe", "pipe"],
   windowsHide: true
 });
+
+const runValidator = (args) => runScript("scripts/validate-phase-readiness-report.mjs", args);
 
 const createPlannedWorkspace = (dir) => {
   const workspace = JSON.parse(runScript("scripts/prepare-deployment-evidence-workspace.mjs", [
@@ -100,6 +102,79 @@ test("phase readiness report can fail CI when blockers are present", () => {
       assert.equal(report.ready, false);
       assert.ok(report.blockers.length > 0);
       assert.ok(existsSync(reportPath));
+      return true;
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase readiness validator accepts current reports", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-readiness-validate-${process.pid}-${Date.now()}`);
+  try {
+    const { workspace, requestsPath } = createPlannedWorkspace(dir);
+    const reportPath = path.join(dir, "phase-readiness.json");
+    runScript("scripts/report-phase-readiness.mjs", [
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath,
+      "--out", reportPath
+    ]);
+
+    const result = JSON.parse(runValidator([
+      "--report", reportPath,
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath
+    ]));
+
+    assert.equal(result.format, "sentinel-phase-readiness-report-validation-v1");
+    assert.equal(result.ready, false);
+    assert.ok(result.blockerCount > 0);
+    assert.equal(result.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase readiness validator rejects stale reports and not-ready release mode", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-readiness-stale-${process.pid}-${Date.now()}`);
+  try {
+    const { workspace, requestsPath } = createPlannedWorkspace(dir);
+    const reportPath = path.join(dir, "phase-readiness.json");
+    runScript("scripts/report-phase-readiness.mjs", [
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath,
+      "--out", reportPath
+    ]);
+
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+    report.ready = true;
+    report.blockers = [];
+    writeFileSync(reportPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator([
+      "--report", reportPath,
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /phase readiness report is stale/);
+      return true;
+    });
+
+    runScript("scripts/report-phase-readiness.mjs", [
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath,
+      "--out", reportPath
+    ]);
+
+    assert.throws(() => runValidator([
+      "--report", reportPath,
+      "--bundle", workspace.bundlePath,
+      "--external-requests", requestsPath,
+      "--require-ready"
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /phase readiness report is not ready/);
       return true;
     });
   } finally {

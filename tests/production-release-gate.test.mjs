@@ -56,6 +56,7 @@ const createReleaseGateWorkspace = (dir) => {
   runScript("scripts/report-phase-readiness.mjs", [
     "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
     "--external-requests", path.join(dir, "external-evidence-requests.json"),
+    "--target", "production",
     "--out", path.join(dir, "phase-readiness.json"),
     "--markdown-out", path.join(dir, "phase-readiness.md")
   ]);
@@ -140,6 +141,7 @@ test("production release gate rejects missing release artifacts", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.deploymentStatus"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.deploymentRedaction"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.externalRequests"));
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseReadiness"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseCompletion"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseEvidence"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseGate"));
@@ -177,6 +179,8 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deploymentStatus"));
       assert.equal(report.checks.deploymentRedaction.ok, true);
       assert.equal(report.checks.externalEvidence.ok, true);
+      assert.equal(report.checks.phaseReadiness.ok, false);
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseReadiness"));
       assert.equal(report.checks.phaseCompletion.ok, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseCompletion"));
       assert.equal(report.checks.phaseEvidence.ok, true);
@@ -190,7 +194,6 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.equal(report.checks.phaseWaivers.ok, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseWaivers"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-target"));
-      assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-readiness"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-review"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-decision"));
 

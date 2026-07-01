@@ -31,6 +31,7 @@ const paths = {
   deploymentStatus: path.resolve(args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json")),
   deploymentRedaction: path.resolve(args.get("--deployment-redaction") || path.join(evidenceDir, "deployment-redaction-report.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
+  phaseReadiness: path.resolve(args.get("--phase-readiness") || path.join(evidenceDir, "phase-readiness.json")),
   phaseCompletion: path.resolve(args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
@@ -107,13 +108,15 @@ const checks = {
       "--strict"
     ])
     : { ok: false, result: null, error: `External evidence request pack not found: ${paths.externalRequests}` },
-  phaseReadiness: existsSync(paths.bundle) && existsSync(paths.externalRequests)
-    ? runJson("scripts/report-phase-readiness.mjs", [
+  phaseReadiness: existsSync(paths.phaseReadiness) && existsSync(paths.bundle) && existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-phase-readiness-report.mjs", [
+      "--report", paths.phaseReadiness,
       "--bundle", paths.bundle,
       "--external-requests", paths.externalRequests,
-      "--target", target
+      "--target", target,
+      "--require-ready"
     ])
-    : { ok: false, result: null, error: "Deployment bundle or external evidence request pack is missing" },
+    : { ok: false, result: null, error: "Phase readiness report, deployment bundle, or external evidence request pack is missing" },
   phaseCompletion: existsSync(paths.phaseCompletion) && existsSync(paths.externalRequests)
     ? runJson("scripts/validate-phase-completion-audit.mjs", [
       "--audit", paths.phaseCompletion,
