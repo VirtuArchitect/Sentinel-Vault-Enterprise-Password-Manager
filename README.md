@@ -242,6 +242,7 @@ pnpm report:external-evidence -- --environment "pilot" --owner "Platform Securit
 pnpm validate:external-evidence -- --requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --strict
 pnpm report:deployment-evidence -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-evidence-status.json"
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --out ".\artifacts\deployment\pilot\phase-readiness.json" --markdown-out ".\artifacts\deployment\pilot\phase-readiness.md"
+pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```
 

@@ -24,6 +24,7 @@ const externalRequestsPath = path.resolve(args.get("--external-requests") || pat
 const outputPath = args.get("--out") ? path.resolve(args.get("--out")) : null;
 const markdownPath = args.get("--markdown-out") ? path.resolve(args.get("--markdown-out")) : null;
 const target = args.get("--target") || "pilot";
+const failOnBlockers = args.has("--fail-on-blockers");
 const allowedTargets = new Set(["pilot", "production"]);
 
 assert.ok(allowedTargets.has(target), "--target must be pilot or production");
@@ -111,6 +112,7 @@ if (target === "production" && bundle.status !== "production") {
 const report = {
   format: "sentinel-phase-readiness-report-v1",
   target,
+  failOnBlockers,
   generatedAt: new Date().toISOString(),
   bundle: {
     path: bundlePath,
@@ -173,3 +175,7 @@ if (markdownPath) {
 }
 
 console.log(text);
+
+if (failOnBlockers && !report.ready) {
+  process.exitCode = 1;
+}
