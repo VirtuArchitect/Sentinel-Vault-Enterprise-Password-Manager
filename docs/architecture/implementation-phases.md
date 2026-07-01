@@ -169,6 +169,7 @@ Implemented:
 - Tamper-evident audit hash chaining.
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
 - Audit WORM evidence template and validator for external signing, immutable retention, object lock, legal hold, readback verification, redaction, and approvals.
+- Audit WORM evidence generator for signed ledger export hashes, event counts, redaction checks, external signing metadata, immutable retention controls, and approvals.
 - Backup SHA-256 manifests and admin verification API.
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
 - Backup recovery evidence template and validator for restore cadence, break-glass roles, key escrow, two-person control, retention, offsite copy, immutability, RPO/RTO, and redaction.

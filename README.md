@@ -127,6 +127,8 @@ pnpm release:log-redaction -- --samples ".\artifacts\security\log-samples"
 pnpm validate:log-redaction -- docs/templates/log-redaction-evidence.json
 pnpm release:pentest-scope -- --report ".\artifacts\security\pentest-findings.json"
 pnpm validate:pentest-scope -- docs/templates/pentest-scope-evidence.json
+pnpm release:audit-worm -- --ledger ".\artifacts\security\sentinel-audit-ledger.json"
+pnpm validate:audit-worm -- docs/templates/audit-worm-evidence.json
 ```
 
 ## Project Structure

@@ -42,6 +42,7 @@
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",
     "validate:pentest-scope": "node scripts/validate-pentest-scope-evidence.mjs",
+    "release:audit-worm": "node scripts/generate-audit-worm-evidence.mjs",
     "validate:audit-worm": "node scripts/validate-audit-worm-evidence.mjs",
     "validate:backup-recovery": "node scripts/validate-backup-recovery-evidence.mjs",
     "validate:device-trust": "node scripts/validate-device-trust-evidence.mjs",
