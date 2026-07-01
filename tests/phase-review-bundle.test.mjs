@@ -1,0 +1,126 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+const rootDir = path.resolve(import.meta.dirname, "..");
+
+const runScript = (script, args) => execFileSync(process.execPath, [script, ...args], {
+  cwd: rootDir,
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "pipe"],
+  windowsHide: true
+});
+
+const createReviewWorkspace = (dir) => {
+  runScript("scripts/prepare-deployment-evidence-workspace.mjs", [
+    "--environment", "pilot",
+    "--owner", "platform-security",
+    "--out-dir", dir
+  ]);
+  runScript("scripts/validate-deployment-evidence-workspace.mjs", [
+    "--manifest", path.join(dir, "deployment-evidence-workspace-manifest.json"),
+    "--bundle", path.join(dir, "deployment-evidence-bundle.json")
+  ]);
+  runScript("scripts/generate-external-evidence-requests.mjs", [
+    "--environment", "pilot",
+    "--owner", "platform-security",
+    "--out", path.join(dir, "external-evidence-requests.json"),
+    "--markdown-out", path.join(dir, "external-evidence-requests.md")
+  ]);
+  runScript("scripts/validate-external-evidence-requests.mjs", [
+    "--requests", path.join(dir, "external-evidence-requests.json"),
+    "--strict"
+  ]);
+  runScript("scripts/report-deployment-evidence-status.mjs", [
+    "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+    "--out", path.join(dir, "deployment-evidence-status.json")
+  ]);
+  runScript("scripts/report-phase-completion-audit.mjs", [
+    "--external-requests", path.join(dir, "external-evidence-requests.json"),
+    "--out", path.join(dir, "phase-completion-audit.json"),
+    "--markdown-out", path.join(dir, "phase-completion-audit.md")
+  ]);
+  runScript("scripts/validate-phase-completion-audit.mjs", [
+    "--audit", path.join(dir, "phase-completion-audit.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json")
+  ]);
+  runScript("scripts/report-phase-readiness.mjs", [
+    "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json"),
+    "--out", path.join(dir, "phase-readiness.json"),
+    "--markdown-out", path.join(dir, "phase-readiness.md")
+  ]);
+  runScript("scripts/prepare-phase-handoff-checklist.mjs", [
+    "--readiness", path.join(dir, "phase-readiness.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json"),
+    "--out", path.join(dir, "phase-handoff-checklist.md")
+  ]);
+  runScript("scripts/validate-phase-handoff-checklist.mjs", [
+    "--checklist", path.join(dir, "phase-handoff-checklist.md"),
+    "--readiness", path.join(dir, "phase-readiness.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json")
+  ]);
+  runScript("scripts/package-phase-evidence.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-evidence-pack-manifest.json")
+  ]);
+  runScript("scripts/validate-phase-gate.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-gate-validation.json"),
+    "--markdown-out", path.join(dir, "phase-gate-validation.md")
+  ]);
+};
+
+test("phase review bundle hashes final review artifacts", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    const result = JSON.parse(runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]));
+
+    assert.equal(result.format, "sentinel-phase-review-bundle-result-v1");
+    assert.equal(result.artifactCount, 3);
+    assert.equal(result.validated, true);
+    assert.equal(result.ready, false);
+    assert.ok(existsSync(manifestPath));
+
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    assert.equal(manifest.format, "sentinel-phase-review-bundle-manifest-v1");
+    assert.equal(Object.keys(manifest.artifacts).length, 3);
+    assert.match(manifest.artifacts.phaseGateValidation.sha256, /^[a-f0-9]{64}$/);
+
+    const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]));
+    assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
+    assert.equal(validation.validated, true);
+    assert.equal(validation.artifactCount, 3);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review bundle validator rejects changed gate reports", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-tamper-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    writeFileSync(path.join(dir, "phase-gate-validation.md"), "# changed gate report\n");
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]), /phaseGateValidationMarkdown .*changed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

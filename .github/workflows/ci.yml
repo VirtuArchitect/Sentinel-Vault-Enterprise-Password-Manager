@@ -65,6 +65,8 @@ jobs:
           pnpm package:phase-evidence -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-evidence-pack-manifest.json"
           pnpm validate:phase-evidence -- --manifest "${RUNNER_TEMP}/deployment-evidence/phase-evidence-pack-manifest.json"
           pnpm validate:phase-gate -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-gate-validation.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/phase-gate-validation.md"
+          pnpm package:phase-review -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-review-bundle-manifest.json"
+          pnpm validate:phase-review -- --manifest "${RUNNER_TEMP}/deployment-evidence/phase-review-bundle-manifest.json"
           if pnpm report:phase-readiness -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --target "pilot" --fail-on-blockers > "${RUNNER_TEMP}/deployment-evidence/phase-readiness-gate.json"; then
             echo "Expected fail-on-blockers to reject placeholder deployment evidence"
             exit 1
