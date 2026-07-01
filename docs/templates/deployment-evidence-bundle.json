@@ -6,6 +6,7 @@
   "generatedAt": "YYYY-MM-DDTHH:mm:ssZ",
   "evidence": {
     "connector": "docs/templates/connector-certification-evidence.json",
+    "devopsTokenResponse": "docs/templates/devops-token-response-evidence.json",
     "browserRollout": "docs/templates/browser-extension-rollout-evidence.json",
     "nativeCompanion": "docs/templates/native-companion-evidence.json",
     "identityProvider": "docs/templates/identity-provider-evidence.json",

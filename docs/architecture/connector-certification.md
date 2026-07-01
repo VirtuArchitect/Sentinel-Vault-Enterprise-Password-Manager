@@ -40,6 +40,7 @@ Generate DevOps service-token compromise-response evidence after rotating or rev
 
 ```powershell
 pnpm preflight:devops-token -- --base-url "https://sentinel.example" --secret-id "replace-with-secret-id" --blocked-secret-id "replace-with-out-of-scope-secret-id" --revoked-token "$env:SENTINEL_OLD_TOKEN" --replacement-token "$env:SENTINEL_NEW_TOKEN"
+pnpm validate:devops-token-response -- artifacts/integrations/devops-token-response-evidence.json
 ```
 
 The preflight verifies that the revoked token is rejected, the replacement token can retrieve the intended scoped secret, an out-of-scope secret remains blocked, and the output contains only token fingerprints and secret-value hashes.

@@ -22,6 +22,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
   mkdirSync(evidenceDir, { recursive: true });
   const copies = {
     connector: "connector-certification-evidence.json",
+    devopsTokenResponse: "devops-token-response-evidence.json",
     browserRollout: "browser-extension-rollout-evidence.json",
     nativeCompanion: "native-companion-evidence.json",
     identityProvider: "identity-provider-evidence.json",
@@ -74,6 +75,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.format, "sentinel-deployment-evidence-bundle-validation-v1");
     assert.equal(validation.status, "planned");
     assert.equal(validation.results.connector.validated, true);
+    assert.equal(validation.results.devopsTokenResponse.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
     assert.equal(validation.results.nativeCompanion.validated, true);
     assert.equal(validation.results.windowsInstallHardening.validated, true);
@@ -100,6 +102,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
     const bundlePath = writeBundleFixture(dir, {
       evidence: {
         connector: "evidence/missing.json",
+        devopsTokenResponse: "evidence/devops-token-response-evidence.json",
         browserRollout: "evidence/browser-extension-rollout-evidence.json",
         nativeCompanion: "evidence/native-companion-evidence.json",
         identityProvider: "evidence/identity-provider-evidence.json",
