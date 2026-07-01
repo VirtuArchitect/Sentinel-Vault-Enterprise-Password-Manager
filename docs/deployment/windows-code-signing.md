@@ -64,4 +64,12 @@ pnpm verify:windows:signatures
 The status must be `Valid` and the signer must match the expected publishing certificate.
 
 Record release evidence with `docs/templates/windows-release-evidence.json`.
+
+Validate planned or completed release evidence with:
+
+```powershell
+pnpm validate:windows-release -- docs/templates/windows-release-evidence.json
+```
+
+When `checks.signatureVerification` is `valid` or `passed`, the validator requires real artifact SHA-256 values, valid Authenticode status for `.exe`, `.msi`, and `.msix` artifacts, signer thumbprints, a Git source commit, passing verification gates, and tested rollback evidence.
 Record source, lockfile, dependency, and artifact provenance with `docs/templates/release-provenance-template.json` or generate it with `pnpm release:provenance`.
