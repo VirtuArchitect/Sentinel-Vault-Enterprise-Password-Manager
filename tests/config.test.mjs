@@ -28,7 +28,7 @@ test("storage provider boundary validates planned database modes", () => {
     config.storage.provider = "sqlite";
     config.storage.sqlitePath = "";
     assert.ok(validateConfig().some((issue) => issue.includes("SQLITE_PATH")));
-    assert.ok(validateConfig().some((issue) => issue.includes("not available")));
+    assert.equal(validateConfig().some((issue) => issue.includes("not available")), false);
 
     config.storage.provider = "postgres";
     config.storage.databaseUrl = "";

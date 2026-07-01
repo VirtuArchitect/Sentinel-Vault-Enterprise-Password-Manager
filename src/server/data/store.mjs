@@ -1,11 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { createRequire } from "node:module";
 import { config } from "../config.mjs";
 import { createSeedState } from "./seedData.mjs";
 
 const stateVersion = 2;
+const require = createRequire(import.meta.url);
 const statePath = path.join(config.storage.dataDir, config.storage.stateFile);
+const sqlitePath = config.storage.sqlitePath ? path.resolve(config.storage.sqlitePath) : path.join(config.storage.dataDir, "sentinel-vault.sqlite");
 const backupDir = path.join(config.storage.dataDir, "backups");
 
 const toPersistedState = (state) => {
@@ -45,10 +48,85 @@ const normalizeState = (candidate) => {
   };
 };
 
-const loadState = () => {
+const sqliteRuntime = () => {
+  try {
+    return require("node:sqlite");
+  } catch (err) {
+    throw new Error("STORAGE_PROVIDER=sqlite requires a Node.js runtime with node:sqlite support. Use Node.js 24+ or switch STORAGE_PROVIDER=json.");
+  }
+};
+
+const openSqlite = () => {
+  const { DatabaseSync } = sqliteRuntime();
+  fs.mkdirSync(path.dirname(sqlitePath), { recursive: true });
+  const db = new DatabaseSync(sqlitePath);
+  db.exec(`
+    PRAGMA journal_mode = WAL;
+    PRAGMA synchronous = FULL;
+    CREATE TABLE IF NOT EXISTS sentinel_state (
+      id TEXT PRIMARY KEY,
+      version INTEGER NOT NULL,
+      data TEXT NOT NULL,
+      saved_at TEXT NOT NULL
+    );
+  `);
+  return db;
+};
+
+const persistSqliteState = (candidate) => {
+  const db = openSqlite();
+  try {
+    const persisted = toPersistedState(candidate);
+    db.prepare(`
+      INSERT INTO sentinel_state (id, version, data, saved_at)
+      VALUES ('main', ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        version = excluded.version,
+        data = excluded.data,
+        saved_at = excluded.saved_at
+    `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+  } finally {
+    db.close();
+  }
+};
+
+const checkpointSqlite = () => {
+  const db = openSqlite();
+  try {
+    db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+  } finally {
+    db.close();
+  }
+};
+
+const loadJsonState = () => {
   if (config.isTest || !fs.existsSync(statePath)) return createSeedState();
   const raw = fs.readFileSync(statePath, "utf8");
   return normalizeState(JSON.parse(raw));
+};
+
+const loadSqliteState = () => {
+  const db = openSqlite();
+  try {
+    const row = db.prepare("SELECT data FROM sentinel_state WHERE id = 'main'").get();
+    if (!row?.data) {
+      const seeded = createSeedState();
+      const persisted = toPersistedState(seeded);
+      db.prepare(`
+        INSERT INTO sentinel_state (id, version, data, saved_at)
+        VALUES ('main', ?, ?, ?)
+      `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+      return seeded;
+    }
+    return normalizeState(JSON.parse(row.data));
+  } finally {
+    db.close();
+  }
+};
+
+const loadState = () => {
+  if (config.storage.provider === "sqlite") return loadSqliteState();
+  return loadJsonState();
 };
 
 const state = loadState();
@@ -78,7 +156,7 @@ const validateBackup = (backupPath) => {
 const listBackups = () => {
   if (config.isTest || !fs.existsSync(backupDir)) return [];
   return fs.readdirSync(backupDir)
-    .filter((file) => file.endsWith(".json"))
+    .filter((file) => file.endsWith(".json") || file.endsWith(".sqlite"))
     .filter((file) => !file.endsWith(".sha256.json"))
     .sort()
     .reverse()
@@ -98,9 +176,25 @@ const listBackups = () => {
 };
 
 const createBackup = () => {
-  if (config.isTest || !fs.existsSync(statePath)) return null;
+  if (config.isTest) return null;
   fs.mkdirSync(backupDir, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  if (config.storage.provider === "sqlite") {
+    if (!fs.existsSync(sqlitePath)) return null;
+    checkpointSqlite();
+    const backupPath = path.join(backupDir, `sentinel-vault-${stamp}.sqlite`);
+    fs.copyFileSync(sqlitePath, backupPath);
+    const manifest = {
+      file: path.basename(backupPath),
+      sha256: sha256File(backupPath),
+      createdAt: new Date().toISOString(),
+      algorithm: "sha256",
+      provider: "sqlite"
+    };
+    fs.writeFileSync(`${backupPath}.sha256.json`, JSON.stringify(manifest, null, 2));
+    return { path: backupPath, manifest };
+  }
+  if (!fs.existsSync(statePath)) return null;
   const backupPath = path.join(backupDir, `sentinel-state-${stamp}.json`);
   fs.copyFileSync(statePath, backupPath);
   const manifest = {
@@ -193,6 +287,11 @@ const validateEncryptedBackups = () => {
 };
 
 const save = () => {
+  if (config.storage.provider === "sqlite") {
+    persistSqliteState(state);
+    if (!config.isTest) createBackup();
+    return;
+  }
   if (config.isTest) return;
   fs.mkdirSync(config.storage.dataDir, { recursive: true });
   createBackup();
@@ -213,11 +312,11 @@ export const store = {
   validateEncryptedBackups,
   getStorageStatus() {
     return {
-      mode: "json",
+      mode: config.storage.provider === "sqlite" ? "sqlite" : "json",
       provider: config.storage.provider,
-      statePath,
+      statePath: config.storage.provider === "sqlite" ? sqlitePath : statePath,
       stateVersion,
-      exists: fs.existsSync(statePath),
+      exists: fs.existsSync(config.storage.provider === "sqlite" ? sqlitePath : statePath),
       backups: listBackups().slice(0, 10)
     };
   },

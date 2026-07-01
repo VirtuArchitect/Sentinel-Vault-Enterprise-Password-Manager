@@ -702,7 +702,7 @@ test("storage status and backup endpoints are admin-only", async () => {
     const status = await jsonFetch(`${baseUrl}/storage/status`, ada.token);
     assert.equal(status.status, 200);
     const body = await status.json();
-    assert.equal(body.storage.mode, "json");
+    assert.equal(body.storage.mode, config.storage.provider === "sqlite" ? "sqlite" : "json");
     assert.equal(body.storage.stateVersion, 2);
 
     const backup = await jsonFetch(`${baseUrl}/storage/backup`, ada.token, { method: "POST" });

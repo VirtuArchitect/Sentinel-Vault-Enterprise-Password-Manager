@@ -81,11 +81,11 @@ export const validateConfig = () => {
   if (!["json", "sqlite", "postgres"].includes(config.storage.provider)) {
     issues.push("STORAGE_PROVIDER must be one of json, sqlite, or postgres.");
   }
-  if (config.storage.provider !== "json") {
-    issues.push(`${config.storage.provider} storage is planned but not available until the database dependency is approved and installed.`);
-  }
   if (config.storage.provider === "sqlite" && !config.storage.sqlitePath) {
     issues.push("SQLITE_PATH is required when STORAGE_PROVIDER is sqlite.");
+  }
+  if (config.storage.provider === "postgres") {
+    issues.push("postgres storage is planned but not available until the database dependency is approved and installed.");
   }
   if (config.storage.provider === "postgres" && !config.storage.databaseUrl) {
     issues.push("DATABASE_URL is required when STORAGE_PROVIDER is postgres.");

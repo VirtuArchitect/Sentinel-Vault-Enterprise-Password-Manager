@@ -7,12 +7,12 @@ Sentinel Vault currently uses a JSON-backed prototype store. That keeps the demo
 | Mode | Purpose | Status |
 | --- | --- | --- |
 | `json` | Local demo and development state | Implemented |
-| `sqlite` | Single-node production prototype and Windows installer default | Provider config ready; runtime planned |
+| `sqlite` | Single-node production prototype and Windows installer default | Implemented with built-in Node SQLite runtime |
 | `postgres` | Multi-node and HA deployment target | Provider config ready; runtime planned |
 
 ## Store Boundary
 
-The current `store` module exposes an explicit provider boundary through `STORAGE_PROVIDER`. JSON remains the only active runtime provider in this build until a database dependency is approved. The eventual adapter boundary has these responsibilities:
+The current `store` module exposes an explicit provider boundary through `STORAGE_PROVIDER`. JSON remains the default demo provider, and SQLite is available for single-node Windows/server prototypes through Node's built-in `node:sqlite` runtime. The adapter boundary has these responsibilities:
 
 - Load and normalize state.
 - Persist users, vaults, secrets, audit events, access requests, service tokens, policies, integrations, and metadata.
@@ -30,19 +30,27 @@ The default evidence output is `artifacts/storage/storage-migration-evidence.jso
 
 ## SQLite Phase
 
-SQLite is the recommended next implementation step because it fits the Windows installer and avoids external database setup.
+SQLite fits the Windows installer and avoids external database setup.
 
-Planned work:
+Implemented:
 
 - Use the implemented `STORAGE_PROVIDER=sqlite` and `SQLITE_PATH` configuration.
-- Create migration scripts for the current JSON entities.
-- Add import/export from the existing JSON state file.
+- Persist the normalized Sentinel Vault state in a SQLite database with full synchronous durability.
+- Initialize a new SQLite database from the current seed state.
+- Preserve the same encrypted secret payloads, audit records, tenant metadata, access requests, integrations, policies, and service-token metadata as JSON mode.
+- Include SQLite database copies in the existing backup manifest flow.
+- Test persistence across separate Node.js processes.
+
+Remaining:
+
+- Create relational migration scripts for the current JSON entities.
+- Add import/export from the existing JSON state file to SQLite.
 - Use `scripts/inspect-storage-state.mjs` to prove source state readiness before migration.
 - Use transactions for secret lifecycle operations.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 - Add tests that run the same API suite against JSON and SQLite modes.
 
-No SQLite runtime dependency has been added yet. The repository instructions require asking before new runtime dependencies.
+No SQLite npm dependency has been added. SQLite mode requires a Node.js runtime that exposes `node:sqlite`.
 
 ## Postgres Phase
 

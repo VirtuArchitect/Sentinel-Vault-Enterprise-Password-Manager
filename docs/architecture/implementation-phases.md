@@ -14,12 +14,12 @@ Status: Implemented
 
 ## Phase 2: Production Storage
 
-Status: Architecture ready, provider boundary implemented, database implementation pending dependency approval
+Status: SQLite runtime implemented, Postgres implementation pending dependency approval
 
 - JSON store remains the demo provider.
 - `STORAGE_PROVIDER`, `SQLITE_PATH`, and `DATABASE_URL` configuration boundaries are validated.
 - JSON state migration-readiness inspector and evidence template exist.
-- SQLite should be the next provider for Windows and single-node production prototypes.
+- SQLite provider persists normalized state using Node's built-in SQLite runtime for Windows and single-node production prototypes.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 
