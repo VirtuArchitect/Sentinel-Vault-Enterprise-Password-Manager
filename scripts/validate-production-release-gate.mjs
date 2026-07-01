@@ -30,6 +30,7 @@ const paths = {
   workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
   deploymentStatus: path.resolve(args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
+  phaseCompletion: path.resolve(args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
   phaseActions: path.resolve(args.get("--phase-actions") || path.join(evidenceDir, "phase-action-register.json")),
@@ -111,6 +112,13 @@ const checks = {
       "--target", target
     ])
     : { ok: false, result: null, error: "Deployment bundle or external evidence request pack is missing" },
+  phaseCompletion: existsSync(paths.phaseCompletion) && existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-phase-completion-audit.mjs", [
+      "--audit", paths.phaseCompletion,
+      "--external-requests", paths.externalRequests,
+      "--fail-on-remaining"
+    ])
+    : { ok: false, result: null, error: "Phase completion audit or external evidence request pack is missing" },
   phaseEvidence: existsSync(paths.phaseEvidence)
     ? runJson("scripts/validate-phase-evidence-pack.mjs", [
       "--manifest", paths.phaseEvidence
