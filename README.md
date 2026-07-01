@@ -245,6 +245,7 @@ pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment
 pnpm prepare:phase-handoff -- --readiness ".\artifacts\deployment\pilot\phase-readiness.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --out ".\artifacts\deployment\pilot\phase-handoff-checklist.md"
 pnpm validate:phase-handoff -- --checklist ".\artifacts\deployment\pilot\phase-handoff-checklist.md" --readiness ".\artifacts\deployment\pilot\phase-readiness.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json"
 pnpm package:phase-evidence -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-evidence-pack-manifest.json"
+pnpm validate:phase-evidence -- --manifest ".\artifacts\deployment\pilot\phase-evidence-pack-manifest.json"
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```

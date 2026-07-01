@@ -50,6 +50,7 @@
     "prepare:phase-handoff": "node scripts/prepare-phase-handoff-checklist.mjs",
     "validate:phase-handoff": "node scripts/validate-phase-handoff-checklist.mjs",
     "package:phase-evidence": "node scripts/package-phase-evidence.mjs",
+    "validate:phase-evidence": "node scripts/validate-phase-evidence-pack.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",

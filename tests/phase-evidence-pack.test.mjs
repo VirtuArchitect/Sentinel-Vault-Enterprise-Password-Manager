@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -67,6 +67,48 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.match(manifest.artifacts.phaseReadiness.sha256, /^[a-f0-9]{64}$/);
     assert.ok(manifest.artifacts.phaseHandoffChecklist.bytes > 0);
     assert.equal(manifest.deploymentEvidenceSummary.total, 21);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase evidence pack validator accepts unchanged manifests", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-pack-valid-${process.pid}-${Date.now()}`);
+  try {
+    prepareEvidencePackInputs(dir);
+    const manifestPath = path.join(dir, "phase-evidence-pack-manifest.json");
+    runScript("scripts/package-phase-evidence.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+
+    const validation = JSON.parse(runScript("scripts/validate-phase-evidence-pack.mjs", [
+      "--manifest", manifestPath
+    ]));
+
+    assert.equal(validation.format, "sentinel-phase-evidence-pack-validation-v1");
+    assert.equal(validation.validated, true);
+    assert.equal(validation.artifactCount, 7);
+    assert.equal(validation.ready, false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase evidence pack validator rejects changed artifacts", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-pack-tampered-${process.pid}-${Date.now()}`);
+  try {
+    prepareEvidencePackInputs(dir);
+    const manifestPath = path.join(dir, "phase-evidence-pack-manifest.json");
+    runScript("scripts/package-phase-evidence.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    writeFileSync(path.join(dir, "phase-readiness.md"), "# tampered readiness report\n");
+
+    assert.throws(() => runScript("scripts/validate-phase-evidence-pack.mjs", [
+      "--manifest", manifestPath
+    ]), /phaseReadinessMarkdown .*changed/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -59,6 +59,8 @@ jobs:
           pnpm report:phase-readiness -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --out "${RUNNER_TEMP}/deployment-evidence/phase-readiness.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/phase-readiness.md"
           pnpm prepare:phase-handoff -- --readiness "${RUNNER_TEMP}/deployment-evidence/phase-readiness.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --out "${RUNNER_TEMP}/deployment-evidence/phase-handoff-checklist.md"
           pnpm validate:phase-handoff -- --checklist "${RUNNER_TEMP}/deployment-evidence/phase-handoff-checklist.md" --readiness "${RUNNER_TEMP}/deployment-evidence/phase-readiness.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json"
+          pnpm package:phase-evidence -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-evidence-pack-manifest.json"
+          pnpm validate:phase-evidence -- --manifest "${RUNNER_TEMP}/deployment-evidence/phase-evidence-pack-manifest.json"
           if pnpm report:phase-readiness -- --bundle "${RUNNER_TEMP}/deployment-evidence/deployment-evidence-bundle.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --target "pilot" --fail-on-blockers > "${RUNNER_TEMP}/deployment-evidence/phase-readiness-gate.json"; then
             echo "Expected fail-on-blockers to reject placeholder deployment evidence"
             exit 1
