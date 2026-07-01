@@ -29,6 +29,7 @@ const paths = {
   bundle: path.resolve(args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json")),
   workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
+  phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
   phaseReview: path.resolve(args.get("--phase-review") || path.join(evidenceDir, "phase-review-bundle-manifest.json")),
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
@@ -95,6 +96,11 @@ const checks = {
       "--target", target
     ])
     : { ok: false, result: null, error: "Deployment bundle or external evidence request pack is missing" },
+  phaseEvidence: existsSync(paths.phaseEvidence)
+    ? runJson("scripts/validate-phase-evidence-pack.mjs", [
+      "--manifest", paths.phaseEvidence
+    ])
+    : { ok: false, result: null, error: `Phase evidence pack manifest not found: ${paths.phaseEvidence}` },
   phaseGate: existsSync(paths.phaseGate)
     ? runJson("scripts/validate-phase-gate.mjs", [
       "--dir", evidenceDir

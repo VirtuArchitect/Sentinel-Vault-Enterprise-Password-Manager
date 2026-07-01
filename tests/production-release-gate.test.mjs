@@ -132,6 +132,7 @@ test("production release gate rejects missing release artifacts", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.bundle"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.workspaceManifest"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.externalRequests"));
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseEvidence"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseGate"));
       assert.ok(existsSync(outputPath));
       return true;
@@ -157,6 +158,7 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.equal(report.ready, false);
       assert.equal(report.checks.deploymentWorkspace.ok, true);
       assert.equal(report.checks.externalEvidence.ok, true);
+      assert.equal(report.checks.phaseEvidence.ok, true);
       assert.equal(report.checks.phaseGate.ok, true);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-target"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-readiness"));
