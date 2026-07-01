@@ -20,6 +20,7 @@
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",
+    "validate:restore-drill": "node scripts/validate-encrypted-backup-restore.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
     "inspect:storage": "node scripts/inspect-storage-state.mjs",
     "migrate:sqlite": "node scripts/migrate-json-to-sqlite.mjs",

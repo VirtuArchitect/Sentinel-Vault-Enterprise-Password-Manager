@@ -42,6 +42,7 @@ Implemented:
 - Include SQLite database copies in the existing backup manifest flow.
 - Enforce migration-readiness evidence before JSON-to-SQLite cutover and write the same relational mirror tables during migration.
 - Use repository-level transaction helpers so secret lifecycle mutations, audit events, integration outbox records, and persistence commits succeed or roll back together.
+- Validate encrypted backups with a dry-run restore drill that verifies the manifest checksum, decrypts the AES-GCM payload, checks state collections, and writes restore evidence.
 - Migrate an existing JSON state file into a SQLite database with redacted migration evidence:
 
 ```powershell
@@ -53,7 +54,7 @@ pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sen
 
 Remaining:
 
-- Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
+- Postgres provider implementation after dependency and deployment target approval.
 
 No SQLite npm dependency has been added. SQLite mode requires a Node.js runtime that exposes `node:sqlite`.
 

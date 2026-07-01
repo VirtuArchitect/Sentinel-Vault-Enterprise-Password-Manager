@@ -25,6 +25,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - JSON-to-SQLite migration script writes the current normalized state snapshot and redacted migration evidence.
 - `pnpm test:sqlite` runs the API and service suite against the SQLite provider, and CI executes it on Node.js 24.
 - Secret lifecycle operations use a repository-level transaction boundary with rollback for state, audit, integration outbox, and deferred commit hooks.
+- `pnpm validate:restore-drill` performs encrypted-backup restore dry runs and writes restore evidence without changing live state.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 
