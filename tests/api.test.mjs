@@ -948,6 +948,8 @@ test("managed service tokens are scoped to allowed secrets", async () => {
       const body = await create.json();
       assert.match(body.secret, /^svt_/);
       assert.equal(body.token.allowedSecrets[0], "s1");
+      assert.equal(body.token.tokenHashVersion, "hmac-sha256:v2");
+      assert.equal(Object.hasOwn(body.token, "tokenHash"), false);
 
       const allowed = await fetch(`${baseUrl}/devops/secrets/s1`, {
         headers: { "X-Sentinel-Service-Token": body.secret }
@@ -992,6 +994,47 @@ test("managed service tokens are scoped to allowed secrets", async () => {
       assert.equal(revoke.status, 200);
     });
   } finally {
+    config.integrations.devopsApiEnabled = previousEnabled;
+  }
+});
+
+test("legacy service token hashes migrate after successful scoped use", async () => {
+  const previousEnabled = config.integrations.devopsApiEnabled;
+  config.integrations.devopsApiEnabled = true;
+  const legacyRaw = "legacy-presented-value-for-hash-upgrade";
+  const legacyToken = {
+    id: crypto.randomUUID(),
+    name: "Legacy CI pipeline",
+    ownerId: "u1",
+    tokenHash: crypto.createHash("sha256").update(legacyRaw, "utf8").digest("base64url"),
+    allowedVaults: [],
+    allowedSecrets: ["s1"],
+    expiresAt: new Date(Date.now() + 86400000).toISOString(),
+    createdAt: new Date().toISOString(),
+    rotatedAt: null,
+    rotationCount: 0,
+    revokedAt: null,
+    lastUsedAt: null,
+    lastUsedSecretId: null,
+    lastUsedSource: null,
+    useCount: 0
+  };
+  store.state.serviceTokens.unshift(legacyToken);
+
+  try {
+    await withApi(async (baseUrl) => {
+      const allowed = await fetch(`${baseUrl}/devops/secrets/s1`, {
+        headers: { "X-Sentinel-Service-Token": legacyRaw }
+      });
+
+      assert.equal(allowed.status, 200);
+      assert.match(legacyToken.tokenHash, /^hmac-sha256:v2:/);
+      assert.equal(legacyToken.tokenHashVersion, "hmac-sha256:v2");
+      assert.ok(legacyToken.legacyHashUpgradedAt);
+      assert.equal(legacyToken.useCount, 1);
+    });
+  } finally {
+    store.state.serviceTokens = store.state.serviceTokens.filter((token) => token.id !== legacyToken.id);
     config.integrations.devopsApiEnabled = previousEnabled;
   }
 });

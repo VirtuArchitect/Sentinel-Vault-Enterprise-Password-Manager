@@ -49,6 +49,7 @@ The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance
 
 - Use scoped service tokens with allowed secret or vault IDs.
 - Rotate service tokens on a fixed schedule and after pipeline compromise.
+- Store service tokens as keyed HMAC-SHA256 hashes and expose only hash-version metadata to administrators.
 - Log last-used source, secret ID, and use count.
 - Confirm build logs do not expose retrieved secret values.
 

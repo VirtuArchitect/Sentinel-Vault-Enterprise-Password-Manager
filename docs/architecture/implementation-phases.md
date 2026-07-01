@@ -79,6 +79,7 @@ Implemented:
 - Integration outbox metadata.
 - Scoped DevOps service-token retrieval API.
 - Last-used, use-count, and rotation metadata for service tokens.
+- Keyed HMAC service-token hashing with public hash-version metadata and legacy SHA-256 hash migration on successful scoped use.
 - SIEM webhook delivery worker with bounded retries.
 - HMAC signing for SIEM webhook payloads.
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
@@ -137,6 +138,7 @@ Implemented:
 - Admin session review and forced active-session revocation APIs.
 - Persistent device inventory metadata for future refresh-token workflows.
 - Service-token last-used source, last-used secret, and use-count metadata.
+- Service-token keyed HMAC hashing and legacy hash migration.
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - Release provenance generator for source commit, lockfile, dependency inventory, and artifact hashes.

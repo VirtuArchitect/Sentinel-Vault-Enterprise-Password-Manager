@@ -1,9 +1,34 @@
 import crypto from "node:crypto";
+import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
 import { audit } from "./auditService.mjs";
 
-const hashToken = (token) => crypto.createHash("sha256").update(token, "utf8").digest("base64url");
+const currentHashVersion = "hmac-sha256:v2";
+const legacyHashVersion = "sha256:v1";
+const tokenHashKey = () => `${config.vaultRootKey}:${config.vaultKeyVersion}:sentinel-service-token`;
+const hashTokenV2 = (token) => `${currentHashVersion}:${crypto.createHmac("sha256", tokenHashKey()).update(token, "utf8").digest("base64url")}`;
+const hashTokenLegacy = (token) => crypto.createHash("sha256").update(token, "utf8").digest("base64url");
+const hashToken = hashTokenV2;
 const createRawServiceToken = () => `svt_${crypto.randomBytes(32).toString("base64url")}`;
+const timingSafeEqual = (left, right) => {
+  const leftBuffer = Buffer.from(String(left || ""), "utf8");
+  const rightBuffer = Buffer.from(String(right || ""), "utf8");
+  return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const matchesTokenHash = (candidate, rawToken) => {
+  const storedHash = String(candidate.tokenHash || "");
+  if (timingSafeEqual(storedHash, hashTokenV2(rawToken))) {
+    return { matched: true, upgraded: false };
+  }
+  if (!storedHash.includes(":") && timingSafeEqual(storedHash, hashTokenLegacy(rawToken))) {
+    candidate.tokenHash = hashTokenV2(rawToken);
+    candidate.tokenHashVersion = currentHashVersion;
+    candidate.legacyHashUpgradedAt = new Date().toISOString();
+    return { matched: true, upgraded: true };
+  }
+  return { matched: false, upgraded: false };
+};
 
 const publicToken = (token) => ({
   id: token.id,
@@ -16,6 +41,7 @@ const publicToken = (token) => ({
   createdAt: token.createdAt,
   rotatedAt: token.rotatedAt || null,
   rotationCount: token.rotationCount || 0,
+  tokenHashVersion: token.tokenHashVersion || legacyHashVersion,
   lastUsedAt: token.lastUsedAt || null,
   lastUsedSecretId: token.lastUsedSecretId || null,
   lastUsedSource: token.lastUsedSource || null,
@@ -43,6 +69,7 @@ export const createServiceToken = (user, input = {}) => {
     name,
     ownerId: user.id,
     tokenHash: hashToken(raw),
+    tokenHashVersion: currentHashVersion,
     allowedVaults: Array.isArray(input.allowedVaults) ? input.allowedVaults : [],
     allowedSecrets: Array.isArray(input.allowedSecrets) ? input.allowedSecrets : [],
     expiresAt: new Date(Date.now() + ttlDays * 86400000).toISOString(),
@@ -87,6 +114,8 @@ export const rotateServiceToken = (user, id) => {
 
   const raw = createRawServiceToken();
   token.tokenHash = hashToken(raw);
+  token.tokenHashVersion = currentHashVersion;
+  delete token.legacyHashUpgradedAt;
   token.rotatedAt = new Date().toISOString();
   token.rotationCount = Number(token.rotationCount || 0) + 1;
   token.lastUsedAt = null;
@@ -98,8 +127,11 @@ export const rotateServiceToken = (user, id) => {
 };
 
 export const resolveServiceToken = (rawToken, secret, source = "127.0.0.1") => {
-  const hash = hashToken(String(rawToken || ""));
-  const token = store.state.serviceTokens.find((candidate) => candidate.tokenHash === hash);
+  const presentedToken = String(rawToken || "");
+  const match = store.state.serviceTokens
+    .map((candidate) => ({ candidate, result: matchesTokenHash(candidate, presentedToken) }))
+    .find(({ result }) => result.matched);
+  const token = match?.candidate;
   if (!token || token.revokedAt || Date.parse(token.expiresAt) <= Date.now()) return null;
   if (token.allowedSecrets.length && !token.allowedSecrets.includes(secret.id)) return null;
   if (token.allowedVaults.length && !token.allowedVaults.includes(secret.vaultId)) return null;

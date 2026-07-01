@@ -43,7 +43,7 @@ Out of scope until implemented:
 | Audit tampering | Tamper-evident audit hash chaining, signed ledger export, and append-only JSONL ledger for file-backed deployments | External signing service and WORM storage |
 | Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, and restore-validation dry runs | Offline recovery ceremony and scheduled restore drills |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, forced revocation, persistent device inventory metadata, and one-time OIDC PKCE state | Refresh-token design and device trust policy |
-| Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
+| Service-token abuse | Scoped token retrieval, audit, last-used metadata, use counts, rotation, keyed HMAC token hashes, and legacy hash migration on successful use | Pipeline compromise response drills |
 | Webhook spoofing | SIEM payload HMAC signing, delivery IDs, nonces, timestamps, bounded delivery retries, and replay-window guidance | Key rotation and completed receiver evidence |
 | Unapproved privileged work | Live ITSM ticket lookup rejects invalid or inactive tickets before access requests are created | Provider-specific approval-state lookup and work-note updates |
 | Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, generated release provenance, and Windows signing helper | Broader SAST and signed release attestations from a certificate-backed host |
