@@ -43,7 +43,7 @@ Out of scope until implemented:
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, forced revocation, and persistent device inventory metadata | Refresh-token design and device trust policy |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Webhook spoofing | SIEM payload HMAC signing and bounded delivery retries | Key rotation and receiver-side replay-window guidance |
-| Unapproved privileged work | ITSM ticket-reference validation for access requests | Live ITSM API validation and approval-state lookup |
+| Unapproved privileged work | Live ITSM ticket lookup rejects invalid or inactive tickets before access requests are created | Provider-specific approval-state lookup and work-note updates |
 | Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, and generated release provenance | Broader SAST and signed release attestations |
 | Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
 

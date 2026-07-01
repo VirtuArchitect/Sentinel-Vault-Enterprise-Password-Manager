@@ -198,6 +198,12 @@ export type AccessRequest = {
   approvedByName: string | null;
   decidedAt: string | null;
   ticketRef: string;
+  ticketValidation: {
+    state: string | null;
+    requester: string | null;
+    assignmentGroup: string | null;
+    checkedAt: string;
+  } | null;
   requestedMinutes: number;
   approvals: string[];
   approvalCount: number;

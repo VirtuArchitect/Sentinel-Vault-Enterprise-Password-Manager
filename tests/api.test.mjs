@@ -66,6 +66,29 @@ const startOidcFixture = async (jwks) => {
   return server;
 };
 
+const startItsmFixture = async (tickets) => {
+  const server = http.createServer((req, res) => {
+    const match = req.url?.match(/^\/tickets\/([^/?]+)$/);
+    if (!match) {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+    const ticketRef = decodeURIComponent(match[1]).toUpperCase();
+    const ticket = tickets[ticketRef];
+    if (!ticket) {
+      res.statusCode = 404;
+      res.end(JSON.stringify({ error: "not found" }));
+      return;
+    }
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(ticket));
+  });
+  server.listen(0, "127.0.0.1");
+  await new Promise((resolve) => server.once("listening", resolve));
+  return server;
+};
+
 const signJwt = (claims, privateKey, kid) => {
   const encodedHeader = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid }), "utf8").toString("base64url");
   const encodedPayload = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url");
@@ -695,6 +718,11 @@ test("integration config updates and ITSM ticket validation are enforced", async
   const previousPrefixes = config.integrations.itsmTicketPrefixes;
   const previousDevops = config.integrations.devopsApiEnabled;
   const previousAccessRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
+  const itsmServer = await startItsmFixture({
+    "INC-12345": { state: "open", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
+    "INC-99999": { state: "closed", active: false, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" }
+  });
+  const itsmBaseUrl = `http://127.0.0.1:${itsmServer.address().port}`;
   try {
     await withApi(async (baseUrl) => {
       const ada = await login(baseUrl, "ada@defence.local");
@@ -703,7 +731,7 @@ test("integration config updates and ITSM ticket validation are enforced", async
       const update = await jsonFetch(`${baseUrl}/integrations/config`, ada.token, {
         method: "PATCH",
         body: JSON.stringify({
-          itsmBaseUrl: "https://itsm.example.test",
+          itsmBaseUrl,
           itsmTicketPrefixes: "INC,CHG",
           devopsApiEnabled: true
         })
@@ -721,13 +749,23 @@ test("integration config updates and ITSM ticket validation are enforced", async
       });
       assert.equal(invalidTicket.status, 400);
 
+      const closedTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+        method: "POST",
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-99999" })
+      });
+      assert.equal(closedTicket.status, 400);
+
       const validTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
         method: "POST",
         body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-12345" })
       });
       assert.equal(validTicket.status, 201);
+      const validBody = await validTicket.json();
+      assert.equal(validBody.request.ticketValidation.state, "open");
+      assert.equal(validBody.request.ticketValidation.assignmentGroup, "Cyber Operations");
     });
   } finally {
+    await new Promise((resolve) => itsmServer.close(resolve));
     config.integrations.itsmBaseUrl = previousItsmBaseUrl;
     config.integrations.itsmTicketPrefixes = previousPrefixes;
     config.integrations.devopsApiEnabled = previousDevops;

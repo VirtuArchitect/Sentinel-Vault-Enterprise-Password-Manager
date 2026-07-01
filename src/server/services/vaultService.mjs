@@ -354,7 +354,7 @@ export const shareSecret = (user, id, userId) => {
   audit(user.id, "SHARE_SECRET", secret.name, `Granted to ${target.name}`);
 };
 
-export const requestSecretAccess = (user, secretId, reason, options = {}) => {
+export const requestSecretAccess = async (user, secretId, reason, options = {}) => {
   const secret = requireSecret(secretId);
   if (canAccessSecret(user, secret)) {
     const error = new Error("User already has access to this secret");
@@ -368,7 +368,7 @@ export const requestSecretAccess = (user, secretId, reason, options = {}) => {
     throw error;
   }
   const requestedMinutes = clampInteger(options.minutes || 30, 5, 240, "minutes");
-  const ticketValidation = validateTicketReference(options.ticketRef);
+  const ticketValidation = await validateTicketReference(options.ticketRef);
   if (!ticketValidation.valid) {
     const error = new Error(ticketValidation.message);
     error.status = 400;
@@ -387,6 +387,12 @@ export const requestSecretAccess = (user, secretId, reason, options = {}) => {
     approvedBy: null,
     decidedAt: null,
     ticketRef: String(options.ticketRef || "").trim(),
+    ticketValidation: ticketValidation.checked ? {
+      state: ticketValidation.state || null,
+      requester: ticketValidation.requester || null,
+      assignmentGroup: ticketValidation.assignmentGroup || null,
+      checkedAt: new Date().toISOString()
+    } : null,
     requestedMinutes,
     approvals: [],
     requiredApprovals: secret.approvalsRequired ? 2 : 1

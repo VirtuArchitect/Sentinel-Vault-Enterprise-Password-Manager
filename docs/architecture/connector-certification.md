@@ -32,7 +32,7 @@ pnpm validate:connector-evidence -- docs/templates/connector-certification-evide
 
 ## ITSM Connectors
 
-- Verify ticket references against the live ITSM API before privileged approval.
+- Verify ticket references against the live ITSM API before privileged approval. Sentinel Vault calls `ITSM_BASE_URL/tickets/{ticketRef}` and requires an active/open/approved/in-progress/scheduled ticket response.
 - Confirm ticket state, requester, assignment group, and change-window policy.
 - Record Sentinel Vault request IDs in the ticket work notes.
 - Reject closed, cancelled, or out-of-window tickets.

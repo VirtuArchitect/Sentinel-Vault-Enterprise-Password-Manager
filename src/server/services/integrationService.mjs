@@ -19,7 +19,7 @@ export const getIntegrationStatus = () => ({
   },
   itsm: {
     configured: Boolean(config.integrations.itsmBaseUrl),
-    mode: config.integrations.itsmBaseUrl ? "ticket-reference" : "manual",
+    mode: config.integrations.itsmBaseUrl ? "live-ticket-validation" : "manual",
     baseUrl: config.integrations.itsmBaseUrl,
     ticketPrefixes: config.integrations.itsmTicketPrefixes
   },
@@ -31,16 +31,59 @@ export const getIntegrationStatus = () => ({
   outboxDepth: store.state.integrationOutbox?.length || 0
 });
 
-export const validateTicketReference = (ticketRef) => {
+const validateTicketWithItsm = async (ticketRef, fetchImpl = globalThis.fetch) => {
+  if (!config.integrations.itsmBaseUrl) return { valid: true, checked: false };
+  const url = `${config.integrations.itsmBaseUrl.replace(/\/$/, "")}/tickets/${encodeURIComponent(ticketRef)}`;
+  try {
+    const response = await fetchImpl(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "SentinelVault-ITSM/1.0"
+      }
+    });
+    if (response.status === 404) return { valid: false, checked: true, message: "Ticket reference was not found in ITSM" };
+    if (!response.ok) return { valid: false, checked: true, message: `ITSM ticket validation returned HTTP ${response.status}` };
+    const ticket = await response.json();
+    const state = String(ticket.state || ticket.status || "").toLowerCase();
+    const active = ticket.active === true || ["open", "active", "approved", "in_progress", "scheduled"].includes(state);
+    if (!active) {
+      return { valid: false, checked: true, message: `Ticket ${ticketRef} is not active` };
+    }
+    return {
+      valid: true,
+      checked: true,
+      state: ticket.state || ticket.status || "active",
+      assignmentGroup: ticket.assignmentGroup || null,
+      requester: ticket.requester || null
+    };
+  } catch (err) {
+    return {
+      valid: false,
+      checked: true,
+      message: err instanceof Error ? `ITSM ticket validation failed: ${err.message}` : "ITSM ticket validation failed"
+    };
+  }
+};
+
+export const validateTicketReference = async (ticketRef, options = {}) => {
   if (!config.integrations.itsmBaseUrl) return { valid: true, required: false };
   const text = String(ticketRef || "").trim().toUpperCase();
   const prefixes = config.integrations.itsmTicketPrefixes;
   const valid = prefixes.some((prefix) => new RegExp(`^${escapeRegex(prefix)}-\\d{3,}$`).test(text));
+  if (!valid) {
+    return {
+      valid: false,
+      required: true,
+      prefixes,
+      message: `Ticket reference must start with ${prefixes.join(", ")} and include a numeric identifier`
+    };
+  }
+  const live = await validateTicketWithItsm(text, options.fetchImpl || globalThis.fetch);
   return {
-    valid,
+    ...live,
     required: true,
     prefixes,
-    message: valid ? "" : `Ticket reference must start with ${prefixes.join(", ")} and include a numeric identifier`
+    message: live.valid ? "" : live.message
   };
 };
 
