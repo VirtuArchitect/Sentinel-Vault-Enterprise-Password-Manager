@@ -65,7 +65,7 @@ Implemented:
 - Bulk secret import with encrypted escrow, duplicate detection, and independent approval.
 - Bulk import runbook and source-system mapping templates.
 - CSV source-export adapter with redacted migration evidence output.
-- Bitwarden, LastPass, and 1Password CSV source-export adapters that normalize into the escrow import pipeline with redacted evidence.
+- Bitwarden, Dashlane, LastPass, and 1Password CSV source-export adapters that normalize into the escrow import pipeline with redacted evidence.
 
 Remaining:
 - Deployment-specific proprietary source export adapters beyond the shipped CSV adapters.

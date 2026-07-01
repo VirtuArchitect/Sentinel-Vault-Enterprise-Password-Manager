@@ -16,10 +16,11 @@ Build a redacted evidence file and API payload from a staged CSV export:
 pnpm prepare:bulk-import -- --csv ".\secure-work\source-export.csv" --mapping ".\docs\templates\bulk-secret-import-mapping.json"
 ```
 
-For Bitwarden, LastPass, or 1Password CSV exports, first normalize the source export into Sentinel's staged CSV shape:
+For Bitwarden, Dashlane credentials CSV, LastPass, or 1Password CSV exports, first normalize the source export into Sentinel's staged CSV shape:
 
 ```powershell
 pnpm convert:source-export -- --source ".\secure-work\bitwarden-export.csv" --format bitwarden-csv --vault-id "v1" --out ".\secure-work\source-export.csv"
+pnpm convert:source-export -- --source ".\secure-work\dashlane-credentials.csv" --format dashlane-csv --vault-id "v1" --out ".\secure-work\source-export.csv"
 pnpm convert:source-export -- --source ".\secure-work\lastpass-export.csv" --format lastpass-csv --vault-id "v1" --out ".\secure-work\source-export.csv"
 pnpm convert:source-export -- --source ".\secure-work\1password-export.csv" --format onepassword-csv --vault-id "v1" --out ".\secure-work\source-export.csv"
 ```

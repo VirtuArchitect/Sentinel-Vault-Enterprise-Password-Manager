@@ -70,6 +70,32 @@ test("onepassword csv export converts to Sentinel import csv", () => {
   }
 });
 
+test("dashlane csv credentials export converts to Sentinel import csv with redacted evidence", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-dashlane-export-"));
+  try {
+    const sourcePath = path.join(dir, "credentials.csv");
+    const outPath = path.join(dir, "normalized.csv");
+    const evidencePath = path.join(dir, "evidence.json");
+    writeFileSync(sourcePath, [
+      "name,url,username,password,note,category,collections,otpSecret",
+      "Finance Portal,https://finance.example.test,ada,Dashlane-Secret-Value,\"Quarterly close login\",Finance,Executive,otpauth-secret-value"
+    ].join("\n"));
+
+    runAdapter(sourcePath, "dashlane-csv", outPath, evidencePath);
+    const csv = readFileSync(outPath, "utf8");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+
+    assert.match(csv, /v-import,password,Finance Portal,ada,Dashlane-Secret-Value,https:\/\/finance.example.test,Executive;Finance,medium,Quarterly close login/);
+    assert.equal(evidence.sourceFormat, "dashlane-csv");
+    assert.equal(evidence.convertedCount, 1);
+    assert.equal(evidence.passwordValuesIncluded, false);
+    assert.equal(JSON.stringify(evidence).includes("Dashlane-Secret-Value"), false);
+    assert.equal(JSON.stringify(evidence).includes("otpauth-secret-value"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("lastpass csv export converts to Sentinel import csv with redacted evidence", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-lastpass-export-"));
   try {

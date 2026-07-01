@@ -14,9 +14,9 @@ const format = String(args.get("--format") || "").toLowerCase();
 const vaultId = args.get("--vault-id");
 const outputPath = args.get("--out") || "artifacts/import/source-export-normalized.csv";
 const evidencePath = args.get("--evidence") || "artifacts/import/source-export-adapter-evidence.json";
-const allowedFormats = new Set(["bitwarden-csv", "lastpass-csv", "onepassword-csv", "sentinel-csv"]);
+const allowedFormats = new Set(["bitwarden-csv", "dashlane-csv", "lastpass-csv", "onepassword-csv", "sentinel-csv"]);
 
-assert.ok(sourcePath, "Usage: node scripts/convert-source-export.mjs --source <file> --format <bitwarden-csv|lastpass-csv|onepassword-csv|sentinel-csv> --vault-id <vault-id>");
+assert.ok(sourcePath, "Usage: node scripts/convert-source-export.mjs --source <file> --format <bitwarden-csv|dashlane-csv|lastpass-csv|onepassword-csv|sentinel-csv> --vault-id <vault-id>");
 assert.ok(allowedFormats.has(format), "Unsupported --format");
 assert.ok(vaultId, "--vault-id is required");
 
@@ -90,6 +90,16 @@ const adapters = {
     tags: normalizeTags(first(row, ["folder"]), first(row, ["favorite"]) === "1" ? "favorite" : ""),
     risk: first(row, ["risk"]) || "medium",
     notes: first(row, ["notes"])
+  }),
+  "dashlane-csv": (row) => ({
+    type: first(row, ["type"]) || "password",
+    name: first(row, ["name", "title"]),
+    username: first(row, ["username", "login", "email"]),
+    password: first(row, ["password"]),
+    url: first(row, ["url", "website"]),
+    tags: normalizeTags(first(row, ["collections"]), first(row, ["category"]), first(row, ["space"])),
+    risk: first(row, ["risk"]) || "medium",
+    notes: first(row, ["note", "notes"])
   }),
   "lastpass-csv": (row) => ({
     type: first(row, ["type"]) || "password",
