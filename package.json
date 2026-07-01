@@ -13,6 +13,7 @@
     "audit:deps": "pnpm audit --audit-level high",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
+    "package:extension": "node scripts/package-browser-extension.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",
     "package:windows:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1"

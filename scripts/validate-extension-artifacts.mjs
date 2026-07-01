@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,6 +9,8 @@ const serviceWorker = readFileSync(path.join(rootDir, "extensions/browser/servic
 const popup = readFileSync(path.join(rootDir, "extensions/browser/popup.js"), "utf8");
 const contentScript = readFileSync(path.join(rootDir, "extensions/browser/content-script.js"), "utf8");
 const companion = readFileSync(path.join(rootDir, "companions/windows/sentinel-tray-helper.ps1"), "utf8");
+const chromePolicy = JSON.parse(readFileSync(path.join(rootDir, "deployments/browser/chrome-policy-template.json"), "utf8"));
+const edgePolicy = JSON.parse(readFileSync(path.join(rootDir, "deployments/browser/edge-policy-template.json"), "utf8"));
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.name, "Sentinel Vault Autofill");
@@ -25,6 +27,15 @@ assert.match(serviceWorker, /chrome\.storage\.session/);
 assert.match(popup, /Confirm Fill/);
 assert.match(contentScript, /sentinel-vault-autofill/);
 assert.match(contentScript, /input\[type='password'\]/);
+assert.ok(existsSync(path.join(rootDir, "scripts/package-browser-extension.mjs")));
+for (const policy of [chromePolicy, edgePolicy]) {
+  assert.ok(Array.isArray(policy.ExtensionInstallForcelist));
+  assert.ok(policy.ExtensionSettings["replace-with-extension-id"]);
+  assert.deepEqual(policy.ExtensionSettings["replace-with-extension-id"].runtime_allowed_hosts, [
+    "http://127.0.0.1:5173/*",
+    "http://localhost:5173/*"
+  ]);
+}
 assert.match(companion, /function Get-SentinelHash/);
 assert.match(companion, /function Clear-SentinelClipboard/);
 assert.match(companion, /function Invoke-SentinelAutoType/);

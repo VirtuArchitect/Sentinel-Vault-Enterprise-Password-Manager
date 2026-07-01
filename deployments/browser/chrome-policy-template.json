@@ -1,0 +1,20 @@
+{
+  "ExtensionInstallForcelist": [
+    "replace-with-extension-id;https://clients2.google.com/service/update2/crx"
+  ],
+  "ExtensionSettings": {
+    "replace-with-extension-id": {
+      "installation_mode": "force_installed",
+      "update_url": "https://clients2.google.com/service/update2/crx",
+      "runtime_allowed_hosts": [
+        "http://127.0.0.1:5173/*",
+        "http://localhost:5173/*"
+      ],
+      "blocked_permissions": [
+        "history",
+        "bookmarks",
+        "downloads"
+      ]
+    }
+  }
+}

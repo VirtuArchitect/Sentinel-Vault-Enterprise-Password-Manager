@@ -160,6 +160,12 @@ pnpm package:windows
 
 The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. See `deployments/windows/README.md`.
 
+Build the browser autofill extension package:
+
+```powershell
+pnpm package:extension
+```
+
 Windows deployment hardening guides:
 
 - `docs/deployment/windows-code-signing.md`
@@ -167,6 +173,7 @@ Windows deployment hardening guides:
 - `docs/architecture/connector-certification.md`
 - `docs/operations/bulk-secret-import-runbook.md`
 - `docs/security/autotype-credential-provider-review.md`
+- `docs/deployment/browser-extension-enterprise-policy.md`
 
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
