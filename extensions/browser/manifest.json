@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Sentinel Vault Autofill",
+  "version": "0.1.0",
+  "description": "Prototype autofill companion for Sentinel Vault Enterprise Password Manager.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5173/*",
+    "https://*/"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "Sentinel Vault",
+    "default_popup": "popup.html"
+  }
+}

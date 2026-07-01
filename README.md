@@ -33,6 +33,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 - Integration status, signed SIEM webhook delivery with retries, ITSM ticket validation, configuration controls, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
+- Browser extension and Windows companion scaffolds for autofill, clipboard, offline cache, and autotype research
 - Startup configuration validation, login rate limiting, and temporary account lockout
 - CI dependency audit gate for high-severity advisories
 - CI secret scanning gate for private keys and common committed token formats
@@ -135,6 +136,8 @@ src/
     services/       Vault, audit, and session services
   types.ts          Shared frontend contracts
 tests/              Node test suites
+extensions/         Browser autofill companion scaffold
+companions/         Windows desktop companion prototypes
 .github/workflows/ CI quality gate
 ```
 

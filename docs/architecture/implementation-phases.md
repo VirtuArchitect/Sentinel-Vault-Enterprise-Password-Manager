@@ -116,12 +116,19 @@ Remaining:
 
 ## Phase 8: Browser and Desktop Extensions
 
-Status: Planned
+Status: Started
+
+Implemented:
+
+- Browser extension Manifest V3 scaffold.
+- Windows clipboard/tray helper PowerShell prototype.
+- Offline cache and native autotype architecture roadmap.
+- Extension artifact validation gate.
 
 Remaining:
 
-- Browser extension autofill.
-- Clipboard auto-clear companion.
-- Windows tray helper.
-- Offline read-only cache.
-- Native autotype or credential-provider research.
+- Production browser autofill implementation.
+- Clipboard auto-clear companion implementation.
+- Windows tray UI.
+- Offline read-only cache implementation.
+- Native autotype or credential-provider proof of concept.
