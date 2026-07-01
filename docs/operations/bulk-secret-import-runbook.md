@@ -10,6 +10,19 @@ Use this runbook when migrating secrets from another password store into Sentine
 4. Stage data with the CSV shape in `docs/templates/bulk-secret-import-template.csv`.
 5. Remove sample values and confirm no production import file is committed to Git.
 
+Build a redacted evidence file and API payload from a staged CSV export:
+
+```powershell
+pnpm prepare:bulk-import -- --csv ".\secure-work\source-export.csv" --mapping ".\docs\templates\bulk-secret-import-mapping.json"
+```
+
+Default outputs:
+
+```text
+artifacts/import/bulk-secret-import-payload.json
+artifacts/import/bulk-secret-import-evidence.json
+```
+
 ## Validation
 
 - Confirm `vaultId` exists and is the intended target vault.
@@ -26,6 +39,8 @@ Submit through `POST /api/secret-imports` with:
 - `reason`
 - `entries`
 - optional `allowDuplicates` only for controlled recovery scenarios
+
+The generated payload can be sent as the request body after security review.
 
 The submitting admin cannot approve their own import batch.
 
@@ -49,3 +64,4 @@ POST /api/secret-imports/:id/deny
 - Confirm imported entries appear in the target vault.
 - Rotate imported high-risk secrets where source-system compromise is possible.
 - Attach the Sentinel import batch ID to the migration ticket.
+- Attach the redacted evidence JSON to the migration ticket.

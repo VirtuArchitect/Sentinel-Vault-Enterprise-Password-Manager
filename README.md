@@ -166,6 +166,12 @@ Build the browser autofill extension package:
 pnpm package:extension
 ```
 
+Prepare a bulk secret import payload and redacted evidence from a CSV export:
+
+```powershell
+pnpm prepare:bulk-import -- --csv ".\docs\templates\bulk-secret-import-template.csv" --mapping ".\docs\templates\bulk-secret-import-mapping.json"
+```
+
 Windows deployment hardening guides:
 
 - `docs/deployment/windows-code-signing.md`
