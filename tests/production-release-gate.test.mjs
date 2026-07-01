@@ -38,6 +38,12 @@ const createReleaseGateWorkspace = (dir) => {
     "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
     "--out", path.join(dir, "deployment-evidence-status.json")
   ]);
+  runScript("scripts/report-deployment-redaction.mjs", [
+    "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+    "--out", path.join(dir, "deployment-redaction-report.json"),
+    "--markdown-out", path.join(dir, "deployment-redaction-report.md"),
+    "--fail-on-findings"
+  ]);
   runScript("scripts/report-phase-completion-audit.mjs", [
     "--external-requests", path.join(dir, "external-evidence-requests.json"),
     "--out", path.join(dir, "phase-completion-audit.json"),
@@ -132,6 +138,7 @@ test("production release gate rejects missing release artifacts", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.bundle"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.workspaceManifest"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.deploymentStatus"));
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.deploymentRedaction"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.externalRequests"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseCompletion"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.phaseEvidence"));
@@ -168,6 +175,7 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.equal(report.checks.deploymentWorkspace.ok, true);
       assert.equal(report.checks.deploymentStatus.ok, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deploymentStatus"));
+      assert.equal(report.checks.deploymentRedaction.ok, true);
       assert.equal(report.checks.externalEvidence.ok, true);
       assert.equal(report.checks.phaseCompletion.ok, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseCompletion"));

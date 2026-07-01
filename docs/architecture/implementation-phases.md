@@ -112,7 +112,7 @@ Implemented:
 - Deployment evidence workspace template-drift check that rejects stale workspaces when new required evidence gates are added.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
 - Deployment evidence status report validator and production release-gate check for stale or not-ready deployment evidence status.
-- Deployment evidence redaction reporter and release-gate check that scan every bundle evidence file for private keys, service tokens, provider tokens, and generic secret assignments.
+- Deployment evidence redaction reporter, validator, and release-gate check that scan every bundle evidence file for private keys, service tokens, provider tokens, generic secret assignments, stale reports, and not-ready evidence.
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
 - External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.
 - Combined Phase 2-8 completion audit and readiness reporter that composes roadmap, deployment evidence status, and strict external evidence request validation.

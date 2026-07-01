@@ -59,6 +59,7 @@
     "report:deployment-evidence": "node scripts/report-deployment-evidence-status.mjs",
     "validate:deployment-status": "node scripts/validate-deployment-evidence-status-report.mjs",
     "report:deployment-redaction": "node scripts/report-deployment-redaction.mjs",
+    "validate:deployment-redaction": "node scripts/validate-deployment-redaction-report.mjs",
     "validate:deployment-evidence": "node scripts/validate-deployment-evidence-bundle.mjs",
     "report:external-evidence": "node scripts/generate-external-evidence-requests.mjs",
     "validate:external-evidence": "node scripts/validate-external-evidence-requests.mjs",

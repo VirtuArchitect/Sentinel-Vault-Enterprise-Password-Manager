@@ -29,6 +29,7 @@ const paths = {
   bundle: path.resolve(args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json")),
   workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
   deploymentStatus: path.resolve(args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json")),
+  deploymentRedaction: path.resolve(args.get("--deployment-redaction") || path.join(evidenceDir, "deployment-redaction-report.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
   phaseCompletion: path.resolve(args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
@@ -93,12 +94,13 @@ const checks = {
       "--require-ready"
     ])
     : { ok: false, result: null, error: "Deployment evidence status report or bundle is missing" },
-  deploymentRedaction: existsSync(paths.bundle)
-    ? runJson("scripts/report-deployment-redaction.mjs", [
+  deploymentRedaction: existsSync(paths.deploymentRedaction) && existsSync(paths.bundle)
+    ? runJson("scripts/validate-deployment-redaction-report.mjs", [
+      "--report", paths.deploymentRedaction,
       "--bundle", paths.bundle,
-      "--fail-on-findings"
+      "--require-ready"
     ])
-    : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },
+    : { ok: false, result: null, error: "Deployment redaction report or evidence bundle is missing" },
   externalEvidence: existsSync(paths.externalRequests)
     ? runJson("scripts/validate-external-evidence-requests.mjs", [
       "--requests", paths.externalRequests,
