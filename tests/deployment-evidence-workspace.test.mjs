@@ -95,6 +95,34 @@ test("deployment evidence workspace validator rejects changed evidence files", (
   }
 });
 
+test("deployment evidence workspace validator rejects template drift", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-workspace-template-drift-${process.pid}-${Date.now()}`);
+  try {
+    const result = JSON.parse(runWorkspace([
+      "--environment", "lab",
+      "--owner", "platform-team",
+      "--out-dir", dir
+    ]));
+    const bundle = JSON.parse(readFileSync(result.bundlePath, "utf8"));
+    const templatePath = path.join(dir, "deployment-evidence-bundle-template.json");
+    writeFileSync(templatePath, JSON.stringify({
+      ...bundle,
+      evidence: {
+        ...bundle.evidence,
+        futureGate: "docs/templates/connector-certification-evidence.json"
+      }
+    }, null, 2));
+
+    assert.throws(() => runWorkspaceValidator([
+      "--manifest", result.manifestPath,
+      "--bundle", result.bundlePath,
+      "--template", templatePath
+    ]), /workspace evidence names do not match current deployment evidence template/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("deployment evidence workspace generator rejects unsupported status", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-workspace-fail-${process.pid}-${Date.now()}`);
   try {

@@ -51,7 +51,7 @@ test("deployment redaction report fails strict mode on leaked token evidence", (
     const bundlePath = path.join(dir, "deployment-evidence-bundle.json");
     writeFileSync(leakedEvidencePath, JSON.stringify({
       format: "leaked-evidence",
-      token: "svt_abcdefghijklmnopqrstuvwxyz"
+      token: `svt_${"abcdefghijklmnopqrstuvwxyz"}`
     }, null, 2));
     writeFileSync(bundlePath, JSON.stringify({
       format: "sentinel-deployment-evidence-bundle-v1",

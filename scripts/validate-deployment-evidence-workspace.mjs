@@ -20,6 +20,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 
 const manifestPath = path.resolve(args.get("--manifest") || "artifacts/deployment/pilot/deployment-evidence-workspace-manifest.json");
 const expectedBundlePath = args.get("--bundle") ? path.resolve(args.get("--bundle")) : null;
+const templatePath = path.resolve(args.get("--template") || "docs/templates/deployment-evidence-bundle.json");
 
 const hashFile = (filePath) => {
   const buffer = readFileSync(filePath);
@@ -43,9 +44,12 @@ const validateArtifact = (workspaceDir, name, artifact) => {
 };
 
 assert.ok(existsSync(manifestPath), `Deployment evidence workspace manifest not found: ${manifestPath}`);
+assert.ok(existsSync(templatePath), `Deployment evidence bundle template not found: ${templatePath}`);
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+const template = JSON.parse(readFileSync(templatePath, "utf8"));
 
 assert.equal(manifest.format, "sentinel-deployment-evidence-workspace-manifest-v1");
+assert.equal(template.format, "sentinel-deployment-evidence-bundle-v1");
 assert.ok(!Number.isNaN(Date.parse(manifest.generatedAt)), "generatedAt must be an ISO-compatible timestamp");
 assert.ok(manifest.environment && typeof manifest.environment === "string", "environment is required");
 assert.ok(manifest.status && typeof manifest.status === "string", "status is required");
@@ -69,6 +73,8 @@ assert.equal(bundle.status, manifest.status, "bundle status does not match manif
 assert.equal(bundle.owner, manifest.owner, "bundle owner does not match manifest");
 
 const evidenceNames = Object.keys(bundle.evidence || {});
+const templateEvidenceNames = Object.keys(template.evidence || {});
+assert.deepEqual(evidenceNames.sort(), templateEvidenceNames.sort(), "workspace evidence names do not match current deployment evidence template");
 assert.deepEqual(Object.keys(manifest.evidence).sort(), evidenceNames.sort(), "manifest evidence names do not match bundle");
 for (const name of evidenceNames) {
   const evidencePath = validateArtifact(workspaceDir, `evidence.${name}`, manifest.evidence[name]);
