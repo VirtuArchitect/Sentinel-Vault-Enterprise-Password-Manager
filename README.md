@@ -34,6 +34,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
 - Startup configuration validation, login rate limiting, and temporary account lockout
 - CI dependency audit gate for high-severity advisories
+- CI secret scanning gate for private keys and common committed token formats
 - Configurable CORS allowlist and baseline browser security headers
 
 ## Demo Accounts
@@ -109,6 +110,13 @@ Run the full local quality gate:
 
 ```bash
 pnpm verify
+```
+
+Run the security gates used by CI:
+
+```bash
+pnpm scan:secrets
+pnpm audit:deps
 ```
 
 ## Project Structure

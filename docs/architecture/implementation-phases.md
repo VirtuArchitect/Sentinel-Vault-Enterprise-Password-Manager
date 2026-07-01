@@ -100,6 +100,7 @@ Implemented:
 - Admin session review and forced active-session revocation APIs.
 - Service-token last-used source, last-used secret, and use-count metadata.
 - Dependency audit in CI.
+- Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - Tamper-evident audit hash chaining.
 - Backup SHA-256 manifests and admin verification API.
 - Threat model.
@@ -107,7 +108,6 @@ Implemented:
 
 Remaining:
 
-- Secret scanning in CI.
 - Append-only audit storage and external signing.
 - Encrypted backup and restore workflow validation.
 - KMS/HSM design and implementation.
