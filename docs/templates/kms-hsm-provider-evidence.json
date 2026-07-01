@@ -1,5 +1,6 @@
 {
   "format": "sentinel-kms-hsm-provider-evidence-v1",
+  "status": "planned",
   "provider": "external-kms-or-hsm",
   "providerName": "replace-with-provider",
   "environment": "replace-with-environment",

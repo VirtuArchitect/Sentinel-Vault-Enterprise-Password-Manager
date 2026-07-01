@@ -13,6 +13,14 @@ Operational evidence templates:
 - `docs/operations/kms-hsm-key-ceremony.md`
 - `docs/templates/kms-hsm-provider-evidence.json`
 
+Validate provider evidence with:
+
+```powershell
+pnpm validate:kms-hsm-evidence docs/templates/kms-hsm-provider-evidence.json
+```
+
+When evidence is marked `approved` or `active`, the validator rejects placeholders, requires a concrete `external-kms` or `hsm` provider boundary, requires a SHA-256 policy hash, and requires all operational checks to pass.
+
 The current implementation does not add provider SDK dependencies. Non-local modes require `KMS_KEY_ID` so deployments cannot silently claim external key management without a key reference.
 
 ## Required Production Follow-Up

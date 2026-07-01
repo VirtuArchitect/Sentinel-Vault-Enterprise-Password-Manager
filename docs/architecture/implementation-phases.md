@@ -125,6 +125,7 @@ Implemented:
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
 - Key-provider boundary for local root key, external KMS, and HSM readiness.
 - KMS/HSM key ceremony runbook and provider evidence template.
+- KMS/HSM provider evidence validator.
 - Threat model.
 - Security review checklist.
 

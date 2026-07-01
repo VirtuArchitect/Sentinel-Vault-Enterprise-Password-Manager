@@ -18,9 +18,11 @@ Use this runbook before enabling `KMS_PROVIDER=external-kms` or `KMS_PROVIDER=hs
 3. Enable audit logging on key usage.
 4. Restrict key usage to the Sentinel Vault service identity.
 5. Record provider, key ID, endpoint, region, and policy hash.
-6. Run `pnpm verify`.
-7. Start Sentinel Vault with non-local KMS settings in a non-production environment.
-8. Confirm `/api/reports/compliance` reports the expected key provider status.
+6. Record provider evidence in `docs/templates/kms-hsm-provider-evidence.json` or an environment-specific copy.
+7. Run `pnpm validate:kms-hsm-evidence <evidence-file>`.
+8. Run `pnpm verify`.
+9. Start Sentinel Vault with non-local KMS settings in a non-production environment.
+10. Confirm `/api/reports/compliance` reports the expected key provider status.
 
 ## Rotation
 
