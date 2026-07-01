@@ -14,6 +14,7 @@
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
     "package:extension": "node scripts/package-browser-extension.mjs",
+    "render:browser-policy": "node scripts/render-browser-policy.mjs",
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",

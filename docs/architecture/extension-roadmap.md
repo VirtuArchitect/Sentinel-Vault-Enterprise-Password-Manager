@@ -9,6 +9,7 @@
 - Never expose plaintext secrets to extension storage.
 - The browser extension now stores the console token in `chrome.storage.session`, fetches URL-matched entries from the local console, reveals only after an explicit Fill action, and injects plaintext only into the active tab.
 - Enterprise rollout evidence now captures deployment-specific Chrome and Edge extension IDs, allowed runtime hosts, blocked permissions, staged rollout rings, store review status, rollback testing, and approvals.
+- Browser enterprise policies can be rendered from completed rollout evidence with `pnpm render:browser-policy`.
 
 ## Clipboard Companion
 

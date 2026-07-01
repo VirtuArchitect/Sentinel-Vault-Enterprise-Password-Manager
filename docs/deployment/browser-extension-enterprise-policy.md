@@ -36,6 +36,14 @@ pnpm validate:browser-rollout docs/templates/browser-extension-rollout-evidence.
 
 For pilot or production rollout evidence, replace the placeholder extension IDs with the private Chrome Web Store or Edge Add-ons IDs, record the package SHA-256, and mark privacy, screenshot redaction, and rollback testing as complete.
 
+Render Chrome and Edge enterprise policies from a completed rollout evidence file:
+
+```powershell
+pnpm render:browser-policy -- --evidence ".\evidence\browser-extension-production.json" --out-dir ".\artifacts\browser\policy"
+```
+
+The renderer refuses placeholder extension IDs and writes deployable `chrome-policy.json` and `edge-policy.json` files for enabled browsers.
+
 ## Store Review Checklist
 
 - Manifest V3 only.
