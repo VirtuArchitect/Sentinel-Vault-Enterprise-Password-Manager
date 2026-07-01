@@ -36,4 +36,5 @@ Public import listings expose batch metadata, counts, status, duplicate reasons,
 - `docs/templates/bulk-secret-import-template.csv`
 - `docs/templates/bulk-secret-import-mapping.json`
 - `docs/operations/bulk-secret-import-runbook.md`
+- `scripts/convert-source-export.mjs`
 - `scripts/prepare-bulk-secret-import.mjs`
