@@ -27,6 +27,7 @@ const allowedTargets = new Set(["pilot", "production"]);
 
 const paths = {
   bundle: path.resolve(args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json")),
+  workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
   phaseReview: path.resolve(args.get("--phase-review") || path.join(evidenceDir, "phase-review-bundle-manifest.json")),
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
@@ -65,6 +66,12 @@ for (const [name, filePath] of Object.entries(paths)) {
 }
 
 const checks = {
+  deploymentWorkspace: existsSync(paths.workspaceManifest) && existsSync(paths.bundle)
+    ? runJson("scripts/validate-deployment-evidence-workspace.mjs", [
+      "--manifest", paths.workspaceManifest,
+      "--bundle", paths.bundle
+    ])
+    : { ok: false, result: null, error: "Deployment evidence workspace manifest or bundle is missing" },
   deploymentEvidence: existsSync(paths.bundle)
     ? runJson("scripts/validate-deployment-evidence-bundle.mjs", [paths.bundle])
     : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },

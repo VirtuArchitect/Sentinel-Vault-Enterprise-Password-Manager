@@ -130,6 +130,7 @@ test("production release gate rejects missing release artifacts", () => {
       assert.equal(report.format, "sentinel-production-release-gate-v1");
       assert.equal(report.ready, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.bundle"));
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "artifact.workspaceManifest"));
       assert.ok(existsSync(outputPath));
       return true;
     });
@@ -152,6 +153,7 @@ test("production release gate rejects placeholder phase workspaces", () => {
       const report = JSON.parse(error.stdout.toString());
       assert.equal(report.format, "sentinel-production-release-gate-v1");
       assert.equal(report.ready, false);
+      assert.equal(report.checks.deploymentWorkspace.ok, true);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-target"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-readiness"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-review"));
