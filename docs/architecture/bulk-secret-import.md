@@ -30,3 +30,9 @@ Duplicate secret material is rejected unless `allowDuplicates` is explicitly set
 ## Security Boundary
 
 Public import listings expose batch metadata, counts, status, duplicate reasons, and imported IDs only. They do not expose plaintext passwords, encrypted payloads, fingerprints, or historical secret material.
+
+## Templates and Runbook
+
+- `docs/templates/bulk-secret-import-template.csv`
+- `docs/templates/bulk-secret-import-mapping.json`
+- `docs/operations/bulk-secret-import-runbook.md`

@@ -49,9 +49,10 @@ Implemented:
 - Safe bulk administration metadata export for tenants, vaults, users, and policies.
 - Safe bulk administration metadata import for tenants and vaults.
 - Bulk secret import with encrypted escrow, duplicate detection, and independent approval.
+- Bulk import runbook and source-system mapping templates.
 
 Remaining:
-- Deployment-specific import runbooks and source-system mapping templates.
+- Deployment-specific source export adapters and migration evidence packs.
 
 ## Phase 5: Enterprise Integrations
 
