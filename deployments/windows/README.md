@@ -136,9 +136,12 @@ Clipboard companion:
 ```powershell
 .\companions\windows\sentinel-tray-helper.ps1 -Value "temporary-secret" -ClipboardTtlSeconds 30
 .\companions\windows\sentinel-tray-helper.ps1 -Watch -ClipboardTtlSeconds 30
+.\companions\windows\sentinel-tray-helper.ps1 -Tray
 ```
 
 The companion clears only a clipboard value it wrote itself. If the user copies something else before the TTL expires, the helper leaves the clipboard unchanged.
+
+Tray mode adds a notification-area menu for opening the console and clearing Sentinel-owned clipboard values.
 
 Guarded autotype proof of concept:
 

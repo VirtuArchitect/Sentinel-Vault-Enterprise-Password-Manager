@@ -15,6 +15,7 @@
 - Clipboard writes should be opt-in from a reveal or fill action.
 - Clear only values written by Sentinel Vault, using a marker hash to avoid destroying unrelated clipboard content.
 - The PowerShell companion prototype writes Sentinel-owned clipboard markers and clears only matching values after the TTL expires.
+- Tray mode provides a notification-area menu for opening the console and clearing Sentinel-owned clipboard values.
 
 ## Offline Read-Only Cache
 

@@ -7,6 +7,7 @@ param(
   [string]$Username = "",
   [string]$Password = "",
   [switch]$IUnderstandAutotypeRisk,
+  [switch]$Tray,
   [switch]$Watch,
   [switch]$ClearNow,
   [switch]$SelfTest
@@ -146,6 +147,44 @@ function Invoke-SentinelAutoType {
   Write-Host "Autotype completed for target window '$TargetWindowTitle'."
 }
 
+function Start-SentinelTray {
+  Add-Type -AssemblyName System.Windows.Forms
+  Add-Type -AssemblyName System.Drawing
+
+  $contextMenu = [System.Windows.Forms.ContextMenuStrip]::new()
+  $openConsole = [System.Windows.Forms.ToolStripMenuItem]::new("Open Sentinel Console")
+  $clearClipboard = [System.Windows.Forms.ToolStripMenuItem]::new("Clear Sentinel Clipboard")
+  $exitItem = [System.Windows.Forms.ToolStripMenuItem]::new("Exit")
+  [void]$contextMenu.Items.Add($openConsole)
+  [void]$contextMenu.Items.Add($clearClipboard)
+  [void]$contextMenu.Items.Add($exitItem)
+
+  $notifyIcon = [System.Windows.Forms.NotifyIcon]::new()
+  $notifyIcon.Text = "Sentinel Vault"
+  $notifyIcon.Icon = [System.Drawing.SystemIcons]::Shield
+  $notifyIcon.ContextMenuStrip = $contextMenu
+  $notifyIcon.Visible = $true
+
+  $openConsole.Add_Click({
+    Start-Process $ConsoleUrl
+  })
+  $clearClipboard.Add_Click({
+    Clear-SentinelClipboard | Out-Null
+    $notifyIcon.ShowBalloonTip(2000, "Sentinel Vault", "Clear command completed for Sentinel-owned clipboard values.", [System.Windows.Forms.ToolTipIcon]::Info)
+  })
+  $exitItem.Add_Click({
+    $notifyIcon.Visible = $false
+    [System.Windows.Forms.Application]::Exit()
+  })
+  $notifyIcon.Add_DoubleClick({
+    Start-Process $ConsoleUrl
+  })
+
+  Write-Host "Sentinel Vault tray helper running. Use the tray icon context menu to open the console or clear Sentinel-owned clipboard values."
+  [System.Windows.Forms.Application]::Run()
+  $notifyIcon.Dispose()
+}
+
 if ($SelfTest) {
   $sample = "sentinel-self-test"
   $hash = Get-SentinelHash -Text $sample
@@ -163,6 +202,11 @@ if ($ClearNow) {
   exit 0
 }
 
+if ($Tray) {
+  Start-SentinelTray
+  exit 0
+}
+
 if ($AutoType) {
   Invoke-SentinelAutoType -TargetWindowTitle $WindowTitle -UserNameValue $Username -PasswordValue $Password
   exit 0
@@ -175,5 +219,5 @@ if ($Value) {
 if ($Watch) {
   Watch-SentinelClipboard
 } elseif (!$Value) {
-  Write-Host "Use -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
+  Write-Host "Use -Tray for the desktop helper UI, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
 }
