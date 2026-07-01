@@ -10,6 +10,19 @@ const require = createRequire(import.meta.url);
 const statePath = path.join(config.storage.dataDir, config.storage.stateFile);
 const sqlitePath = config.storage.sqlitePath ? path.resolve(config.storage.sqlitePath) : path.join(config.storage.dataDir, "sentinel-vault.sqlite");
 const backupDir = path.join(config.storage.dataDir, "backups");
+const sqliteMirrorTables = [
+  "users",
+  "device_inventory",
+  "tenants",
+  "vaults",
+  "secrets",
+  "service_tokens",
+  "secret_imports",
+  "access_requests",
+  "integration_outbox",
+  "audit_events",
+  "policies"
+];
 
 const toPersistedState = (state) => {
   const { sessions: _sessions, loginFailures: _loginFailures, ...persisted } = state;
@@ -69,22 +82,67 @@ const openSqlite = () => {
       data TEXT NOT NULL,
       saved_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS device_inventory (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS tenants (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS vaults (id TEXT PRIMARY KEY, tenant_id TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS secrets (id TEXT PRIMARY KEY, vault_id TEXT, risk TEXT, deleted_at TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS service_tokens (id TEXT PRIMARY KEY, revoked_at TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS secret_imports (id TEXT PRIMARY KEY, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS access_requests (id TEXT PRIMARY KEY, secret_id TEXT, requester_id TEXT, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS integration_outbox (id TEXT PRIMARY KEY, target TEXT, status TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, ts TEXT, action TEXT, actor TEXT, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS policies (id TEXT PRIMARY KEY, data TEXT NOT NULL);
   `);
   return db;
+};
+
+const replaceJsonRows = (db, table, rows, columns = {}) => {
+  db.prepare(`DELETE FROM ${table}`).run();
+  const columnNames = ["id", ...Object.keys(columns), "data"];
+  const placeholders = columnNames.map(() => "?").join(", ");
+  const insert = db.prepare(`INSERT INTO ${table} (${columnNames.join(", ")}) VALUES (${placeholders})`);
+  for (const row of rows || []) {
+    const id = row.id || crypto.createHash("sha256").update(JSON.stringify(row)).digest("base64url");
+    insert.run(id, ...Object.values(columns).map((column) => row[column] ?? null), JSON.stringify(row));
+  }
+};
+
+const syncSqliteMirrorTables = (db, persisted) => {
+  replaceJsonRows(db, "users", persisted.users);
+  replaceJsonRows(db, "device_inventory", persisted.deviceInventory);
+  replaceJsonRows(db, "tenants", persisted.tenants);
+  replaceJsonRows(db, "vaults", persisted.vaults, { tenant_id: "tenantId" });
+  replaceJsonRows(db, "secrets", persisted.secrets, { vault_id: "vaultId", risk: "risk", deleted_at: "deletedAt" });
+  replaceJsonRows(db, "service_tokens", persisted.serviceTokens, { revoked_at: "revokedAt" });
+  replaceJsonRows(db, "secret_imports", persisted.secretImports, { status: "status" });
+  replaceJsonRows(db, "access_requests", persisted.accessRequests, { secret_id: "secretId", requester_id: "requesterId", status: "status" });
+  replaceJsonRows(db, "integration_outbox", persisted.integrationOutbox, { target: "target", status: "status" });
+  replaceJsonRows(db, "audit_events", persisted.audit, { ts: "ts", action: "action", actor: "actor" });
+  db.prepare("DELETE FROM policies").run();
+  db.prepare("INSERT INTO policies (id, data) VALUES ('main', ?)").run(JSON.stringify(persisted.policies));
 };
 
 const persistSqliteState = (candidate) => {
   const db = openSqlite();
   try {
     const persisted = toPersistedState(candidate);
-    db.prepare(`
-      INSERT INTO sentinel_state (id, version, data, saved_at)
-      VALUES ('main', ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        version = excluded.version,
-        data = excluded.data,
-        saved_at = excluded.saved_at
-    `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+    db.exec("BEGIN IMMEDIATE TRANSACTION");
+    try {
+      db.prepare(`
+        INSERT INTO sentinel_state (id, version, data, saved_at)
+        VALUES ('main', ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          version = excluded.version,
+          data = excluded.data,
+          saved_at = excluded.saved_at
+      `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+      syncSqliteMirrorTables(db, persisted);
+      db.exec("COMMIT");
+    } catch (err) {
+      db.exec("ROLLBACK");
+      throw err;
+    }
   } finally {
     db.close();
   }
@@ -112,10 +170,18 @@ const loadSqliteState = () => {
     if (!row?.data) {
       const seeded = createSeedState();
       const persisted = toPersistedState(seeded);
-      db.prepare(`
-        INSERT INTO sentinel_state (id, version, data, saved_at)
-        VALUES ('main', ?, ?, ?)
-      `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+      db.exec("BEGIN IMMEDIATE TRANSACTION");
+      try {
+        db.prepare(`
+          INSERT INTO sentinel_state (id, version, data, saved_at)
+          VALUES ('main', ?, ?, ?)
+        `).run(stateVersion, JSON.stringify(persisted), persisted.metadata.savedAt);
+        syncSqliteMirrorTables(db, persisted);
+        db.exec("COMMIT");
+      } catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+      }
       return seeded;
     }
     return normalizeState(JSON.parse(row.data));
@@ -317,6 +383,7 @@ export const store = {
       statePath: config.storage.provider === "sqlite" ? sqlitePath : statePath,
       stateVersion,
       exists: fs.existsSync(config.storage.provider === "sqlite" ? sqlitePath : statePath),
+      mirrorTables: config.storage.provider === "sqlite" ? sqliteMirrorTables : [],
       backups: listBackups().slice(0, 10)
     };
   },

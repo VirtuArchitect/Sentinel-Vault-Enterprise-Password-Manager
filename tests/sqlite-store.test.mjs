@@ -58,6 +58,7 @@ test("sqlite store persists normalized state across processes", { skip: !hasNode
       console.log(JSON.stringify({
         mode: store.getStorageStatus().mode,
         exists: store.getStorageStatus().exists,
+        mirrorTables: store.getStorageStatus().mirrorTables,
         vault: store.findVaultById("v-sqlite")
       }));
     `);
@@ -65,7 +66,18 @@ test("sqlite store persists normalized state across processes", { skip: !hasNode
     const result = JSON.parse(output.trim());
     assert.equal(result.mode, "sqlite");
     assert.equal(result.exists, true);
+    assert.ok(result.mirrorTables.includes("vaults"));
     assert.equal(result.vault.name, "SQLite Persistence");
+
+    const { DatabaseSync } = require("node:sqlite");
+    const db = new DatabaseSync(sqlitePath);
+    try {
+      assert.equal(db.prepare("SELECT COUNT(*) AS count FROM vaults WHERE id = ?").get("v-sqlite").count, 1);
+      assert.equal(db.prepare("SELECT COUNT(*) AS count FROM secrets").get().count >= 3, true);
+      assert.equal(db.prepare("SELECT COUNT(*) AS count FROM audit_events").get().count >= 3, true);
+    } finally {
+      db.close();
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

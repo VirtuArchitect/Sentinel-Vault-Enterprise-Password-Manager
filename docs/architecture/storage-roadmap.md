@@ -37,6 +37,7 @@ Implemented:
 - Use the implemented `STORAGE_PROVIDER=sqlite` and `SQLITE_PATH` configuration.
 - Persist the normalized Sentinel Vault state in a SQLite database with full synchronous durability.
 - Initialize a new SQLite database from the current seed state.
+- Mirror users, device inventory, tenants, vaults, secrets, service tokens, imports, access requests, integration outbox records, audit events, and policies into relational SQLite tables in the same transaction as the canonical snapshot.
 - Preserve the same encrypted secret payloads, audit records, tenant metadata, access requests, integrations, policies, and service-token metadata as JSON mode.
 - Include SQLite database copies in the existing backup manifest flow.
 - Migrate an existing JSON state file into a SQLite database with redacted migration evidence:
@@ -49,9 +50,8 @@ pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sen
 
 Remaining:
 
-- Create relational migration scripts for the current JSON entities.
 - Use `scripts/inspect-storage-state.mjs` to prove source state readiness before migration.
-- Use transactions for secret lifecycle operations.
+- Move secret lifecycle operations to narrower repository-level transactions instead of whole-state commits.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 - Add tests that run the same API suite against JSON and SQLite modes.
 

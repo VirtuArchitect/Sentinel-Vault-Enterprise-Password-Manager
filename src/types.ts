@@ -109,6 +109,7 @@ export type StorageStatus = {
   statePath: string;
   stateVersion: number;
   exists: boolean;
+  mirrorTables: string[];
   backups: Array<{ file: string; size: number; createdAt: string; verified?: boolean; verificationReason?: string | null; sha256?: string | null }>;
 };
 
