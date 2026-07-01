@@ -256,6 +256,7 @@ pnpm validate:deployment-workspace -- --manifest ".\artifacts\deployment\pilot\d
 pnpm report:external-evidence -- --environment "pilot" --owner "Platform Security" --out ".\artifacts\deployment\pilot\external-evidence-requests.json" --markdown-out ".\artifacts\deployment\pilot\external-evidence-requests.md"
 pnpm validate:external-evidence -- --requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --strict
 pnpm report:deployment-evidence -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-evidence-status.json"
+pnpm validate:deployment-status -- --report ".\artifacts\deployment\pilot\deployment-evidence-status.json" --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 pnpm report:deployment-redaction -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-redaction-report.json" --markdown-out ".\artifacts\deployment\pilot\deployment-redaction-report.md" --fail-on-findings
 pnpm report:phase-completion -- --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --out ".\artifacts\deployment\pilot\phase-completion-audit.json" --markdown-out ".\artifacts\deployment\pilot\phase-completion-audit.md"
 pnpm validate:phase-completion -- --audit ".\artifacts\deployment\pilot\phase-completion-audit.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json"

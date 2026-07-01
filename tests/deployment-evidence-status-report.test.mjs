@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -19,6 +19,16 @@ const runWorkspace = (args) => execFileSync(process.execPath, [
 
 const runReport = (args) => execFileSync(process.execPath, [
   "scripts/report-deployment-evidence-status.mjs",
+  ...args
+], {
+  cwd: rootDir,
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "pipe"],
+  windowsHide: true
+});
+
+const runValidator = (args) => execFileSync(process.execPath, [
+  "scripts/validate-deployment-evidence-status-report.mjs",
   ...args
 ], {
   cwd: rootDir,
@@ -71,6 +81,58 @@ test("deployment evidence status report records missing evidence without failing
     assert.equal(report.summary.missing, 1);
     assert.equal(report.items.find((item) => item.name === "connector").issue, "evidence file not found");
     assert.equal(report.readyForPilotOrProduction, false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("deployment evidence status validator accepts current reports", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-status-validate-${process.pid}-${Date.now()}`);
+  try {
+    const workspace = JSON.parse(runWorkspace([
+      "--environment", "lab",
+      "--owner", "platform-security",
+      "--out-dir", dir
+    ]));
+    const outputPath = path.join(dir, "deployment-evidence-status.json");
+    runReport(["--bundle", workspace.bundlePath, "--out", outputPath]);
+
+    const validation = JSON.parse(runValidator([
+      "--report", outputPath,
+      "--bundle", workspace.bundlePath
+    ]));
+    assert.equal(validation.format, "sentinel-deployment-evidence-status-validation-v1");
+    assert.equal(validation.validated, true);
+    assert.equal(validation.readyForPilotOrProduction, false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("deployment evidence status validator rejects stale reports and not-ready release mode", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-status-stale-${process.pid}-${Date.now()}`);
+  try {
+    const workspace = JSON.parse(runWorkspace([
+      "--environment", "lab",
+      "--owner", "platform-security",
+      "--out-dir", dir
+    ]));
+    const outputPath = path.join(dir, "deployment-evidence-status.json");
+    const report = JSON.parse(runReport(["--bundle", workspace.bundlePath, "--out", outputPath]));
+    report.summary.missing = 9;
+    writeFileSync(outputPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator([
+      "--report", outputPath,
+      "--bundle", workspace.bundlePath
+    ]), /deployment evidence status report is stale/);
+
+    runReport(["--bundle", workspace.bundlePath, "--out", outputPath]);
+    assert.throws(() => runValidator([
+      "--report", outputPath,
+      "--bundle", workspace.bundlePath,
+      "--require-ready"
+    ]), /not ready/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

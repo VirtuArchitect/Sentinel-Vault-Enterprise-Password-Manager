@@ -28,6 +28,7 @@ const allowedTargets = new Set(["pilot", "production"]);
 const paths = {
   bundle: path.resolve(args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json")),
   workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
+  deploymentStatus: path.resolve(args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
@@ -84,6 +85,13 @@ const checks = {
   deploymentEvidence: existsSync(paths.bundle)
     ? runJson("scripts/validate-deployment-evidence-bundle.mjs", [paths.bundle])
     : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },
+  deploymentStatus: existsSync(paths.deploymentStatus) && existsSync(paths.bundle)
+    ? runJson("scripts/validate-deployment-evidence-status-report.mjs", [
+      "--report", paths.deploymentStatus,
+      "--bundle", paths.bundle,
+      "--require-ready"
+    ])
+    : { ok: false, result: null, error: "Deployment evidence status report or bundle is missing" },
   deploymentRedaction: existsSync(paths.bundle)
     ? runJson("scripts/report-deployment-redaction.mjs", [
       "--bundle", paths.bundle,
