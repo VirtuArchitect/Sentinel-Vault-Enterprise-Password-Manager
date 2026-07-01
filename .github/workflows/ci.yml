@@ -29,3 +29,6 @@ jobs:
 
       - name: Verify
         run: pnpm verify
+
+      - name: Dependency audit
+        run: pnpm audit --audit-level high

@@ -34,7 +34,7 @@ Out of scope until implemented:
 
 | Threat | Current mitigation | Remaining work |
 | --- | --- | --- |
-| Brute-force login | Basic login rate limit | Account lockout, MFA, IP/device review |
+| Brute-force login | Login rate limit and temporary account lockout | MFA and IP/device review |
 | Direct-object access | Role and vault checks in service layer | Broader negative tests and tenant model |
 | Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
 | Compromised root key | Production requires non-demo key | KMS/HSM integration and key rotation |
@@ -42,14 +42,14 @@ Out of scope until implemented:
 | Backup exposure | Admin-only backup endpoint | Backup encryption and restore validation |
 | Session replay | Expiring in-memory sessions and logout invalidation | Device review, forced admin revocation, refresh-token design |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
-| Supply-chain compromise | Lockfile and CI verify | Dependency audit and secret scanning in CI |
+| Supply-chain compromise | Lockfile, CI verify, and high-severity dependency audit | Secret scanning in CI |
 | Misconfigured IIS/TLS | IIS guidance exists | TLS automation, headers review, deployment checklist |
 
 ## Security Backlog
 
-1. Add dependency and secret scanning to CI.
+1. Add secret scanning to CI.
 2. Add production CSP review and environment-specific security headers.
-3. Add account lockout and MFA verification.
+3. Add MFA verification.
 4. Add append-only or signed audit log strategy.
 5. Add encrypted backup and restore validation.
 6. Add KMS/HSM key-management design.

@@ -32,7 +32,8 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 - Integration status and audit outbox for SIEM, ITSM, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
-- Startup configuration validation and login rate limiting
+- Startup configuration validation, login rate limiting, and temporary account lockout
+- CI dependency audit gate for high-severity advisories
 - Configurable CORS allowlist and baseline browser security headers
 
 ## Demo Accounts
@@ -179,6 +180,8 @@ Copy `.env.example` to `.env` for local development and set:
 ```text
 PORT=5173
 CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
+FAILED_LOGIN_LIMIT=5
+LOGIN_LOCKOUT_MINUTES=15
 VAULT_ROOT_KEY=your-local-development-root-key
 VAULT_KEY_VERSION=demo-root-v1
 VAULT_KEY_SALT=sentinel-vault

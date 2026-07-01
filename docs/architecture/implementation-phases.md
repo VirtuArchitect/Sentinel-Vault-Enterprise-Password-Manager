@@ -94,16 +94,17 @@ Implemented:
 - Security headers.
 - Config validation.
 - Login rate limiting.
+- Temporary account lockout after repeated failed login attempts.
 - Server-side logout and session invalidation.
 - Active session count and TTL surfaced in the Management panel.
 - Service-token last-used source, last-used secret, and use-count metadata.
+- Dependency audit in CI.
 - Threat model.
 - Security review checklist.
 
 Remaining:
 
 - Secret scanning in CI.
-- Dependency audit in CI.
 - Append-only or signed audit log strategy.
 - Encrypted backup and restore validation.
 - KMS/HSM design and implementation.

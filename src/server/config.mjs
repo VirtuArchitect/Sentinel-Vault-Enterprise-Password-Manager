@@ -12,6 +12,8 @@ export const config = {
   vaultKeyVersion: process.env.VAULT_KEY_VERSION || "demo-root-v1",
   vaultKeySalt: process.env.VAULT_KEY_SALT || "sentinel-vault",
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
+  failedLoginLimit: Number(process.env.FAILED_LOGIN_LIMIT || 5),
+  loginLockoutMinutes: Number(process.env.LOGIN_LOCKOUT_MINUTES || 15),
   corsOrigins: String(process.env.CORS_ORIGINS || "http://127.0.0.1:5173,http://localhost:5173")
     .split(",")
     .map((origin) => origin.trim())
@@ -42,6 +44,12 @@ export const validateConfig = () => {
   }
   if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535) {
     issues.push("PORT must be an integer between 1 and 65535.");
+  }
+  if (!Number.isInteger(config.failedLoginLimit) || config.failedLoginLimit < 1 || config.failedLoginLimit > 25) {
+    issues.push("FAILED_LOGIN_LIMIT must be an integer between 1 and 25.");
+  }
+  if (!Number.isInteger(config.loginLockoutMinutes) || config.loginLockoutMinutes < 1 || config.loginLockoutMinutes > 1440) {
+    issues.push("LOGIN_LOCKOUT_MINUTES must be an integer between 1 and 1440.");
   }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");

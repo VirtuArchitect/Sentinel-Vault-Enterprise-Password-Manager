@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 process.env.NODE_ENV = "test";
 const { createApp } = await import("../src/server/app.mjs");
 const { config } = await import("../src/server/config.mjs");
+const { store } = await import("../src/server/data/store.mjs");
+const { hashPassword } = await import("../src/server/crypto/passwords.mjs");
 
 let nextPort = 18100;
 
@@ -100,6 +102,48 @@ test("logout revokes the active session token", async () => {
     const afterLogout = await jsonFetch(`${baseUrl}/console`, ada.token);
     assert.equal(afterLogout.status, 401);
   });
+});
+
+test("repeated failed logins temporarily lock the account", async () => {
+  const previousLimit = config.failedLoginLimit;
+  const previousLockout = config.loginLockoutMinutes;
+  config.failedLoginLimit = 2;
+  config.loginLockoutMinutes = 15;
+  store.state.users.push({
+    id: "u-lockout",
+    name: "Lockout Test User",
+    email: "lockout@defence.local",
+    role: "VAULT_OPERATOR",
+    unit: "Test",
+    mfa: true,
+    ...hashPassword("CorrectPassw0rd!")
+  });
+  try {
+    await withApi(async (baseUrl) => {
+      for (let attempt = 0; attempt < config.failedLoginLimit; attempt += 1) {
+        const failed = await fetch(`${baseUrl}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "lockout@defence.local", password: "wrong-password" })
+        });
+        assert.equal(failed.status, 401);
+      }
+
+      const locked = await fetch(`${baseUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "lockout@defence.local", password: "CorrectPassw0rd!" })
+      });
+      assert.equal(locked.status, 423);
+      const body = await locked.json();
+      assert.ok(body.lockedUntil);
+    });
+  } finally {
+    config.failedLoginLimit = previousLimit;
+    config.loginLockoutMinutes = previousLockout;
+    store.state.loginFailures.delete("lockout@defence.local");
+    store.state.users = store.state.users.filter((user) => user.id !== "u-lockout");
+  }
 });
 
 test("object-level authorization blocks secret rotation outside accessible vaults", async () => {

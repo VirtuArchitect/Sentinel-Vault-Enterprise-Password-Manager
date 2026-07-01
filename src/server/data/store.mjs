@@ -8,7 +8,7 @@ const statePath = path.join(config.dataDir, config.stateFile);
 const backupDir = path.join(config.dataDir, "backups");
 
 const toPersistedState = (state) => {
-  const { sessions: _sessions, ...persisted } = state;
+  const { sessions: _sessions, loginFailures: _loginFailures, ...persisted } = state;
   return {
     ...persisted,
     metadata: {
@@ -25,6 +25,7 @@ const normalizeState = (candidate) => {
     ...candidate,
     metadata: { version: stateVersion, ...(candidate?.metadata || {}) },
     sessions: new Map(),
+    loginFailures: new Map(),
     users: candidate?.users || seeded.users,
     vaults: candidate?.vaults || seeded.vaults,
     secrets: candidate?.secrets || seeded.secrets,
