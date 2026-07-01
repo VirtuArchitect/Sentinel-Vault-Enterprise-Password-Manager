@@ -26,6 +26,8 @@
     "validate:native-companion": "node scripts/validate-native-companion-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
     "release:kms-hsm": "node scripts/generate-kms-hsm-provider-evidence.mjs",
+    "release:kms-hsm-sdk-approval": "node scripts/generate-kms-hsm-sdk-approval-evidence.mjs",
+    "validate:kms-hsm-sdk-approval": "node scripts/validate-kms-hsm-sdk-approval-evidence.mjs",
     "preflight:kms-hsm": "node scripts/preflight-kms-hsm-gateway.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",
     "release:identity-evidence": "node scripts/generate-identity-provider-evidence.mjs",

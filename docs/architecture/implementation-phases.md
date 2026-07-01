@@ -217,13 +217,14 @@ Implemented:
 - KMS/HSM provider evidence validator.
 - KMS/HSM HTTP gateway preflight for live status and sign-operation evidence without adding cloud SDK dependencies.
 - KMS/HSM provider evidence generator for gateway preflight summaries, provider/key metadata, policy hash, rotation dates, audit/backup/restore checks, and approvals.
+- KMS/HSM provider SDK approval evidence template, generator, validator, and deployment-bundle gate for dependency, supply-chain, environment, operation-proof, rollback, and redaction approval before any provider SDK is added.
 - Dependency-free KMS/HSM HTTP gateway runtime signing for non-local key-provider modes with key-ID and signature-shape validation.
 - Threat model.
 - Security review checklist.
 
 Remaining:
 
-- Provider SDK-backed KMS/HSM integration after dependency and environment approval.
+- Provider SDK-backed KMS/HSM implementation after completed dependency, environment, and operation-proof approval evidence.
 
 ## Phase 8: Browser and Desktop Extensions
 

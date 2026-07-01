@@ -91,7 +91,7 @@ test("phase evidence intake maps owner requests to intake folders and validation
 
     assert.equal(result.format, "sentinel-phase-evidence-intake-result-v1");
     assert.equal(result.intakeCount, 7);
-    assert.equal(result.expectedFileCount, 19);
+    assert.equal(result.expectedFileCount, 20);
     assert.equal(result.blockedIntakeCount, 7);
     assert.ok(existsSync(intakePath));
     assert.ok(existsSync(markdownPath));

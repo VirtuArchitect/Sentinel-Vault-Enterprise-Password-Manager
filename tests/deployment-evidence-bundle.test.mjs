@@ -29,6 +29,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     nativeCompanion: "native-companion-evidence.json",
     identityProvider: "identity-provider-evidence.json",
     kmsHsm: "kms-hsm-provider-evidence.json",
+    kmsHsmSdkApproval: "kms-hsm-sdk-approval-evidence.json",
     windowsRelease: "windows-release-evidence.json",
     windowsSigning: "windows-signing-execution-evidence.json",
     windowsInstallHardening: "windows-install-hardening-evidence.json",
@@ -84,6 +85,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.postgresHa.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
     assert.equal(validation.results.nativeCompanion.validated, true);
+    assert.equal(validation.results.kmsHsmSdkApproval.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
     assert.equal(validation.results.windowsSigning.validated, true);
     assert.equal(validation.results.windowsInstallHardening.validated, true);
@@ -117,6 +119,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         nativeCompanion: "evidence/native-companion-evidence.json",
         identityProvider: "evidence/identity-provider-evidence.json",
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
+        kmsHsmSdkApproval: "evidence/kms-hsm-sdk-approval-evidence.json",
         windowsRelease: "evidence/windows-release-evidence.json",
         windowsSigning: "evidence/windows-signing-execution-evidence.json",
         windowsInstallHardening: "evidence/windows-install-hardening-evidence.json",

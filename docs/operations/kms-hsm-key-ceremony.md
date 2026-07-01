@@ -5,6 +5,7 @@ Use this runbook before enabling `KMS_PROVIDER=external-kms` or `KMS_PROVIDER=hs
 ## Preconditions
 
 - Provider owner and security approver are named.
+- Provider SDK dependency approval is recorded with `pnpm validate:kms-hsm-sdk-approval`.
 - Key purpose is limited to Sentinel Vault envelope operations.
 - Key ID is recorded in `KMS_KEY_ID`.
 - Provider endpoint is recorded in `KMS_ENDPOINT` where applicable.
@@ -18,11 +19,13 @@ Use this runbook before enabling `KMS_PROVIDER=external-kms` or `KMS_PROVIDER=hs
 3. Enable audit logging on key usage.
 4. Restrict key usage to the Sentinel Vault service identity.
 5. Record provider, key ID, endpoint, region, and policy hash.
-6. Record provider evidence in `docs/templates/kms-hsm-provider-evidence.json` or an environment-specific copy.
-7. Run `pnpm validate:kms-hsm-evidence <evidence-file>`.
-8. Run `pnpm verify`.
-9. Start Sentinel Vault with non-local KMS settings in a non-production environment.
-10. Confirm `/api/reports/compliance` reports the expected key provider status.
+6. Record SDK approval evidence in `docs/templates/kms-hsm-sdk-approval-evidence.json` or an environment-specific copy.
+7. Record provider evidence in `docs/templates/kms-hsm-provider-evidence.json` or an environment-specific copy.
+8. Run `pnpm validate:kms-hsm-sdk-approval <approval-evidence-file>`.
+9. Run `pnpm validate:kms-hsm-evidence <provider-evidence-file>`.
+10. Run `pnpm verify`.
+11. Start Sentinel Vault with non-local KMS settings in a non-production environment.
+12. Confirm `/api/reports/compliance` reports the expected key provider status.
 
 ## Rotation
 

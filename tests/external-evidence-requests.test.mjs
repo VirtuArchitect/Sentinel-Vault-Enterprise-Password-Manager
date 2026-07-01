@@ -55,6 +55,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.some((request) => request.evidenceTemplates.includes("docs/templates/windows-signing-execution-evidence.json")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:native-companion -- <native-companion-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>")));
     assert.ok(report.requests.every((request) => request.acceptanceCriteria.length >= 3));
 
     const markdown = readFileSync(markdownPath, "utf8");
@@ -84,7 +85,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.equal(result.strict, true);
     assert.equal(result.requestCount, 7);
     assert.ok(result.templateCount >= 10);
-    assert.equal(result.validatorCommandCount, 10);
+    assert.equal(result.validatorCommandCount, 11);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

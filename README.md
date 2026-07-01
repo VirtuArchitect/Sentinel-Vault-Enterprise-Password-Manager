@@ -151,6 +151,8 @@ pnpm release:devops-token-response -- --preflight ".\artifacts\integrations\devo
 pnpm validate:devops-token-response -- docs/templates/devops-token-response-evidence.json
 pnpm release:identity-evidence -- --preflight ".\artifacts\identity\identity-provider-preflight.json"
 pnpm validate:identity-evidence -- docs/templates/identity-provider-evidence.json
+pnpm release:kms-hsm-sdk-approval -- --status planned --out ".\artifacts\security\kms-hsm-sdk-approval-evidence.json"
+pnpm validate:kms-hsm-sdk-approval -- docs/templates/kms-hsm-sdk-approval-evidence.json
 pnpm release:kms-hsm -- --preflight ".\artifacts\security\kms-hsm-gateway-preflight.json"
 pnpm validate:kms-hsm-evidence -- docs/templates/kms-hsm-provider-evidence.json
 pnpm release:siem-rotation -- --report ".\artifacts\integrations\siem-receiver-rotation.json"

@@ -146,12 +146,15 @@ const requests = [
       "Key ceremony, rotation, backup, restore, and rollback evidence"
     ],
     evidenceTemplates: [
+      "docs/templates/kms-hsm-sdk-approval-evidence.json",
       "docs/templates/kms-hsm-provider-evidence.json"
     ],
     commands: [
       "pnpm preflight:kms-hsm -- --endpoint <gateway-url> --key-id <key-id> --out <kms-hsm-gateway-preflight.json>",
       "pnpm release:kms-hsm -- --preflight <kms-hsm-gateway-preflight.json> --out <kms-hsm-provider-evidence.json>",
-      "pnpm validate:kms-hsm-evidence -- <kms-hsm-provider-evidence.json>"
+      "pnpm validate:kms-hsm-evidence -- <kms-hsm-provider-evidence.json>",
+      "pnpm release:kms-hsm-sdk-approval -- --status approved --report <sdk-approval-report.json> --preflight <kms-hsm-gateway-preflight.json> --provider-evidence <kms-hsm-provider-evidence.json> --out <kms-hsm-sdk-approval-evidence.json>",
+      "pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>"
     ],
     acceptanceCriteria: [
       "Dependency approval covers SDK provenance, maintenance, license, and threat-model impact",

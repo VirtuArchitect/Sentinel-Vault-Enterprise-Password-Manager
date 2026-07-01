@@ -1,0 +1,46 @@
+{
+  "format": "sentinel-kms-hsm-sdk-approval-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "provider": "external-kms-or-hsm",
+  "sdk": {
+    "packageName": "replace-with-package",
+    "packageVersion": "replace-with-version",
+    "license": "replace-with-license",
+    "registry": "replace-with-registry",
+    "packageSha256": "replace-with-sha256",
+    "maintenanceStatus": "planned",
+    "supplyChainReview": "planned",
+    "securityReview": "planned",
+    "approvalReference": "replace-with-approval-ticket"
+  },
+  "targetEnvironment": {
+    "providerTenant": "replace-with-provider-tenant",
+    "region": "replace-with-region",
+    "keyId": "replace-with-key-id",
+    "serviceIdentity": "replace-with-service-identity",
+    "networkIsolation": "planned",
+    "auditSinkConfigured": "planned",
+    "breakGlassProcedure": "planned"
+  },
+  "operationProof": {
+    "preflightPath": "replace-with-kms-hsm-preflight.json",
+    "providerEvidencePath": "replace-with-kms-hsm-provider-evidence.json",
+    "signOrUnwrapOperation": "planned",
+    "keyExportBlocked": "planned",
+    "auditEventCaptured": "planned",
+    "rollbackTested": "planned"
+  },
+  "approvals": {
+    "securityArchitectureOwner": "replace-with-owner",
+    "platformOwner": "replace-with-owner",
+    "releaseOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  },
+  "redaction": {
+    "containsCredentials": "planned",
+    "containsKeyMaterial": "planned",
+    "containsProviderTokens": "planned",
+    "containsConnectionStrings": "planned"
+  }
+}

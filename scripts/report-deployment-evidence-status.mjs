@@ -23,6 +23,7 @@ const validators = {
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
+  kmsHsmSdkApproval: ["scripts/validate-kms-hsm-sdk-approval-evidence.mjs"],
   windowsRelease: ["scripts/validate-windows-release-evidence.mjs"],
   windowsSigning: ["scripts/validate-windows-signing-execution-evidence.mjs"],
   windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"],
