@@ -7,14 +7,16 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 | Mode | Purpose | Status |
 | --- | --- | --- |
 | `local` | Demo identities and isolated development | Implemented |
-| `oidc` | Generic OpenID Connect provider | Planned |
-| `entra` | Microsoft Entra ID with group-to-role mapping | Planned |
+| `oidc` | Generic OpenID Connect provider | Provider config ready; token validation planned |
+| `entra` | Microsoft Entra ID with group-to-role mapping | Provider config ready; token validation planned |
 | `saml` | Enterprise SAML deployments | Future |
 
 ## Authentication Requirements
 
 - External identity must verify issuer, audience, signature, expiry, nonce, and state.
 - Role assignment must come from configured groups or explicit admin mapping.
+- `IDENTITY_ROLE_SECURITY_ADMIN`, `IDENTITY_ROLE_VAULT_OPERATOR`, and `IDENTITY_ROLE_AUDITOR` define external group mappings.
+- `IDENTITY_GROUP_CLAIM` defines the token claim used for role mapping.
 - Users must be disabled locally when access is revoked.
 - Session creation must audit provider, subject, groups, and resulting role without logging tokens.
 - Local demo login must remain available only when `IDENTITY_PROVIDER=local`.
@@ -28,6 +30,7 @@ Current MFA is metadata and policy only. Production MFA should support:
 - Admin reset and recovery workflow.
 - Audit events for enrollment, reset, success, and failure.
 - Policy enforcement for privileged roles.
+- `IDENTITY_MFA_CLAIM` and `IDENTITY_MFA_REQUIRED_VALUE` define the expected provider MFA assertion for future token validation.
 
 ## Session Requirements
 
@@ -40,4 +43,4 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 ## Implementation Notes
 
-No OIDC, SAML, passkey, or MFA dependency has been added yet. The repository instructions require asking before new runtime dependencies.
+No OIDC, SAML, passkey, or MFA dependency has been added yet. The repository instructions require asking before new runtime dependencies. External identity modes are intentionally configuration-gated until a token validation library and provider metadata are approved.

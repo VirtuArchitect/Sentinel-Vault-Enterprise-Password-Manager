@@ -19,11 +19,9 @@ export const getIdentityStatus = () => {
     clientId: external ? provider.clientId : "",
     tenantId: provider.mode === "entra" ? provider.tenantId : "",
     groupClaim: provider.groupClaim,
+    mfaClaim: provider.mfaClaim,
+    mfaRequiredValue: provider.mfaRequiredValue,
     mfaSource: external ? "identity_provider" : "demo_user_seed",
-    roleMapping: {
-      SECURITY_ADMIN: "Sentinel Vault Admins",
-      VAULT_OPERATOR: "Sentinel Vault Operators",
-      AUDITOR: "Sentinel Vault Auditors"
-    }
+    roleMapping: provider.roleMappings
   };
 };

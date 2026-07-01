@@ -157,6 +157,8 @@ export type IdentityStatus = {
   clientId: string;
   tenantId: string;
   groupClaim: string;
+  mfaClaim: string;
+  mfaRequiredValue: string;
   mfaSource: string;
   roleMapping: Record<Role, string>;
 };

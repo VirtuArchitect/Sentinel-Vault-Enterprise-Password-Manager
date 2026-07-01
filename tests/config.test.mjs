@@ -42,3 +42,37 @@ test("storage provider boundary validates planned database modes", () => {
     config.storage.databaseUrl = previousDatabaseUrl;
   }
 });
+
+test("external identity providers require role and MFA claim mapping", () => {
+  const previous = {
+    mode: config.identityProvider.mode,
+    issuer: config.identityProvider.issuer,
+    clientId: config.identityProvider.clientId,
+    tenantId: config.identityProvider.tenantId,
+    groupClaim: config.identityProvider.groupClaim,
+    mfaClaim: config.identityProvider.mfaClaim,
+    mfaRequiredValue: config.identityProvider.mfaRequiredValue,
+    roleMappings: { ...config.identityProvider.roleMappings }
+  };
+  try {
+    config.identityProvider.mode = "entra";
+    config.identityProvider.issuer = "https://login.microsoftonline.com/test/v2.0";
+    config.identityProvider.clientId = "sentinel-client";
+    config.identityProvider.tenantId = "";
+    assert.ok(validateConfig().some((issue) => issue.includes("ENTRA_TENANT_ID")));
+
+    config.identityProvider.tenantId = "tenant-id";
+    config.identityProvider.mfaClaim = "";
+    assert.ok(validateConfig().some((issue) => issue.includes("IDENTITY_MFA_CLAIM")));
+
+    config.identityProvider.mfaClaim = "amr";
+    config.identityProvider.roleMappings.SECURITY_ADMIN = "";
+    assert.ok(validateConfig().some((issue) => issue.includes("IDENTITY_ROLE_SECURITY_ADMIN")));
+
+    config.identityProvider.roleMappings.SECURITY_ADMIN = "Sentinel Vault Admins";
+    assert.equal(validateConfig().some((issue) => issue.includes("IDENTITY_ROLE_SECURITY_ADMIN")), false);
+  } finally {
+    Object.assign(config.identityProvider, previous);
+    config.identityProvider.roleMappings = previous.roleMappings;
+  }
+});

@@ -24,10 +24,11 @@ Status: Architecture ready, provider boundary implemented, database implementati
 
 ## Phase 3: Real Authentication
 
-Status: Architecture ready, implementation pending dependency approval
+Status: Architecture ready, provider configuration boundary implemented, token validation pending dependency approval
 
 - Local seeded users remain demo-only.
 - OIDC and Entra ID placeholders exist in configuration.
+- External provider role, group-claim, tenant, and MFA-claim settings are validated.
 - MFA is currently policy metadata, not real challenge verification.
 - See `identity-roadmap.md`.
 

@@ -42,7 +42,14 @@ export const config = {
     issuer: process.env.OIDC_ISSUER || "",
     clientId: process.env.OIDC_CLIENT_ID || "",
     tenantId: process.env.ENTRA_TENANT_ID || "",
-    groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups"
+    groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups",
+    mfaClaim: process.env.IDENTITY_MFA_CLAIM || "amr",
+    mfaRequiredValue: process.env.IDENTITY_MFA_REQUIRED_VALUE || "mfa",
+    roleMappings: {
+      SECURITY_ADMIN: process.env.IDENTITY_ROLE_SECURITY_ADMIN || "Sentinel Vault Admins",
+      VAULT_OPERATOR: process.env.IDENTITY_ROLE_VAULT_OPERATOR || "Sentinel Vault Operators",
+      AUDITOR: process.env.IDENTITY_ROLE_AUDITOR || "Sentinel Vault Auditors"
+    }
   },
   integrations: {
     siemWebhookUrl: process.env.SIEM_WEBHOOK_URL || "",
@@ -92,8 +99,25 @@ export const validateConfig = () => {
   if (!Number.isInteger(config.loginLockoutMinutes) || config.loginLockoutMinutes < 1 || config.loginLockoutMinutes > 1440) {
     issues.push("LOGIN_LOCKOUT_MINUTES must be an integer between 1 and 1440.");
   }
+  if (!["local", "oidc", "entra"].includes(config.identityProvider.mode)) {
+    issues.push("IDENTITY_PROVIDER must be one of local, oidc, or entra.");
+  }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");
+  }
+  if (config.identityProvider.mode === "entra" && !config.identityProvider.tenantId) {
+    issues.push("ENTRA_TENANT_ID is required when IDENTITY_PROVIDER is entra.");
+  }
+  if (config.identityProvider.mode !== "local") {
+    if (!config.identityProvider.groupClaim) issues.push("IDENTITY_GROUP_CLAIM is required for external identity providers.");
+    if (!config.identityProvider.mfaClaim || !config.identityProvider.mfaRequiredValue) {
+      issues.push("IDENTITY_MFA_CLAIM and IDENTITY_MFA_REQUIRED_VALUE are required for external identity providers.");
+    }
+    for (const [role, groupName] of Object.entries(config.identityProvider.roleMappings)) {
+      if (!String(groupName || "").trim()) {
+        issues.push(`IDENTITY_ROLE_${role} must map ${role} to a provider group.`);
+      }
+    }
   }
   if (config.integrations.siemWebhookUrl && config.isProduction && !config.integrations.siemWebhookSecret) {
     issues.push("SIEM_WEBHOOK_SECRET is required when SIEM_WEBHOOK_URL is set in production.");
