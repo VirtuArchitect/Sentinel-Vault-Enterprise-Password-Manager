@@ -91,6 +91,7 @@ Implemented:
 - Windows zip package.
 - PowerShell installer and uninstaller.
 - Scheduled Task supervisor.
+- Installer storage-provider switches for JSON and SQLite deployments.
 - Optional IIS front-end configuration.
 - Package icon asset.
 - Start Menu shortcut.

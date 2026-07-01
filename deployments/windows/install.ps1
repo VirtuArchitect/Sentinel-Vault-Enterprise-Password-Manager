@@ -3,6 +3,9 @@ param(
   [string]$HostName = "127.0.0.1",
   [int]$Port = 5173,
   [string]$VaultRootKey = "",
+  [ValidateSet("json", "sqlite")]
+  [string]$StorageProvider = "json",
+  [string]$SqlitePath = "",
   [switch]$ConfigureIis,
   [string]$SiteName = "Sentinel Vault",
   [int]$SitePort = 8080,
@@ -119,6 +122,15 @@ if (!(Test-Path $sourceApp)) {
 if (!(Get-Command node -ErrorAction SilentlyContinue)) {
   throw "Node.js is required on the target server. Install Node.js 20+ before running this installer."
 }
+if ($StorageProvider -eq "sqlite") {
+  if ([string]::IsNullOrWhiteSpace($SqlitePath)) {
+    $SqlitePath = Join-Path $InstallDir "data\sentinel-vault.sqlite"
+  }
+  $sqliteCheck = & node -e "try { require('node:sqlite'); process.exit(0); } catch { process.exit(1); }"
+  if ($LASTEXITCODE -ne 0) {
+    throw "SQLite storage requires a Node.js runtime with node:sqlite support. Install Node.js 24+ or rerun with -StorageProvider json."
+  }
+}
 
 if ([string]::IsNullOrWhiteSpace($VaultRootKey)) {
   $VaultRootKey = New-SecretKey
@@ -133,13 +145,21 @@ if (Test-Path (Join-Path $packageRoot "assets")) {
   Copy-Item -Path (Join-Path $packageRoot "assets") -Destination $InstallDir -Recurse -Force
 }
 New-Item -ItemType Directory -Path (Join-Path $InstallDir "logs") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $InstallDir "data") -Force | Out-Null
+if ($StorageProvider -eq "sqlite") {
+  New-Item -ItemType Directory -Path (Split-Path -Parent $SqlitePath) -Force | Out-Null
+}
 
 $envContent = @(
   "NODE_ENV=production",
   "HOST=$HostName",
   "PORT=$Port",
-  "VAULT_ROOT_KEY=$VaultRootKey"
+  "VAULT_ROOT_KEY=$VaultRootKey",
+  "STORAGE_PROVIDER=$StorageProvider"
 )
+if ($StorageProvider -eq "sqlite") {
+  $envContent += "SQLITE_PATH=$SqlitePath"
+}
 Set-Content -Path (Join-Path $InstallDir "sentinel.env") -Value $envContent -Encoding UTF8
 
 icacls (Join-Path $InstallDir "sentinel.env") /inheritance:r /grant:r "Administrators:F" "SYSTEM:F" | Out-Null

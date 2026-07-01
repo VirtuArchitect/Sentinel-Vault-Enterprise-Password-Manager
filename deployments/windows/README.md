@@ -8,6 +8,7 @@ The package runs the Node/Express API on localhost and can optionally configure 
 
 - Windows Server 2019+ or Windows 10/11 for local testing
 - Node.js 20+
+- Node.js 24+ when installing with `-StorageProvider sqlite`
 - PowerShell 5.1+
 - Administrator PowerShell session for install/uninstall
 - Optional IIS mode:
@@ -132,6 +133,16 @@ For remote access without IIS, pass a host binding such as:
 
 ```powershell
 .\install.ps1 -HostName "0.0.0.0" -Port 5173 -VaultRootKey "replace-with-production-secret"
+```
+
+Install with the SQLite storage provider on a Node.js 24+ host:
+
+```powershell
+.\install.ps1 `
+  -Port 5173 `
+  -VaultRootKey "replace-with-production-secret" `
+  -StorageProvider sqlite `
+  -SqlitePath "C:\Program Files\Sentinel Vault\data\sentinel-vault.sqlite"
 ```
 
 ## Install With IIS Front End
