@@ -44,6 +44,7 @@
     "prepare:deployment-evidence": "node scripts/prepare-deployment-evidence-workspace.mjs",
     "report:deployment-evidence": "node scripts/report-deployment-evidence-status.mjs",
     "validate:deployment-evidence": "node scripts/validate-deployment-evidence-bundle.mjs",
+    "report:external-evidence": "node scripts/generate-external-evidence-requests.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",
