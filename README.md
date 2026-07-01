@@ -131,6 +131,8 @@ pnpm release:audit-worm -- --ledger ".\artifacts\security\sentinel-audit-ledger.
 pnpm validate:audit-worm -- docs/templates/audit-worm-evidence.json
 pnpm release:backup-recovery -- --restore-evidence ".\artifacts\storage\encrypted-backup-restore-evidence.json"
 pnpm validate:backup-recovery -- docs/templates/backup-recovery-evidence.json
+pnpm release:device-trust -- --device-inventory ".\artifacts\security\device-inventory.json"
+pnpm validate:device-trust -- docs/templates/device-trust-evidence.json
 ```
 
 ## Project Structure

@@ -46,6 +46,7 @@
     "validate:audit-worm": "node scripts/validate-audit-worm-evidence.mjs",
     "release:backup-recovery": "node scripts/generate-backup-recovery-evidence.mjs",
     "validate:backup-recovery": "node scripts/validate-backup-recovery-evidence.mjs",
+    "release:device-trust": "node scripts/generate-device-trust-evidence.mjs",
     "validate:device-trust": "node scripts/validate-device-trust-evidence.mjs",
     "validate:brute-force": "node scripts/validate-brute-force-evidence.mjs",
     "validate:tenant-isolation": "node scripts/validate-tenant-isolation-evidence.mjs",
