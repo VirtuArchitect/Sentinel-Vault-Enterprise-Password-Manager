@@ -141,6 +141,7 @@ Implemented:
 - Windows tray UI mode for console launch and Sentinel-owned clipboard clear.
 - Encrypted read-only offline cache export and verification APIs.
 - DPAPI-protected Windows offline cache storage and manifest inspection helper.
+- Current-user scheduled cleanup for expired DPAPI-protected offline caches.
 - Guarded native autotype proof of concept in the Windows companion.
 - Credential-provider proof-of-concept boundary and formal autotype security review.
 - Browser extension packaging script, enterprise policy templates, and store review checklist.
@@ -150,5 +151,5 @@ Implemented:
 Remaining:
 
 - Deployment-specific browser extension IDs and enterprise rollout evidence.
-- Dedicated native offline cache browsing UI and scheduled cleanup.
+- Dedicated native offline cache browsing UI.
 - Signed native credential-provider implementation after approval.

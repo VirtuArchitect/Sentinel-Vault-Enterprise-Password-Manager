@@ -12,6 +12,8 @@ param(
   [switch]$ProtectOfflineCache,
   [switch]$ShowOfflineCache,
   [switch]$RemoveExpiredOfflineCache,
+  [switch]$InstallOfflineCacheCleanupTask,
+  [switch]$RemoveOfflineCacheCleanupTask,
   [switch]$Watch,
   [switch]$ClearNow,
   [switch]$SelfTest
@@ -23,6 +25,7 @@ Set-StrictMode -Version Latest
 $stateDir = Join-Path $env:LOCALAPPDATA "SentinelVault"
 $markerPath = Join-Path $stateDir "clipboard-marker.json"
 $protectedOfflineCachePath = Join-Path $stateDir "offline-cache.dpapi"
+$offlineCleanupTaskName = "SentinelVaultOfflineCacheCleanup"
 
 function Get-SentinelHash {
   param([Parameter(Mandatory = $true)][string]$Text)
@@ -268,6 +271,29 @@ function Remove-ExpiredSentinelOfflineCache {
   Write-Host "Offline cache is still valid until $($cache.cache.manifest.expiresAt)."
 }
 
+function Install-SentinelOfflineCacheCleanupTask {
+  $scriptPath = $PSCommandPath
+  if (!$scriptPath) {
+    throw "Cannot install scheduled task because the helper script path is unavailable."
+  }
+  $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -RemoveExpiredOfflineCache"
+  $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(5) -RepetitionInterval (New-TimeSpan -Hours 1)
+  $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel LeastPrivilege
+  $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew
+  Register-ScheduledTask -TaskName $offlineCleanupTaskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+  Write-Host "Installed scheduled task '$offlineCleanupTaskName' for hourly Sentinel offline cache cleanup."
+}
+
+function Remove-SentinelOfflineCacheCleanupTask {
+  $task = Get-ScheduledTask -TaskName $offlineCleanupTaskName -ErrorAction SilentlyContinue
+  if ($task) {
+    Unregister-ScheduledTask -TaskName $offlineCleanupTaskName -Confirm:$false
+    Write-Host "Removed scheduled task '$offlineCleanupTaskName'."
+  } else {
+    Write-Host "Scheduled task '$offlineCleanupTaskName' is not installed."
+  }
+}
+
 if ($SelfTest) {
   $sample = "sentinel-self-test"
   $hash = Get-SentinelHash -Text $sample
@@ -275,6 +301,7 @@ if ($SelfTest) {
   $roundTrip = [System.Text.Encoding]::UTF8.GetString((Unprotect-SentinelBytes -Bytes (Protect-SentinelBytes -Bytes ([System.Text.Encoding]::UTF8.GetBytes($sample)))))
   if ($roundTrip -ne $sample) { throw "DPAPI round-trip failed self-test." }
   if ("Invoke-SentinelAutoType".Length -lt 1) { throw "Autotype function self-test failed." }
+  if ($offlineCleanupTaskName -ne "SentinelVaultOfflineCacheCleanup") { throw "Offline cleanup task name self-test failed." }
   Write-Host "Sentinel Vault companion self-test passed."
   exit 0
 }
@@ -307,6 +334,16 @@ if ($RemoveExpiredOfflineCache) {
   exit 0
 }
 
+if ($InstallOfflineCacheCleanupTask) {
+  Install-SentinelOfflineCacheCleanupTask
+  exit 0
+}
+
+if ($RemoveOfflineCacheCleanupTask) {
+  Remove-SentinelOfflineCacheCleanupTask
+  exit 0
+}
+
 if ($AutoType) {
   Invoke-SentinelAutoType -TargetWindowTitle $WindowTitle -UserNameValue $Username -PasswordValue $Password
   exit 0
@@ -319,5 +356,5 @@ if ($Value) {
 if ($Watch) {
   Watch-SentinelClipboard
 } elseif (!$Value) {
-  Write-Host "Use -Tray for the desktop helper UI, -ProtectOfflineCache to store an exported cache with DPAPI, -ShowOfflineCache to inspect its manifest, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
+  Write-Host "Use -Tray for the desktop helper UI, -ProtectOfflineCache to store an exported cache with DPAPI, -ShowOfflineCache to inspect its manifest, -InstallOfflineCacheCleanupTask to schedule expiry cleanup, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
 }

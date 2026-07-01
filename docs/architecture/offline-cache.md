@@ -43,6 +43,13 @@ Remove an expired protected cache:
 .\companions\windows\sentinel-tray-helper.ps1 -RemoveExpiredOfflineCache
 ```
 
+Install or remove hourly cleanup for the current Windows user:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 -InstallOfflineCacheCleanupTask
+.\companions\windows\sentinel-tray-helper.ps1 -RemoveOfflineCacheCleanupTask
+```
+
 ## Remaining Native Work
 
-A production offline reader should add a dedicated read-only UI for browsing decrypted records after online verification, perform automatic cleanup on a schedule, and use an approved enterprise KMS/HSM flow where DPAPI alone is not sufficient.
+A production offline reader should add a dedicated read-only UI for browsing decrypted records after online verification and use an approved enterprise KMS/HSM flow where DPAPI alone is not sufficient.
