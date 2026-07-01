@@ -208,6 +208,12 @@ Build a signed-EXE-ready setup package with Inno Setup installed:
 pnpm package:windows:installer
 ```
 
+Generate Windows release evidence from built artifacts:
+
+```powershell
+pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"
+```
+
 ## Enterprise Roadmap Status
 
 Implemented in this prototype:

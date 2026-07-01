@@ -29,8 +29,9 @@ Use this checklist before publishing a Sentinel Vault Windows package outside a 
 7. Optionally validate or build MSI authoring with `pnpm package:windows:msi -ValidateOnly` or `pnpm package:windows:msi`.
 8. Optionally validate or build MSIX authoring with `pnpm package:windows:msix -ValidateOnly` or `pnpm package:windows:msix`.
 9. Generate release provenance with `pnpm release:provenance -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"`.
-10. Sign the release artifacts with `pnpm sign:windows`.
-11. Verify the signature on a clean Windows host before publishing.
+10. Generate planned Windows release evidence with `pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"`.
+11. Sign the release artifacts with `pnpm sign:windows`.
+12. Verify the signature on a clean Windows host before publishing.
 
 Validate signing inputs without accessing a certificate:
 
@@ -67,6 +68,12 @@ The status must be `Valid` and the signer must match the expected publishing cer
 Record release evidence with `docs/templates/windows-release-evidence.json`.
 Record install hardening evidence with `docs/templates/windows-install-hardening-evidence.json`.
 
+Generate artifact hashes and a planned Windows release evidence file from built artifacts:
+
+```powershell
+pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip" --out ".\artifacts\release\windows-release-evidence.json"
+```
+
 Validate planned or completed release evidence with:
 
 ```powershell
@@ -75,4 +82,5 @@ pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evid
 ```
 
 When `checks.signatureVerification` is `valid` or `passed`, the validator requires real artifact SHA-256 values, valid Authenticode status for `.exe`, `.msi`, and `.msix` artifacts, signer thumbprints, a Git source commit, passing verification gates, and tested rollback evidence.
+On the approved signing host, replace `signatureVerification`, `authenticodeStatus`, and `signerThumbprint` with the verified Authenticode results before marking the release as signed.
 Record source, lockfile, dependency, and artifact provenance with `docs/templates/release-provenance-template.json` or generate it with `pnpm release:provenance`.
