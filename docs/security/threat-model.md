@@ -36,7 +36,7 @@ Out of scope until implemented:
 
 | Threat | Current mitigation | Remaining work |
 | --- | --- | --- |
-| Brute-force login | Login rate limit, temporary account lockout, OIDC/Entra MFA claim enforcement, identity-provider conformance preflight evidence, and device trust evidence gate | Deployment-specific IP/device trust evidence |
+| Brute-force login | Login rate limit, temporary account lockout, OIDC/Entra MFA claim enforcement, identity-provider conformance preflight evidence, device trust evidence gate, and brute-force/IP source evidence gate | Completed deployment-specific IP/device trust evidence |
 | Direct-object access | Role, vault, and tenant metadata checks in service layer, broader cross-tenant negative tests, documented tenant isolation model, and tenant-isolation evidence gate | Completed deployment-specific tenant isolation evidence |
 | Secret disclosure in logs | API avoids intentional value logging, uses a structured logger with recursive sensitive-field, bearer-token, and error redaction, and requires centralized log-shipping redaction evidence | Completed deployment-specific SIEM/log-sink redaction evidence |
 | Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, and key ceremony evidence templates exist | Provider SDK integration and completed provider evidence |

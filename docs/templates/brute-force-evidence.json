@@ -1,0 +1,53 @@
+{
+  "format": "sentinel-brute-force-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "testedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "appControls": {
+    "failedLoginLimit": 5,
+    "lockoutMinutes": 15,
+    "temporaryAccountLockout": "planned",
+    "sessionInvalidationAfterLogout": "planned",
+    "mfaClaimRequired": "planned",
+    "identityProviderPreflight": "planned"
+  },
+  "networkControls": {
+    "edgeName": "replace-with-waf-or-reverse-proxy",
+    "sourceIpPreserved": "planned",
+    "trustedProxyConfigured": "planned",
+    "perIpRateLimit": "planned",
+    "distributedAttackDetection": "planned",
+    "geoOrAsnPolicy": "planned",
+    "wafOrReverseProxyLogging": "planned"
+  },
+  "drills": {
+    "singleAccountLockout": "planned",
+    "singleIpSpray": "planned",
+    "distributedSpray": "planned",
+    "validUserAfterLockout": "planned",
+    "mfaRequiredAfterNewDevice": "planned"
+  },
+  "samples": {
+    "failedAttempts": 0,
+    "distinctSourceIps": 0,
+    "lockedAccounts": 0,
+    "alertsGenerated": 0
+  },
+  "monitoring": {
+    "siemAlertCreated": "planned",
+    "ticketOrIncidentCreated": "planned",
+    "dashboardReviewed": "planned",
+    "falsePositiveDisposition": "planned"
+  },
+  "redaction": {
+    "passwordsFound": false,
+    "tokensFound": false,
+    "sourceIpsScopedOrHashed": "planned"
+  },
+  "approvals": {
+    "identityOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

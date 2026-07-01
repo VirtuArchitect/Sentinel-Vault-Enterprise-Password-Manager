@@ -144,6 +144,7 @@ Implemented:
 - Config validation.
 - Login rate limiting.
 - Temporary account lockout after repeated failed login attempts.
+- Brute-force and IP/source rate-limit evidence template and validator for lockout drills, proxy/WAF controls, alerts, and redaction.
 - Server-side logout and session invalidation.
 - Active session count and TTL surfaced in the Management panel.
 - Admin session review and forced active-session revocation APIs.
