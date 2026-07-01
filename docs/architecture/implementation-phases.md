@@ -112,6 +112,7 @@ Implemented:
 - Fail-on-blockers readiness mode for CI or release gates that must stop when Phase 4-8 evidence is incomplete.
 - CI coverage for deployment readiness tooling, including expected failure of placeholder deployment evidence under the strict release gate.
 - Phase handoff checklist generator that converts readiness blockers and external evidence requests into owner-action checklists.
+- Phase handoff checklist validator that detects stale or edited owner-action checklists before release gate review.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:

@@ -48,6 +48,7 @@
     "validate:external-evidence": "node scripts/validate-external-evidence-requests.mjs",
     "report:phase-readiness": "node scripts/report-phase-readiness.mjs",
     "prepare:phase-handoff": "node scripts/prepare-phase-handoff-checklist.mjs",
+    "validate:phase-handoff": "node scripts/validate-phase-handoff-checklist.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",
