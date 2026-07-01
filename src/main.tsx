@@ -34,7 +34,7 @@ import {
 import { api } from "./api/client";
 import sentinelVaultMarkUrl from "./assets/sentinel-vault-mark.svg";
 import { generatePassword as generateCredentialPassword } from "./lib/passwordGenerator";
-import type { AccessRequest, AddSecret, AuditEvent, ConsoleData, Policies, Secret, UserRecord } from "./types";
+import type { AccessRequest, AddSecret, AuditEvent, ConsoleData, IdentityStatus, Policies, Secret, UserRecord } from "./types";
 import "./styles.css";
 
 const blankSecret = (vaultId = ""): AddSecret => ({
@@ -56,19 +56,30 @@ function SentinelLogo({ size = "medium" }: { size?: "small" | "medium" | "large"
 function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: ConsoleData) => void; initialError?: string }) {
   const [email, setEmail] = useState("ada@defence.local");
   const [password, setPassword] = useState("Passw0rd!");
+  const [idToken, setIdToken] = useState("");
+  const [identity, setIdentity] = useState<IdentityStatus | null>(null);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
+  const externalIdentity = identity?.mode && identity.mode !== "local";
 
   useEffect(() => {
     setError(initialError);
   }, [initialError]);
+
+  useEffect(() => {
+    api<{ identity: IdentityStatus }>("/api/identity/status")
+      .then((response) => setIdentity(response.identity))
+      .catch(() => setIdentity(null));
+  }, []);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setBusy(true);
     setError("");
     try {
-      const login = await api<{ token: string; user: UserRecord }>("/api/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      const login = externalIdentity
+        ? await api<{ token: string; user: UserRecord }>("/api/login/federated", { method: "POST", body: JSON.stringify({ idToken }) })
+        : await api<{ token: string; user: UserRecord }>("/api/login", { method: "POST", body: JSON.stringify({ email, password }) });
       const data = await api<ConsoleData>("/api/console", {}, login.token);
       onLogin(login.token, data);
     } catch (err) {
@@ -90,24 +101,41 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
         </header>
         <p className="login-intro">Sign in with a defence identity to access the multi-user password vault and audit-controlled workbench.</p>
         <form onSubmit={submit} className="unlock-form">
-          <label>
-            User name
-            <input value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" />
-          </label>
-          <label>
-            Master key
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" />
-          </label>
+          {externalIdentity ? (
+            <>
+              <div className="identity-provider">
+                <span>{identity?.name}</span>
+                <strong>{identity?.issuer}</strong>
+              </div>
+              <label>
+                Identity token
+                <textarea value={idToken} onChange={(event) => setIdToken(event.target.value)} rows={5} spellCheck={false} />
+              </label>
+            </>
+          ) : (
+            <>
+              <label>
+                User name
+                <input value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" />
+              </label>
+              <label>
+                Master key
+                <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" />
+              </label>
+            </>
+          )}
           {error && <div className="error">{error}</div>}
-          <button className="primary" disabled={busy}><LockKeyhole size={17} />{busy ? "Unlocking..." : "Unlock Vault"}</button>
+          <button className="primary" disabled={busy}><LockKeyhole size={17} />{busy ? "Unlocking..." : externalIdentity ? "Sign In" : "Unlock Vault"}</button>
         </form>
-        <div className="demo-accounts">
-          <span>Demo identities</span>
-          <button type="button" onClick={() => setEmail("ada@defence.local")}>Security Admin</button>
-          <button type="button" onClick={() => setEmail("morgan@defence.local")}>Vault Operator</button>
-          <button type="button" onClick={() => setEmail("iris@defence.local")}>Auditor</button>
-          <small>Password: Passw0rd!</small>
-        </div>
+        {!externalIdentity && (
+          <div className="demo-accounts">
+            <span>Demo identities</span>
+            <button type="button" onClick={() => setEmail("ada@defence.local")}>Security Admin</button>
+            <button type="button" onClick={() => setEmail("morgan@defence.local")}>Vault Operator</button>
+            <button type="button" onClick={() => setEmail("iris@defence.local")}>Auditor</button>
+            <small>Password: Passw0rd!</small>
+          </div>
+        )}
       </section>
     </main>
   );

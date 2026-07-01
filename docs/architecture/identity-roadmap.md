@@ -22,6 +22,7 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 - Session creation must audit provider, subject, groups, and resulting role without logging tokens.
 - Local demo login must remain available only when `IDENTITY_PROVIDER=local`.
 - Local password login is disabled when `IDENTITY_PROVIDER` is `oidc` or `entra`; use `POST /api/login/federated` with an identity-provider ID token.
+- `GET /api/identity/status` exposes provider mode and claim mapping metadata before login so the console can switch between local and federated sign-in modes.
 
 Deployment evidence is captured in `docs/templates/identity-provider-evidence.json` and validated with:
 
@@ -53,4 +54,4 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 ## Implementation Notes
 
-No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation. Future production hardening should add nonce/state binding for browser redirects, provider-specific conformance tests, refresh-token replay protections, and optional approved identity SDK support.
+No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation. The console can submit an externally acquired ID token in federated mode. Future production hardening should add nonce/state binding for browser redirects, provider-specific conformance tests, refresh-token replay protections, and optional approved identity SDK support.

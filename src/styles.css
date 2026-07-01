@@ -100,6 +100,28 @@ input, select, textarea {
   padding: 5px 8px;
 }
 textarea { min-height: 86px; resize: vertical; }
+.unlock-form textarea {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.identity-provider {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #c2c8da;
+  background: #f8f9fd;
+  padding: 10px 12px;
+}
+.identity-provider span {
+  font-size: 13px;
+  color: #343850;
+}
+.identity-provider strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5b627a;
+  overflow-wrap: anywhere;
+}
 .primary, .secondary {
   min-height: 34px;
   border: 1px solid #7894b6;

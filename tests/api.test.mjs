@@ -87,6 +87,16 @@ test("health endpoint is available without authentication", async () => {
   });
 });
 
+test("identity status is available before login", async () => {
+  await withApi(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/identity/status`);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.identity.mode, config.identityProvider.mode);
+    assert.equal(body.identity.configured, true);
+  });
+});
+
 test("security headers are environment aware", () => {
   const developmentCsp = buildContentSecurityPolicy({ ...config, isProduction: false, host: "127.0.0.1", port: 5173 });
   assert.match(developmentCsp, /ws:\/\/127\.0\.0\.1:5173/);

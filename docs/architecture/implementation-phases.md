@@ -33,6 +33,7 @@ Status: Backend OIDC/Entra ID-token validation implemented; browser redirect UX 
 - External provider role, group-claim, tenant, and MFA-claim settings are validated.
 - Identity-provider evidence template and validator exist for OIDC/Entra readiness.
 - `POST /api/login/federated` validates RS256 ID tokens with OIDC discovery/JWKS, issuer, audience, expiry, MFA claim, group-to-role mapping, and local enabled-user provisioning.
+- `GET /api/identity/status` and the console login screen switch between local demo unlock and external ID-token sign-in.
 - MFA is enforced as an identity-provider token claim; interactive challenge UX remains provider-owned.
 - See `identity-roadmap.md`.
 

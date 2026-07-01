@@ -6,10 +6,14 @@ import { auth } from "../middleware/auth.mjs";
 import { publicUser } from "../rbac/roles.mjs";
 import { createSession, revokeSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
-import { validateExternalIdentityToken } from "../services/identityService.mjs";
+import { getIdentityStatus, validateExternalIdentityToken } from "../services/identityService.mjs";
 import { rateLimit } from "../middleware/rateLimit.mjs";
 
 export const authRoutes = express.Router();
+
+authRoutes.get("/identity/status", (_req, res) => {
+  res.json({ identity: getIdentityStatus() });
+});
 
 const loginFailureKey = (email) => String(email || "").toLowerCase().trim();
 
