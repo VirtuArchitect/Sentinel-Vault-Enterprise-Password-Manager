@@ -76,3 +76,38 @@ test("external identity providers require role and MFA claim mapping", () => {
     config.identityProvider.roleMappings = previous.roleMappings;
   }
 });
+
+test("siem webhook signing key rotation metadata is validated", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  const originalWebhookUrl = config.integrations.siemWebhookUrl;
+  const originalWebhookSecret = config.integrations.siemWebhookSecret;
+  const originalWebhookKeyId = config.integrations.siemWebhookKeyId;
+  const originalPreviousSecret = config.integrations.siemWebhookPreviousSecret;
+  const originalPreviousKeyId = config.integrations.siemWebhookPreviousKeyId;
+  const originalProduction = config.isProduction;
+
+  try {
+    config.isProduction = true;
+    config.integrations.siemWebhookUrl = "https://siem.example.test/events";
+    config.integrations.siemWebhookSecret = "configured-signing-secret";
+    config.integrations.siemWebhookKeyId = "";
+    config.integrations.siemWebhookPreviousSecret = "old-signing-secret";
+    config.integrations.siemWebhookPreviousKeyId = "";
+
+    const issues = validateConfig();
+    assert.ok(issues.includes("SIEM_WEBHOOK_KEY_ID is required when SIEM webhook signing is enabled in production."));
+    assert.ok(issues.includes("SIEM_WEBHOOK_PREVIOUS_KEY_ID is required when SIEM_WEBHOOK_PREVIOUS_SECRET is set."));
+
+    config.integrations.siemWebhookKeyId = "siem-key-2026-07";
+    config.integrations.siemWebhookPreviousKeyId = "siem-key-2026-07";
+    assert.ok(validateConfig().includes("SIEM_WEBHOOK_KEY_ID and SIEM_WEBHOOK_PREVIOUS_KEY_ID must be different during rotation."));
+  } finally {
+    process.env.NODE_ENV = originalNodeEnv;
+    config.integrations.siemWebhookUrl = originalWebhookUrl;
+    config.integrations.siemWebhookSecret = originalWebhookSecret;
+    config.integrations.siemWebhookKeyId = originalWebhookKeyId;
+    config.integrations.siemWebhookPreviousSecret = originalPreviousSecret;
+    config.integrations.siemWebhookPreviousKeyId = originalPreviousKeyId;
+    config.isProduction = originalProduction;
+  }
+});

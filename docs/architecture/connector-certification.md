@@ -41,10 +41,12 @@ The preflight verifies that the revoked token is rejected, the replacement token
 ## SIEM Connectors
 
 - Verify `X-Sentinel-Signature` with the timestamp, nonce, and raw body envelope.
+- Verify `X-Sentinel-Key-Id` resolves to the active receiver secret and keep `X-Sentinel-Previous-Key-Id` accepted only for the approved rotation window.
 - Reject deliveries outside the replay window.
 - Store delivery IDs or nonces for at least the replay window.
 - Confirm event schema mapping for login, reveal, rotate, policy, token, backup, and admin events.
 - Confirm failed delivery alerting and queue monitoring.
+- Rotate `SIEM_WEBHOOK_SECRET` by setting a new `SIEM_WEBHOOK_KEY_ID`, retaining `SIEM_WEBHOOK_PREVIOUS_SECRET` and `SIEM_WEBHOOK_PREVIOUS_KEY_ID` only until receiver evidence confirms the new key is accepted.
 
 ## ITSM Connectors
 

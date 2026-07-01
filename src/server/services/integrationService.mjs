@@ -14,6 +14,9 @@ export const getIntegrationStatus = () => ({
     mode: config.integrations.siemWebhookUrl ? "webhook" : "outbox",
     webhookUrl: config.integrations.siemWebhookUrl,
     signing: Boolean(config.integrations.siemWebhookSecret),
+    signingKeyId: config.integrations.siemWebhookKeyId,
+    previousSigningKeyConfigured: Boolean(config.integrations.siemWebhookPreviousSecret && config.integrations.siemWebhookPreviousKeyId),
+    previousSigningKeyId: config.integrations.siemWebhookPreviousKeyId,
     replayWindowSeconds,
     pending: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && ["queued", "retrying"].includes(item.status)).length || 0,
     failed: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && item.status === "failed").length || 0
@@ -93,6 +96,11 @@ export const updateIntegrationConfig = (patch = {}) => {
   if (patch.siemWebhookSecret !== undefined && String(patch.siemWebhookSecret || "").trim()) {
     config.integrations.siemWebhookSecret = String(patch.siemWebhookSecret).trim();
   }
+  if (patch.siemWebhookKeyId !== undefined) config.integrations.siemWebhookKeyId = String(patch.siemWebhookKeyId || "").trim();
+  if (patch.siemWebhookPreviousSecret !== undefined && String(patch.siemWebhookPreviousSecret || "").trim()) {
+    config.integrations.siemWebhookPreviousSecret = String(patch.siemWebhookPreviousSecret).trim();
+  }
+  if (patch.siemWebhookPreviousKeyId !== undefined) config.integrations.siemWebhookPreviousKeyId = String(patch.siemWebhookPreviousKeyId || "").trim();
   if (patch.siemMaxAttempts !== undefined) config.integrations.siemMaxAttempts = Number(patch.siemMaxAttempts);
   if (patch.siemRetrySeconds !== undefined) config.integrations.siemRetrySeconds = Number(patch.siemRetrySeconds);
   if (patch.itsmBaseUrl !== undefined) config.integrations.itsmBaseUrl = String(patch.itsmBaseUrl || "").trim();
@@ -164,6 +172,10 @@ export const deliverQueuedIntegrationEvents = async ({ fetchImpl = globalThis.fe
     };
     if (config.integrations.siemWebhookSecret) {
       headers["X-Sentinel-Signature"] = `sha256=${signDelivery({ timestamp: deliveryTs, nonce: deliveryNonce, payload }, config.integrations.siemWebhookSecret)}`;
+      if (config.integrations.siemWebhookKeyId) headers["X-Sentinel-Key-Id"] = config.integrations.siemWebhookKeyId;
+      if (config.integrations.siemWebhookPreviousSecret && config.integrations.siemWebhookPreviousKeyId) {
+        headers["X-Sentinel-Previous-Key-Id"] = config.integrations.siemWebhookPreviousKeyId;
+      }
     }
     item.lastDeliveryId = deliveryId;
     item.lastDeliveryAt = deliveryTs;

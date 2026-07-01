@@ -55,6 +55,9 @@ export const config = {
   integrations: {
     siemWebhookUrl: process.env.SIEM_WEBHOOK_URL || "",
     siemWebhookSecret: process.env.SIEM_WEBHOOK_SECRET || "",
+    siemWebhookKeyId: process.env.SIEM_WEBHOOK_KEY_ID || "",
+    siemWebhookPreviousSecret: process.env.SIEM_WEBHOOK_PREVIOUS_SECRET || "",
+    siemWebhookPreviousKeyId: process.env.SIEM_WEBHOOK_PREVIOUS_KEY_ID || "",
     siemMaxAttempts: Number(process.env.SIEM_MAX_ATTEMPTS || 5),
     siemRetrySeconds: Number(process.env.SIEM_RETRY_SECONDS || 60),
     itsmBaseUrl: process.env.ITSM_BASE_URL || "",
@@ -122,6 +125,18 @@ export const validateConfig = () => {
   }
   if (config.integrations.siemWebhookUrl && config.isProduction && !config.integrations.siemWebhookSecret) {
     issues.push("SIEM_WEBHOOK_SECRET is required when SIEM_WEBHOOK_URL is set in production.");
+  }
+  if (config.integrations.siemWebhookUrl && config.isProduction && config.integrations.siemWebhookSecret && !config.integrations.siemWebhookKeyId) {
+    issues.push("SIEM_WEBHOOK_KEY_ID is required when SIEM webhook signing is enabled in production.");
+  }
+  if (config.integrations.siemWebhookPreviousSecret && !config.integrations.siemWebhookPreviousKeyId) {
+    issues.push("SIEM_WEBHOOK_PREVIOUS_KEY_ID is required when SIEM_WEBHOOK_PREVIOUS_SECRET is set.");
+  }
+  if (config.integrations.siemWebhookPreviousKeyId && !config.integrations.siemWebhookPreviousSecret) {
+    issues.push("SIEM_WEBHOOK_PREVIOUS_SECRET is required when SIEM_WEBHOOK_PREVIOUS_KEY_ID is set.");
+  }
+  if (config.integrations.siemWebhookKeyId && config.integrations.siemWebhookPreviousKeyId && config.integrations.siemWebhookKeyId === config.integrations.siemWebhookPreviousKeyId) {
+    issues.push("SIEM_WEBHOOK_KEY_ID and SIEM_WEBHOOK_PREVIOUS_KEY_ID must be different during rotation.");
   }
   if (!Number.isInteger(config.integrations.siemMaxAttempts) || config.integrations.siemMaxAttempts < 1 || config.integrations.siemMaxAttempts > 25) {
     issues.push("SIEM_MAX_ATTEMPTS must be an integer between 1 and 25.");

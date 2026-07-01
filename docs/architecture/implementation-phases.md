@@ -86,6 +86,7 @@ Implemented:
 - SIEM webhook delivery worker with bounded retries.
 - HMAC signing for SIEM webhook payloads.
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
+- SIEM webhook signing key IDs and previous-key rotation metadata for receiver rotation windows.
 - ITSM ticket format validation and live ticket lookup for active/open change or incident records.
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.

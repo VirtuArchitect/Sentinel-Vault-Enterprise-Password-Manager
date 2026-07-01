@@ -780,12 +780,18 @@ test("integration status is available to audit-capable users", async () => {
 test("siem webhook delivery signs payloads and records retries", async () => {
   const previousWebhookUrl = config.integrations.siemWebhookUrl;
   const previousWebhookSecret = config.integrations.siemWebhookSecret;
+  const previousWebhookKeyId = config.integrations.siemWebhookKeyId;
+  const previousWebhookPreviousSecret = config.integrations.siemWebhookPreviousSecret;
+  const previousWebhookPreviousKeyId = config.integrations.siemWebhookPreviousKeyId;
   const previousMaxAttempts = config.integrations.siemMaxAttempts;
   const previousRetrySeconds = config.integrations.siemRetrySeconds;
   const previousOutbox = store.state.integrationOutbox;
 
   config.integrations.siemWebhookUrl = "https://siem.example.test/events";
   config.integrations.siemWebhookSecret = "test-webhook-signing-key";
+  config.integrations.siemWebhookKeyId = "siem-key-2026-07";
+  config.integrations.siemWebhookPreviousSecret = "old-test-webhook-signing-key";
+  config.integrations.siemWebhookPreviousKeyId = "siem-key-2026-06";
   config.integrations.siemMaxAttempts = 2;
   config.integrations.siemRetrySeconds = 5;
   store.state.integrationOutbox = [];
@@ -808,6 +814,8 @@ test("siem webhook delivery signs payloads and records retries", async () => {
     assert.ok(deliveredCalls[0].options.headers["X-Sentinel-Timestamp"]);
     assert.ok(deliveredCalls[0].options.headers["X-Sentinel-Nonce"]);
     assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Replay-Window"], "300");
+    assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Key-Id"], "siem-key-2026-07");
+    assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Previous-Key-Id"], "siem-key-2026-06");
     const parsedDelivery = JSON.parse(deliveredCalls[0].options.body).delivery;
     assert.equal(parsedDelivery.id, deliveredCalls[0].options.headers["X-Sentinel-Delivery-Id"]);
     assert.equal(parsedDelivery.ts, deliveredCalls[0].options.headers["X-Sentinel-Timestamp"]);
@@ -842,6 +850,9 @@ test("siem webhook delivery signs payloads and records retries", async () => {
   } finally {
     config.integrations.siemWebhookUrl = previousWebhookUrl;
     config.integrations.siemWebhookSecret = previousWebhookSecret;
+    config.integrations.siemWebhookKeyId = previousWebhookKeyId;
+    config.integrations.siemWebhookPreviousSecret = previousWebhookPreviousSecret;
+    config.integrations.siemWebhookPreviousKeyId = previousWebhookPreviousKeyId;
     config.integrations.siemMaxAttempts = previousMaxAttempts;
     config.integrations.siemRetrySeconds = previousRetrySeconds;
     store.state.integrationOutbox = previousOutbox;
