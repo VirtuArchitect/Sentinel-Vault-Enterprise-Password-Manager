@@ -45,6 +45,15 @@ const jsonFetch = (url, token, options = {}) => fetch(url, {
   }
 });
 
+const waitFor = async (predicate, { timeoutMs = 1000, intervalMs = 20 } = {}) => {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  assert.ok(predicate(), "Timed out waiting for condition");
+};
+
 const startOidcFixture = async (jwks, options = {}) => {
   const issuedCodes = new Map();
   const server = http.createServer((req, res) => {
@@ -121,7 +130,28 @@ const startOidcFixture = async (jwks, options = {}) => {
 };
 
 const startItsmFixture = async (tickets) => {
+  const workNotes = [];
   const server = http.createServer((req, res) => {
+    const workNoteMatch = req.url?.match(/^\/tickets\/([^/?]+)\/work-notes$/);
+    if (workNoteMatch && req.method === "POST") {
+      const ticketRef = decodeURIComponent(workNoteMatch[1]).toUpperCase();
+      if (!tickets[ticketRef]) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ error: "not found" }));
+        return;
+      }
+      let raw = "";
+      req.on("data", (chunk) => {
+        raw += chunk;
+      });
+      req.on("end", () => {
+        workNotes.push({ ticketRef, body: JSON.parse(raw || "{}") });
+        res.statusCode = 201;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ ok: true }));
+      });
+      return;
+    }
     const match = req.url?.match(/^\/tickets\/([^/?]+)$/);
     if (!match) {
       res.statusCode = 404;
@@ -138,6 +168,7 @@ const startItsmFixture = async (tickets) => {
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(ticket));
   });
+  server.workNotes = workNotes;
   server.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
   return server;
@@ -947,6 +978,44 @@ test("integration config updates and ITSM ticket validation are enforced", async
       const validBody = await validTicket.json();
       assert.equal(validBody.request.ticketValidation.state, "open");
       assert.equal(validBody.request.ticketValidation.assignmentGroup, "Cyber Operations");
+      await waitFor(() => itsmServer.workNotes.length === 1);
+      assert.equal(itsmServer.workNotes[0].ticketRef, "INC-12345");
+      assert.equal(itsmServer.workNotes[0].body.source, "Sentinel Vault");
+      assert.equal(itsmServer.workNotes[0].body.action, "access_requested");
+      assert.equal(itsmServer.workNotes[0].body.requestId, validBody.request.id);
+      assert.equal(itsmServer.workNotes[0].body.redaction.secretValueIncluded, false);
+      assert.equal(itsmServer.workNotes[0].body.redaction.freeFormReasonIncluded, false);
+      assert.doesNotMatch(JSON.stringify(itsmServer.workNotes[0].body), /Need temporary admin access/);
+
+      const approve = await jsonFetch(`${baseUrl}/access-requests/${validBody.request.id}/approve`, ada.token, {
+        method: "POST",
+        body: JSON.stringify({ minutes: 15 })
+      });
+      assert.equal(approve.status, 200);
+      await waitFor(() => itsmServer.workNotes.length === 2);
+      assert.equal(itsmServer.workNotes[1].body.action, "access_approved");
+      assert.equal(itsmServer.workNotes[1].body.requestStatus, "approved");
+
+      const revoke = await jsonFetch(`${baseUrl}/access-requests/${validBody.request.id}/revoke`, ada.token, { method: "POST" });
+      assert.equal(revoke.status, 200);
+      await waitFor(() => itsmServer.workNotes.length === 3);
+      assert.equal(itsmServer.workNotes[2].body.action, "access_revoked");
+      assert.equal(itsmServer.workNotes[2].body.requestStatus, "revoked");
+
+      const secondTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+        method: "POST",
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-12345" })
+      });
+      assert.equal(secondTicket.status, 201);
+      const secondBody = await secondTicket.json();
+      await waitFor(() => itsmServer.workNotes.length === 4);
+      assert.equal(itsmServer.workNotes[3].body.action, "access_requested");
+
+      const deny = await jsonFetch(`${baseUrl}/access-requests/${secondBody.request.id}/deny`, ada.token, { method: "POST" });
+      assert.equal(deny.status, 200);
+      await waitFor(() => itsmServer.workNotes.length === 5);
+      assert.equal(itsmServer.workNotes[4].body.action, "access_denied");
+      assert.equal(itsmServer.workNotes[4].body.requestStatus, "denied");
     });
   } finally {
     await new Promise((resolve) => itsmServer.close(resolve));

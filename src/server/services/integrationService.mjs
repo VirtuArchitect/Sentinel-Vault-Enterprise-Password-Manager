@@ -23,7 +23,7 @@ export const getIntegrationStatus = () => ({
   },
   itsm: {
     configured: Boolean(config.integrations.itsmBaseUrl),
-    mode: config.integrations.itsmBaseUrl ? "live-ticket-validation" : "manual",
+    mode: config.integrations.itsmBaseUrl ? "live-ticket-validation-work-notes" : "manual",
     baseUrl: config.integrations.itsmBaseUrl,
     ticketPrefixes: config.integrations.itsmTicketPrefixes
   },
@@ -88,6 +88,64 @@ export const validateTicketReference = async (ticketRef, options = {}) => {
     required: true,
     prefixes,
     message: live.valid ? "" : live.message
+  };
+};
+
+const publicWorkNotePayload = ({ action, request, actor, secret }) => ({
+  source: "Sentinel Vault",
+  action,
+  requestId: request.id,
+  requestStatus: request.status,
+  requestedAt: request.requestedAt,
+  decidedAt: request.decidedAt || null,
+  expiresAt: request.expiresAt || null,
+  requestedMinutes: request.requestedMinutes || null,
+  actor: {
+    id: actor.id,
+    name: actor.name,
+    role: actor.role
+  },
+  secret: {
+    id: secret.id,
+    name: secret.name,
+    vaultId: secret.vaultId
+  },
+  redaction: {
+    secretValueIncluded: false,
+    freeFormReasonIncluded: false
+  },
+  note: `Sentinel Vault ${action} access request ${request.id} for ${secret.name}. Status: ${request.status}.`
+});
+
+export const postItsmWorkNote = async ({ ticketRef, action, request, actor, secret, fetchImpl = globalThis.fetch }) => {
+  if (!config.integrations.itsmBaseUrl || !ticketRef) {
+    return { attempted: false, delivered: false, reason: "not_configured" };
+  }
+  const normalizedTicketRef = String(ticketRef || "").trim().toUpperCase();
+  const url = `${config.integrations.itsmBaseUrl.replace(/\/$/, "")}/tickets/${encodeURIComponent(normalizedTicketRef)}/work-notes`;
+  const payload = publicWorkNotePayload({ action, request, actor, secret });
+  const response = await fetchImpl(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "User-Agent": "SentinelVault-ITSM/1.0"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    return {
+      attempted: true,
+      delivered: false,
+      status: response.status,
+      message: `ITSM work-note update returned HTTP ${response.status}`
+    };
+  }
+  return {
+    attempted: true,
+    delivered: true,
+    status: response.status,
+    ticketRef: normalizedTicketRef
   };
 };
 

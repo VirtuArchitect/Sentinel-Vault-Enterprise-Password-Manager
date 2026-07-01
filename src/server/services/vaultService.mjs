@@ -7,7 +7,8 @@ import { audit } from "./auditService.mjs";
 import { verifyAuditChain } from "./auditService.mjs";
 import { getIdentityStatus } from "./identityService.mjs";
 import { getIntegrationStatus } from "./integrationService.mjs";
-import { validateTicketReference } from "./integrationService.mjs";
+import { postItsmWorkNote, validateTicketReference } from "./integrationService.mjs";
+import { logger } from "../logging/logger.mjs";
 import { getSessionStatus } from "./sessionService.mjs";
 
 export const canAccessVault = (user, vault) => Boolean(vault && (vault.members.includes(user.id) || user.role === "SECURITY_ADMIN"));
@@ -66,6 +67,44 @@ const publicRequest = (request) => {
     requesterName: requester?.name || "Unknown user",
     approvedByName: approver?.name || null
   };
+};
+
+const scheduleItsmAccessWorkNote = (action, actor, request, secret) => {
+  if (!request.ticketRef) return;
+  const requestSnapshot = {
+    id: request.id,
+    status: request.status,
+    requestedAt: request.requestedAt,
+    decidedAt: request.decidedAt || null,
+    expiresAt: request.expiresAt || null,
+    requestedMinutes: request.requestedMinutes || null
+  };
+  const actorSnapshot = {
+    id: actor.id,
+    name: actor.name,
+    role: actor.role
+  };
+  const secretSnapshot = {
+    id: secret.id,
+    name: secret.name,
+    vaultId: secret.vaultId
+  };
+  const ticketRef = request.ticketRef;
+  store.afterCommit(() => {
+    postItsmWorkNote({
+      ticketRef,
+      action,
+      request: requestSnapshot,
+      actor: actorSnapshot,
+      secret: secretSnapshot
+    }).then((result) => {
+      if (result.attempted && !result.delivered) {
+        logger.warn("itsm.work_note_delivery_failed", { ticketRef, requestId: requestSnapshot.id, action, result });
+      }
+    }).catch((err) => {
+      logger.warn("itsm.work_note_delivery_failed", { ticketRef, requestId: requestSnapshot.id, action, err });
+    });
+  });
 };
 
 const clampInteger = (value, min, max, field) => {
@@ -399,6 +438,7 @@ export const requestSecretAccess = async (user, secretId, reason, options = {}) 
   };
   store.state.accessRequests.unshift(request);
   audit(user.id, "ACCESS_REQUEST", secret.name, text);
+  scheduleItsmAccessWorkNote("access_requested", user, request, secret);
   return publicRequest(request);
 });
 
@@ -434,6 +474,7 @@ export const approveAccessRequest = (user, requestId, minutes = 30) => store.wit
     request.decidedAt = new Date().toISOString();
   }
   audit(user.id, "ACCESS_APPROVED", secret.name, `Approval ${request.approvals.length}/${request.requiredApprovals}; temporary access for ${ttl} minutes`);
+  scheduleItsmAccessWorkNote(request.status === "approved" ? "access_approved" : "approval_recorded", user, request, secret);
   return publicRequest(request);
 });
 
@@ -451,6 +492,7 @@ export const denyAccessRequest = (user, requestId) => store.withTransaction(() =
   request.decidedAt = new Date().toISOString();
   request.expiresAt = null;
   audit(user.id, "ACCESS_DENIED", secret.name, "Temporary access denied");
+  scheduleItsmAccessWorkNote("access_denied", user, request, secret);
   return publicRequest(request);
 });
 
@@ -467,6 +509,7 @@ export const revokeAccessRequest = (user, requestId) => store.withTransaction(()
   request.expiresAt = new Date().toISOString();
   request.decidedAt = new Date().toISOString();
   audit(user.id, "ACCESS_REVOKED", secret.name, "Temporary access revoked");
+  scheduleItsmAccessWorkNote("access_revoked", user, request, secret);
   return publicRequest(request);
 });
 

@@ -90,6 +90,7 @@ Implemented:
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
 - SIEM webhook signing key IDs and previous-key rotation metadata for receiver rotation windows.
 - ITSM ticket format validation and live ticket lookup for active/open change or incident records.
+- Redacted ITSM work-note updates for access request, approval, denial, and revocation events.
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.

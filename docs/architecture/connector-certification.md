@@ -58,7 +58,7 @@ The preflight verifies that the revoked token is rejected, the replacement token
 
 - Verify ticket references against the live ITSM API before privileged approval. Sentinel Vault calls `ITSM_BASE_URL/tickets/{ticketRef}` and requires an active/open/approved/in-progress/scheduled ticket response.
 - Confirm ticket state, requester, assignment group, and change-window policy.
-- Record Sentinel Vault request IDs in the ticket work notes.
+- Record Sentinel Vault request IDs in the ticket work notes. Sentinel Vault posts redacted work notes to `ITSM_BASE_URL/tickets/{ticketRef}/work-notes` for access-request, approval, denial, and revocation events.
 - Reject closed, cancelled, or out-of-window tickets.
 
 ## DevOps Connectors
