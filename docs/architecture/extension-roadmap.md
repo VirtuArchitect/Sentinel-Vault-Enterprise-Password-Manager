@@ -7,6 +7,7 @@
 - Match credentials by origin, URL, and vault policy rather than page title.
 - Require explicit user confirmation before filling high-risk or approval-required entries.
 - Never expose plaintext secrets to extension storage.
+- The browser extension now stores the console token in `chrome.storage.session`, fetches URL-matched entries from the local console, reveals only after an explicit Fill action, and injects plaintext only into the active tab.
 
 ## Clipboard Companion
 

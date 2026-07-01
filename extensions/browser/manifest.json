@@ -10,7 +10,7 @@
   ],
   "host_permissions": [
     "http://127.0.0.1:5173/*",
-    "https://*/"
+    "http://localhost:5173/*"
   ],
   "background": {
     "service_worker": "service-worker.js"

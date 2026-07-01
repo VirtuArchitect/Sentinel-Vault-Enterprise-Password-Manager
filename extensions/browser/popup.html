@@ -11,7 +11,16 @@
       <span>Autofill Companion</span>
     </header>
     <main>
-      <button id="status">Check Console</button>
+      <section id="login-panel">
+        <label>User name<input id="email" autocomplete="username" value="ada@defence.local" /></label>
+        <label>Master key<input id="password" type="password" autocomplete="current-password" /></label>
+        <button id="login">Unlock Extension</button>
+      </section>
+      <section id="match-panel" hidden>
+        <div class="origin" id="origin">Current site</div>
+        <div id="matches" class="matches"></div>
+        <button id="lock" class="secondary">Lock Extension</button>
+      </section>
       <p id="result">Awaiting console check.</p>
     </main>
     <script src="popup.js"></script>

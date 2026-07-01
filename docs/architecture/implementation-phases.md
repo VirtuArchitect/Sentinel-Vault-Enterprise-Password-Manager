@@ -129,6 +129,7 @@ Status: Started
 Implemented:
 
 - Browser extension Manifest V3 scaffold.
+- Explicit browser autofill flow with local-console login, URL matching, audited reveal, and active-tab field injection.
 - Windows clipboard/tray helper PowerShell prototype.
 - Clipboard auto-clear companion implementation with Sentinel-owned marker hashes.
 - Offline cache and native autotype architecture roadmap.
@@ -136,7 +137,7 @@ Implemented:
 
 Remaining:
 
-- Production browser autofill implementation.
+- Browser extension packaging, enterprise policy deployment, and store review.
 - Windows tray UI.
 - Offline read-only cache implementation.
 - Native autotype or credential-provider proof of concept.

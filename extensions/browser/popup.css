@@ -26,10 +26,51 @@ main {
   padding: 12px;
 }
 
+section,
+label,
+.matches {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  font-size: 12px;
+  color: #374151;
+}
+
+input {
+  min-height: 28px;
+  border: 1px solid #9ca3af;
+  padding: 0 7px;
+  font: inherit;
+}
+
 button {
   min-height: 30px;
   border: 1px solid #7894b6;
   background: #dbeafe;
+}
+
+button.secondary {
+  background: #fff;
+}
+
+.match {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+}
+
+.match strong,
+.origin {
+  font-size: 12px;
+}
+
+.match span {
+  color: #4b5563;
+  font-size: 11px;
 }
 
 p {
