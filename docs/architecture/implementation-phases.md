@@ -30,6 +30,7 @@ Status: Architecture ready, provider configuration boundary implemented, token v
 - Local seeded users remain demo-only.
 - OIDC and Entra ID placeholders exist in configuration.
 - External provider role, group-claim, tenant, and MFA-claim settings are validated.
+- Identity-provider evidence template and validator exist for OIDC/Entra readiness.
 - MFA is currently policy metadata, not real challenge verification.
 - See `identity-roadmap.md`.
 

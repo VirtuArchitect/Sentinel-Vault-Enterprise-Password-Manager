@@ -1,0 +1,41 @@
+{
+  "format": "sentinel-identity-provider-evidence-v1",
+  "status": "planned",
+  "provider": "entra",
+  "environment": "replace-with-environment",
+  "issuer": "https://login.microsoftonline.com/replace-with-tenant-id/v2.0",
+  "clientId": "replace-with-client-id",
+  "tenantId": "replace-with-tenant-id",
+  "jwksUri": "https://login.microsoftonline.com/replace-with-tenant-id/discovery/v2.0/keys",
+  "audience": "replace-with-client-id",
+  "claims": {
+    "subject": "sub",
+    "groups": "groups",
+    "mfa": "amr",
+    "mfaRequiredValue": "mfa"
+  },
+  "roleMappings": {
+    "SECURITY_ADMIN": "Sentinel Vault Admins",
+    "VAULT_OPERATOR": "Sentinel Vault Operators",
+    "AUDITOR": "Sentinel Vault Auditors"
+  },
+  "checks": {
+    "issuerDiscovery": "planned",
+    "jwksReachable": "planned",
+    "audienceValidation": "planned",
+    "signatureValidation": "planned",
+    "expiryValidation": "planned",
+    "mfaClaimValidation": "planned",
+    "roleMappingValidation": "planned",
+    "logoutRevocation": "planned"
+  },
+  "rollback": {
+    "disableProcedure": "Set IDENTITY_PROVIDER=local and restart the console in a controlled break-glass window.",
+    "tested": false
+  },
+  "approvals": {
+    "identityOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "changeTicket": "replace-with-ticket"
+  }
+}

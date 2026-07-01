@@ -21,6 +21,14 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 - Session creation must audit provider, subject, groups, and resulting role without logging tokens.
 - Local demo login must remain available only when `IDENTITY_PROVIDER=local`.
 
+Deployment evidence is captured in `docs/templates/identity-provider-evidence.json` and validated with:
+
+```powershell
+pnpm validate:identity-evidence docs/templates/identity-provider-evidence.json
+```
+
+When evidence is marked `pilot` or `production`, the validator rejects placeholders and requires issuer/JWKS, audience, signature, expiry, MFA claim, role mapping, logout revocation, rollback, and approval checks to pass.
+
 ## MFA Requirements
 
 Current MFA is metadata and policy only. Production MFA should support:
