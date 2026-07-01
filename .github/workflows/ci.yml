@@ -9,6 +9,10 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
 
       - name: Install dependencies
@@ -29,6 +33,21 @@ jobs:
 
       - name: Verify
         run: pnpm verify
+
+      - name: Verify SQLite storage mode
+        if: matrix.node-version == 24
+        run: |
+          export STORAGE_PROVIDER=sqlite
+          export SQLITE_PATH="${RUNNER_TEMP}/sentinel-vault-ci.sqlite"
+          pnpm test
+
+      - name: Validate release evidence templates
+        run: |
+          pnpm validate:connector-evidence docs/templates/connector-certification-evidence.json
+          pnpm validate:browser-rollout docs/templates/browser-extension-rollout-evidence.json
+          pnpm validate:kms-hsm-evidence docs/templates/kms-hsm-provider-evidence.json
+          pnpm validate:identity-evidence docs/templates/identity-provider-evidence.json
+          pnpm release:provenance -- --out "${RUNNER_TEMP}/release-provenance.json"
 
       - name: Secret scan
         run: pnpm scan:secrets
