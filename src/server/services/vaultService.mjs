@@ -168,6 +168,7 @@ export const getConsolePayload = (user) => {
   return {
     user: publicUser(user),
     users: hasPermission(user.role, "users:read") ? store.state.users.map(publicUser) : [],
+    tenants: hasPermission(user.role, "policy:write") ? store.state.tenants.map((tenant) => ({ ...tenant })) : [],
     vaults: readableVaults,
     secrets,
     deletedSecrets,
@@ -182,6 +183,7 @@ export const getConsolePayload = (user) => {
     accessRequests,
     metrics: {
       secrets: store.state.secrets.length,
+      tenants: store.state.tenants.length,
       vaults: store.state.vaults.length,
       stale: store.state.secrets.filter(isStale).length,
       highRisk: store.state.secrets.filter((secret) => secret.risk === "high").length,

@@ -5,7 +5,7 @@ import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus, updateIntegrationConfig } from "../services/integrationService.mjs";
 import { audit, exportSignedAuditLedger, verifySignedAuditLedger } from "../services/auditService.mjs";
-import { createVault, updateUser, updateVault } from "../services/adminService.mjs";
+import { createTenant, createVault, exportAdminMetadata, importAdminMetadata, updateTenant, updateUser, updateVault } from "../services/adminService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listDevices, listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
@@ -81,6 +81,35 @@ consoleRoutes.get("/sessions", auth, can("policy:write"), (_req, res) => {
 consoleRoutes.post("/vaults", auth, can("policy:write"), (req, res, next) => {
   try {
     res.status(201).json({ vault: createVault(req.user, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/tenants", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.status(201).json({ tenant: createTenant(req.user, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.patch("/tenants/:id", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ tenant: updateTenant(req.user, req.params.id, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.get("/admin/export", auth, can("policy:write"), (req, res) => {
+  res.setHeader("Content-Disposition", "attachment; filename=sentinel-admin-metadata.json");
+  res.json({ metadata: exportAdminMetadata(req.user) });
+});
+
+consoleRoutes.post("/admin/import", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ result: importAdminMetadata(req.user, req.body) });
   } catch (err) {
     next(err);
   }

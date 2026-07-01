@@ -179,6 +179,8 @@ Implemented in this prototype:
 - Temporary reveal access after approval
 - Console workflows for editing entries, reviewing deleted items, and restoring previous versions
 - Admin workflows for vault group creation, membership updates, and user role/status management
+- Tenant hierarchy metadata and tenant-aware vault groups
+- Safe bulk administration metadata import/export for tenants, vaults, users, and policies
 - Policy validation and session timeout enforcement
 - Tamper-evident audit event hash chaining for security-sensitive actions
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments
@@ -190,7 +192,7 @@ Still intentionally out of scope for the prototype:
 - Production database storage with migrations
 - AD, Entra ID, LDAP, SAML, OIDC, passkey, or real MFA integration
 - Browser extension autofill
-- SIEM, ITSM, PAM, SOAR, Kubernetes, and CI/CD integrations
+- Production-certified SIEM, ITSM, PAM, SOAR, Kubernetes, and CI/CD connectors
 - HA clustering, backup, replication, and disaster recovery
 - HSM/KMS-backed key management and independent cryptographic review
 - Session recording and privileged session brokering

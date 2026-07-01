@@ -32,7 +32,7 @@ Status: Architecture ready, implementation pending dependency approval
 
 ## Phase 4: Vault Administration
 
-Status: Partially implemented
+Status: Implemented
 
 Implemented:
 
@@ -43,9 +43,13 @@ Implemented:
 - Version-history UI with restore action.
 - Vault/group creation and membership management.
 - User enable/disable and role management UI.
+- Tenant hierarchy metadata with cycle prevention.
+- Tenant-aware vault creation and update.
+- Safe bulk administration metadata export for tenants, vaults, users, and policies.
+- Safe bulk administration metadata import for tenants and vaults.
 
 Remaining:
-- Tenant hierarchy and bulk import/export administration.
+- Production bulk secret import with escrow, duplicate detection, and two-person review.
 
 ## Phase 5: Enterprise Integrations
 

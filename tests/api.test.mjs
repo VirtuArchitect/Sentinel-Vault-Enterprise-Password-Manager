@@ -111,10 +111,24 @@ test("console payload respects users and audit permissions", async () => {
 test("security admins can manage vaults and user status", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");
+    const createTenant = await jsonFetch(`${baseUrl}/tenants`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Red Team Directorate",
+        parentId: "t1",
+        classification: "SECRET",
+        ownerUnit: "Cyber Operations"
+      })
+    });
+    assert.equal(createTenant.status, 201);
+    const createdTenant = await createTenant.json();
+    assert.equal(createdTenant.tenant.parentId, "t1");
+
     const createVault = await jsonFetch(`${baseUrl}/vaults`, ada.token, {
       method: "POST",
       body: JSON.stringify({
         name: "Red Team Operations",
+        tenantId: createdTenant.tenant.id,
         classification: "SECRET",
         ownerUnit: "Cyber Operations",
         members: ["u1", "u2"]
@@ -123,7 +137,16 @@ test("security admins can manage vaults and user status", async () => {
     assert.equal(createVault.status, 201);
     const created = await createVault.json();
     assert.equal(created.vault.name, "Red Team Operations");
+    assert.equal(created.vault.tenantId, createdTenant.tenant.id);
     assert.deepEqual(created.vault.members.sort(), ["u1", "u2"]);
+
+    const updateTenant = await jsonFetch(`${baseUrl}/tenants/${createdTenant.tenant.id}`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ ownerUnit: "Assurance" })
+    });
+    assert.equal(updateTenant.status, 200);
+    const updatedTenant = await updateTenant.json();
+    assert.equal(updatedTenant.tenant.ownerUnit, "Assurance");
 
     const updateVault = await jsonFetch(`${baseUrl}/vaults/${created.vault.id}`, ada.token, {
       method: "PATCH",
@@ -155,6 +178,46 @@ test("security admins can manage vaults and user status", async () => {
       body: JSON.stringify({ enabled: true, role: "VAULT_OPERATOR" })
     });
     assert.equal(restoreMorgan.status, 200);
+  });
+});
+
+test("security admins can export and import safe administration metadata", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const exportResponse = await jsonFetch(`${baseUrl}/admin/export`, ada.token);
+    assert.equal(exportResponse.status, 200);
+    assert.match(exportResponse.headers.get("content-disposition"), /sentinel-admin-metadata/);
+    const exported = await exportResponse.json();
+
+    assert.equal(exported.metadata.format, "sentinel-vault-admin-metadata-v1");
+    assert.ok(exported.metadata.tenants.length >= 1);
+    assert.ok(exported.metadata.vaults.every((vault) => Object.hasOwn(vault, "tenantId")));
+    assert.equal(exported.metadata.secrets, undefined);
+    assert.equal(exported.metadata.serviceTokens, undefined);
+    assert.equal(exported.metadata.users.some((user) => Object.hasOwn(user, "hash") || Object.hasOwn(user, "salt")), false);
+
+    const rejected = await jsonFetch(`${baseUrl}/admin/import`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ secrets: [{ id: "unsafe" }] })
+    });
+    assert.equal(rejected.status, 400);
+
+    const importResponse = await jsonFetch(`${baseUrl}/admin/import`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        tenants: [{ id: "t-import", name: "Imported Tenant", parentId: "t1", classification: "SECRET", ownerUnit: "Integration" }],
+        vaults: [{ id: "v-import", tenantId: "t-import", name: "Imported Vault", classification: "SECRET", ownerUnit: "Integration", members: ["u1"], health: 87 }]
+      })
+    });
+    assert.equal(importResponse.status, 200);
+    const imported = await importResponse.json();
+    assert.equal(imported.result.tenants.created, 1);
+    assert.equal(imported.result.vaults.created, 1);
+
+    const consoleResponse = await jsonFetch(`${baseUrl}/console`, ada.token);
+    const consoleData = await consoleResponse.json();
+    assert.ok(consoleData.tenants.some((tenant) => tenant.id === "t-import"));
+    assert.ok(consoleData.vaults.some((vault) => vault.id === "v-import" && vault.tenantId === "t-import"));
   });
 });
 

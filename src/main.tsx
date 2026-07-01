@@ -148,7 +148,7 @@ function App() {
   const [locked, setLocked] = useState(false);
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
   const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
-  const [newVault, setNewVault] = useState({ name: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+  const [newVault, setNewVault] = useState({ name: "", tenantId: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
   const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", devopsApiEnabled: false });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
@@ -156,6 +156,7 @@ function App() {
     if (!activeToken) return;
     const fresh = await api<ConsoleData>("/api/console", {}, activeToken);
     setData(fresh);
+    setNewVault((current) => ({ ...current, tenantId: current.tenantId || fresh.tenants[0]?.id || "" }));
     setIntegrationDraft((current) => ({
       ...current,
       siemWebhookUrl: fresh.integrations.siem.webhookUrl,
@@ -314,7 +315,7 @@ function App() {
     event.preventDefault();
     action(async () => {
       await api("/api/vaults", { method: "POST", body: JSON.stringify({ ...newVault, members: newVault.members.split(",").map((member) => member.trim()) }) }, token);
-      setNewVault({ name: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+      setNewVault({ name: "", tenantId: data.tenants[0]?.id || "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
     }, "Vault group created");
   };
 
@@ -673,8 +674,8 @@ function UserTable({ users, canManage, onChange }: { users: UserRecord[]; canMan
 function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubmit, integrationDraft, onIntegrationChange, onIntegrationSubmit }: {
   data: ConsoleData;
   canManage: boolean;
-  newVault: { name: string; classification: string; ownerUnit: string; members: string };
-  onVaultChange: (vault: { name: string; classification: string; ownerUnit: string; members: string }) => void;
+  newVault: { name: string; tenantId: string; classification: string; ownerUnit: string; members: string };
+  onVaultChange: (vault: { name: string; tenantId: string; classification: string; ownerUnit: string; members: string }) => void;
   onVaultSubmit: (event: React.FormEvent) => void;
   integrationDraft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean };
   onIntegrationChange: (draft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean }) => void;
@@ -685,6 +686,7 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
       <h2><Settings size={18} />Management</h2>
       <dl>
         <div><dt>Identity</dt><dd>{data.identity.name} ({data.identity.mode})</dd></div>
+        <div><dt>Tenants</dt><dd>{data.metrics.tenants} hierarchy nodes</dd></div>
         <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.reviewable} reviewable / {data.session.knownDevices} devices / {data.session.ttlMinutes} min TTL</dd></div>
         <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion} / {data.crypto.keyProvider.provider}</dd></div>
         <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
@@ -698,6 +700,9 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
       <form className="vault-admin-form" onSubmit={onVaultSubmit}>
         <h3><FolderLock size={16} />Create Vault Group</h3>
         <label>Name<input value={newVault.name} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, name: event.target.value })} /></label>
+        <label>Tenant<select value={newVault.tenantId} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, tenantId: event.target.value })}>
+          {data.tenants.map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.name}</option>)}
+        </select></label>
         <label>Classification<select value={newVault.classification} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, classification: event.target.value })}>
           <option value="OFFICIAL">OFFICIAL</option>
           <option value="OFFICIAL-SENSITIVE">OFFICIAL-SENSITIVE</option>

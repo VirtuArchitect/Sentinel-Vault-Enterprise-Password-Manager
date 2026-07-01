@@ -35,7 +35,7 @@ Out of scope until implemented:
 | Threat | Current mitigation | Remaining work |
 | --- | --- | --- |
 | Brute-force login | Login rate limit and temporary account lockout | MFA and IP/device review |
-| Direct-object access | Role and vault checks in service layer | Broader negative tests and tenant model |
+| Direct-object access | Role, vault, and tenant metadata checks in service layer | Broader negative tests and production tenant isolation model |
 | Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
 | Compromised root key | Production requires non-demo key and key-provider boundary supports external KMS/HSM modes | Provider SDK integration and key rotation ceremony |
 | Audit tampering | Tamper-evident audit hash chaining, signed ledger export, and append-only JSONL ledger for file-backed deployments | External signing service and WORM storage |

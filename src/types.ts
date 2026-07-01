@@ -13,11 +13,20 @@ export type UserRecord = {
 
 export type VaultRecord = {
   id: string;
+  tenantId: string | null;
   name: string;
   classification: string;
   ownerUnit: string;
   members: string[];
   health: number;
+};
+
+export type TenantRecord = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  classification: string;
+  ownerUnit: string;
 };
 
 export type Secret = {
@@ -69,6 +78,7 @@ export type Policies = {
 export type ConsoleData = {
   user: UserRecord;
   users: UserRecord[];
+  tenants: TenantRecord[];
   vaults: VaultRecord[];
   secrets: Secret[];
   deletedSecrets: Secret[];
@@ -83,6 +93,7 @@ export type ConsoleData = {
   accessRequests: AccessRequest[];
   metrics: {
     secrets: number;
+    tenants: number;
     vaults: number;
     stale: number;
     highRisk: number;

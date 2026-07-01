@@ -21,6 +21,7 @@ const toPersistedState = (state) => {
 
 const normalizeState = (candidate) => {
   const seeded = createSeedState();
+  const tenants = candidate?.tenants || seeded.tenants;
   return {
     ...seeded,
     ...candidate,
@@ -29,7 +30,11 @@ const normalizeState = (candidate) => {
     loginFailures: new Map(),
     users: candidate?.users || seeded.users,
     deviceInventory: candidate?.deviceInventory || seeded.deviceInventory,
-    vaults: candidate?.vaults || seeded.vaults,
+    tenants,
+    vaults: (candidate?.vaults || seeded.vaults).map((vault) => ({
+      tenantId: tenants[0]?.id || "t1",
+      ...vault
+    })),
     secrets: candidate?.secrets || seeded.secrets,
     serviceTokens: candidate?.serviceTokens || seeded.serviceTokens,
     accessRequests: candidate?.accessRequests || seeded.accessRequests,
@@ -222,6 +227,9 @@ export const store = {
   },
   findVaultById(id) {
     return state.vaults.find((vault) => vault.id === id);
+  },
+  findTenantById(id) {
+    return state.tenants.find((tenant) => tenant.id === id);
   },
   findSecretById(id) {
     return state.secrets.find((secret) => secret.id === id);

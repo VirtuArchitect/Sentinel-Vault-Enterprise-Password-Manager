@@ -26,10 +26,15 @@ export const createSeedState = () => ({
   sessions: new Map(),
   deviceInventory: [],
   loginFailures: new Map(),
+  tenants: [
+    { id: "t1", name: "Defence Command", parentId: null, classification: "SECRET", ownerUnit: "Strategic Systems" },
+    { id: "t2", name: "Cyber Operations", parentId: "t1", classification: "TOP SECRET", ownerUnit: "Cyber Operations" },
+    { id: "t3", name: "Assurance", parentId: "t1", classification: "OFFICIAL-SENSITIVE", ownerUnit: "Assurance" }
+  ],
   vaults: [
-    { id: "v1", name: "Mission Systems", classification: "SECRET", ownerUnit: "Strategic Systems", members: ["u1", "u2"], health: 98 },
-    { id: "v2", name: "Identity Backbone", classification: "TOP SECRET", ownerUnit: "Cyber Operations", members: ["u1", "u2", "u3"], health: 93 },
-    { id: "v3", name: "Supplier Access", classification: "OFFICIAL-SENSITIVE", ownerUnit: "Assurance", members: ["u1", "u3"], health: 89 }
+    { id: "v1", tenantId: "t1", name: "Mission Systems", classification: "SECRET", ownerUnit: "Strategic Systems", members: ["u1", "u2"], health: 98 },
+    { id: "v2", tenantId: "t2", name: "Identity Backbone", classification: "TOP SECRET", ownerUnit: "Cyber Operations", members: ["u1", "u2", "u3"], health: 93 },
+    { id: "v3", tenantId: "t3", name: "Supplier Access", classification: "OFFICIAL-SENSITIVE", ownerUnit: "Assurance", members: ["u1", "u3"], health: 89 }
   ],
   secrets: [
     seedSecret({ id: "s1", vaultId: "v1", type: "api_key", name: "Satellite Telemetry API", username: "svc_telemetry", password: "E7#hP9!qZ2@Lw8$mV4", url: "https://telemetry.defence.local", tags: ["api", "mission"], risk: "low", rotatedAt: "2026-06-21T09:30:00Z", sharedWith: ["u2"], notes: "Runtime API credential for telemetry ingestion." }),
