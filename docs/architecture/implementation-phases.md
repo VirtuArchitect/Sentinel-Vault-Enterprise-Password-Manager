@@ -200,6 +200,7 @@ Implemented:
 - Credential-provider proof-of-concept boundary and formal autotype security review.
 - Browser extension packaging script, enterprise policy templates, and store review checklist.
 - Browser extension enterprise rollout evidence template and validator.
+- Browser extension rollout evidence generator for packaged artifact SHA-256, manifest version, and planned enterprise rollout metadata.
 - Browser enterprise policy renderer for completed rollout evidence.
 - Native companion and credential-provider release evidence template and validator for signed-artifact, abuse-test, rollback, and approval gates.
 - Offline cache and native autotype architecture roadmap.

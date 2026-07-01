@@ -167,6 +167,12 @@ Build the browser autofill extension package:
 pnpm package:extension
 ```
 
+Generate planned browser extension rollout evidence from the package:
+
+```powershell
+pnpm release:browser-rollout -- --artifact ".\artifacts\browser\sentinel-vault-autofill.zip"
+```
+
 Prepare a bulk secret import payload and redacted evidence from a CSV export:
 
 ```powershell

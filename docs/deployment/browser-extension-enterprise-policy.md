@@ -31,10 +31,11 @@ Replace `replace-with-extension-id` with the enterprise extension ID assigned by
 Record rollout evidence with:
 
 ```powershell
+pnpm release:browser-rollout -- --artifact ".\artifacts\browser\sentinel-vault-autofill.zip" --out ".\artifacts\browser\browser-extension-rollout-evidence.json"
 pnpm validate:browser-rollout docs/templates/browser-extension-rollout-evidence.json
 ```
 
-For pilot or production rollout evidence, replace the placeholder extension IDs with the private Chrome Web Store or Edge Add-ons IDs, record the package SHA-256, and mark privacy, screenshot redaction, and rollback testing as complete.
+For pilot or production rollout evidence, replace the placeholder extension IDs with the private Chrome Web Store or Edge Add-ons IDs, confirm the generated package SHA-256, and mark privacy, screenshot redaction, and rollback testing as complete.
 
 Render Chrome and Edge enterprise policies from a completed rollout evidence file:
 
