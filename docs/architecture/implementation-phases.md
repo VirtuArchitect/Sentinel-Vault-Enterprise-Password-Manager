@@ -98,6 +98,7 @@ Implemented:
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.
 - SIEM receiver signing-key rotation evidence template and validator.
+- SIEM receiver signing-key rotation evidence generator for receiver metadata, key-window checks, replay rejection, delivery samples, redaction review, and approvals.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.

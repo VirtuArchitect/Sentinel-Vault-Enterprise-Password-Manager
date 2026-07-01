@@ -52,6 +52,7 @@
     "release:brute-force": "node scripts/generate-brute-force-evidence.mjs",
     "validate:brute-force": "node scripts/validate-brute-force-evidence.mjs",
     "validate:tenant-isolation": "node scripts/validate-tenant-isolation-evidence.mjs",
+    "release:siem-rotation": "node scripts/generate-siem-receiver-rotation-evidence.mjs",
     "validate:siem-rotation": "node scripts/validate-siem-receiver-rotation-evidence.mjs",
     "validate:release-attestation": "node scripts/validate-release-attestation-evidence.mjs",
     "release:sast": "node scripts/generate-sast-evidence.mjs",
