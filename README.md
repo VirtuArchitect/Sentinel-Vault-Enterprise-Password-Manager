@@ -172,6 +172,12 @@ Prepare a bulk secret import payload and redacted evidence from a CSV export:
 pnpm prepare:bulk-import -- --csv ".\docs\templates\bulk-secret-import-template.csv" --mapping ".\docs\templates\bulk-secret-import-mapping.json"
 ```
 
+Inspect a JSON state file before a future SQLite/Postgres migration:
+
+```powershell
+pnpm inspect:storage -- --state ".\data\sentinel-state.json"
+```
+
 Windows deployment hardening guides:
 
 - `docs/deployment/windows-code-signing.md`

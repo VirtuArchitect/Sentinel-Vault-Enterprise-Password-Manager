@@ -20,6 +20,14 @@ The current `store` module exposes an explicit provider boundary through `STORAG
 - Enforce state version and migration checks before the server starts.
 - Expose health, backup, restore, and retention metadata to admin-only endpoints.
 
+Migration readiness evidence can be generated from a JSON state file:
+
+```powershell
+pnpm inspect:storage -- --state ".\data\sentinel-state.json"
+```
+
+The default evidence output is `artifacts/storage/storage-migration-evidence.json`.
+
 ## SQLite Phase
 
 SQLite is the recommended next implementation step because it fits the Windows installer and avoids external database setup.
@@ -29,6 +37,7 @@ Planned work:
 - Use the implemented `STORAGE_PROVIDER=sqlite` and `SQLITE_PATH` configuration.
 - Create migration scripts for the current JSON entities.
 - Add import/export from the existing JSON state file.
+- Use `scripts/inspect-storage-state.mjs` to prove source state readiness before migration.
 - Use transactions for secret lifecycle operations.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 - Add tests that run the same API suite against JSON and SQLite modes.
@@ -44,6 +53,7 @@ Planned work:
 - Use the implemented `STORAGE_PROVIDER=postgres` and `DATABASE_URL` configuration.
 - Add connection pooling.
 - Add migration locking.
+- Use `docs/templates/storage-migration-evidence.json` as required cutover evidence.
 - Add row-level ownership checks where appropriate.
 - Add backup and restore runbooks.
 - Add HA deployment guidance.

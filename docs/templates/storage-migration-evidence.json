@@ -1,0 +1,55 @@
+{
+  "format": "sentinel-storage-migration-evidence-v1",
+  "inspectedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "stateFile": "replace-with-state-file",
+  "stateSha256": "replace-with-sha256",
+  "stateVersion": 2,
+  "providerTargets": [
+    "sqlite",
+    "postgres"
+  ],
+  "counts": {
+    "users": 0,
+    "deviceInventory": 0,
+    "tenants": 0,
+    "vaults": 0,
+    "secrets": 0,
+    "serviceTokens": 0,
+    "secretImports": 0,
+    "accessRequests": 0,
+    "integrationOutbox": 0,
+    "audit": 0
+  },
+  "checks": {
+    "requiredCollectionsPresent": true,
+    "transientCollectionsExcluded": true,
+    "plaintextSecretsAbsent": true,
+    "encryptedSecretPayloadsPresent": true,
+    "orphanSecretsAbsent": true,
+    "orphanVaultMembersAbsent": true
+  },
+  "findings": {
+    "missingCollections": [],
+    "defaultedCollections": [],
+    "transientCollectionsPresent": [],
+    "plaintextSecretFields": [],
+    "legacyEncryptedShape": [],
+    "unencryptedSecretIds": [],
+    "orphanSecrets": [],
+    "orphanVaultMembers": []
+  },
+  "migrationTables": [
+    "users",
+    "devices",
+    "tenants",
+    "vaults",
+    "vault_members",
+    "secrets",
+    "secret_imports",
+    "access_requests",
+    "service_tokens",
+    "integration_outbox",
+    "audit_events",
+    "policies"
+  ]
+}
