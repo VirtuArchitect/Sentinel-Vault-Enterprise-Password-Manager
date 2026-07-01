@@ -664,11 +664,49 @@ test("repeated failed logins temporarily lock the account", async () => {
   }
 });
 
-test("object-level authorization blocks secret rotation outside accessible vaults", async () => {
+test("object-level authorization blocks cross-tenant secret operations", async () => {
   await withApi(async (baseUrl) => {
     const morgan = await login(baseUrl, "morgan@defence.local");
-    const response = await jsonFetch(`${baseUrl}/secrets/s3/rotate`, morgan.token, { method: "POST" });
-    assert.equal(response.status, 403);
+    const beforeRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
+
+    const blockedReveal = await jsonFetch(`${baseUrl}/secrets/s3/reveal`, morgan.token, { method: "POST" });
+    assert.equal(blockedReveal.status, 403);
+
+    const blockedUpdate = await jsonFetch(`${baseUrl}/secrets/s3`, morgan.token, {
+      method: "PATCH",
+      body: JSON.stringify({ notes: "cross-tenant mutation attempt" })
+    });
+    assert.equal(blockedUpdate.status, 403);
+
+    const blockedDelete = await jsonFetch(`${baseUrl}/secrets/s3`, morgan.token, { method: "DELETE" });
+    assert.equal(blockedDelete.status, 403);
+
+    const blockedRestore = await jsonFetch(`${baseUrl}/secrets/s3/restore`, morgan.token, { method: "POST" });
+    assert.equal(blockedRestore.status, 403);
+
+    const blockedVersionRestore = await jsonFetch(`${baseUrl}/secrets/s3/versions/0/restore`, morgan.token, { method: "POST" });
+    assert.equal(blockedVersionRestore.status, 403);
+
+    const blockedRotate = await jsonFetch(`${baseUrl}/secrets/s3/rotate`, morgan.token, { method: "POST" });
+    assert.equal(blockedRotate.status, 403);
+
+    const blockedShare = await jsonFetch(`${baseUrl}/secrets/s3/share`, morgan.token, {
+      method: "POST",
+      body: JSON.stringify({ userId: "u2" })
+    });
+    assert.equal(blockedShare.status, 403);
+
+    const request = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+      method: "POST",
+      body: JSON.stringify({ secretId: "s3", reason: "Need supplier credential review", minutes: 30 })
+    });
+    assert.equal(request.status, 201);
+    const requestBody = await request.json();
+
+    const blockedApprove = await jsonFetch(`${baseUrl}/access-requests/${requestBody.request.id}/approve`, morgan.token, { method: "POST" });
+    assert.equal(blockedApprove.status, 403);
+
+    store.state.accessRequests = beforeRequests;
   });
 });
 

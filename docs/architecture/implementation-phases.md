@@ -60,6 +60,7 @@ Implemented:
 - User enable/disable and role management UI.
 - Tenant hierarchy metadata with cycle prevention.
 - Tenant-aware vault creation and update.
+- Tenant isolation model and broader cross-tenant negative authorization tests for reveal, update, delete, restore, rotate, share, and access approval operations.
 - Safe bulk administration metadata export for tenants, vaults, users, and policies.
 - Safe bulk administration metadata import for tenants and vaults.
 - Bulk secret import with encrypted escrow, duplicate detection, and independent approval.
