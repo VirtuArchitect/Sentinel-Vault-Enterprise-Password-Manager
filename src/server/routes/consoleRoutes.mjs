@@ -5,7 +5,7 @@ import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
 import { audit } from "../services/auditService.mjs";
-import { createServiceToken, listServiceTokens, revokeServiceToken } from "../services/serviceTokenService.mjs";
+import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
   approveAccessRequest,
@@ -75,6 +75,14 @@ consoleRoutes.post("/service-tokens", auth, can("policy:write"), (req, res, next
 consoleRoutes.post("/service-tokens/:id/revoke", auth, can("policy:write"), (req, res, next) => {
   try {
     res.json(revokeServiceToken(req.user, req.params.id));
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/service-tokens/:id/rotate", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json(rotateServiceToken(req.user, req.params.id));
   } catch (err) {
     next(err);
   }

@@ -3,6 +3,7 @@ import { store } from "../data/store.mjs";
 import { audit } from "./auditService.mjs";
 
 const hashToken = (token) => crypto.createHash("sha256").update(token, "utf8").digest("base64url");
+const createRawServiceToken = () => `svt_${crypto.randomBytes(32).toString("base64url")}`;
 
 const publicToken = (token) => ({
   id: token.id,
@@ -13,6 +14,8 @@ const publicToken = (token) => ({
   expiresAt: token.expiresAt,
   revokedAt: token.revokedAt || null,
   createdAt: token.createdAt,
+  rotatedAt: token.rotatedAt || null,
+  rotationCount: token.rotationCount || 0,
   lastUsedAt: token.lastUsedAt || null,
   lastUsedSecretId: token.lastUsedSecretId || null,
   lastUsedSource: token.lastUsedSource || null,
@@ -34,7 +37,7 @@ export const createServiceToken = (user, input = {}) => {
     error.status = 400;
     throw error;
   }
-  const raw = `svt_${crypto.randomBytes(32).toString("base64url")}`;
+  const raw = createRawServiceToken();
   const token = {
     id: crypto.randomUUID(),
     name,
@@ -44,6 +47,8 @@ export const createServiceToken = (user, input = {}) => {
     allowedSecrets: Array.isArray(input.allowedSecrets) ? input.allowedSecrets : [],
     expiresAt: new Date(Date.now() + ttlDays * 86400000).toISOString(),
     createdAt: new Date().toISOString(),
+    rotatedAt: null,
+    rotationCount: 0,
     revokedAt: null,
     lastUsedAt: null,
     lastUsedSecretId: null,
@@ -65,6 +70,31 @@ export const revokeServiceToken = (user, id) => {
   token.revokedAt = new Date().toISOString();
   audit(user.id, "SERVICE_TOKEN_REVOKE", token.name, "Revoked DevOps service token");
   return { token: publicToken(token) };
+};
+
+export const rotateServiceToken = (user, id) => {
+  const token = store.findServiceTokenById(id);
+  if (!token) {
+    const error = new Error("Service token not found");
+    error.status = 404;
+    throw error;
+  }
+  if (token.revokedAt) {
+    const error = new Error("Revoked service tokens cannot be rotated");
+    error.status = 400;
+    throw error;
+  }
+
+  const raw = createRawServiceToken();
+  token.tokenHash = hashToken(raw);
+  token.rotatedAt = new Date().toISOString();
+  token.rotationCount = Number(token.rotationCount || 0) + 1;
+  token.lastUsedAt = null;
+  token.lastUsedSecretId = null;
+  token.lastUsedSource = null;
+  token.useCount = 0;
+  audit(user.id, "SERVICE_TOKEN_ROTATE", token.name, "Rotated scoped DevOps service token");
+  return { token: publicToken(token), secret: raw };
 };
 
 export const resolveServiceToken = (rawToken, secret, source = "127.0.0.1") => {

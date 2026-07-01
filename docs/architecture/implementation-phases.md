@@ -56,6 +56,7 @@ Implemented:
 - Integration status.
 - Integration outbox metadata.
 - Scoped DevOps service-token retrieval API.
+- Last-used, use-count, and rotation metadata for service tokens.
 
 Remaining:
 
@@ -63,7 +64,6 @@ Remaining:
 - ITSM ticket validation.
 - Webhook signing.
 - Integration configuration UI.
-- Last-used and rotation metadata for service tokens.
 
 ## Phase 6: Windows Installer Hardening
 

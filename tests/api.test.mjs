@@ -341,8 +341,28 @@ test("managed service tokens are scoped to allowed secrets", async () => {
       assert.ok(usedToken.lastUsedAt);
       assert.ok(usedToken.lastUsedSource);
 
-      const denied = await fetch(`${baseUrl}/devops/secrets/s2`, {
+      const rotate = await jsonFetch(`${baseUrl}/service-tokens/${body.token.id}/rotate`, ada.token, { method: "POST" });
+      assert.equal(rotate.status, 200);
+      const rotated = await rotate.json();
+      assert.match(rotated.secret, /^svt_/);
+      assert.notEqual(rotated.secret, body.secret);
+      assert.equal(rotated.token.rotationCount, 1);
+      assert.ok(rotated.token.rotatedAt);
+      assert.equal(rotated.token.useCount, 0);
+      assert.equal(rotated.token.lastUsedAt, null);
+
+      const oldTokenDenied = await fetch(`${baseUrl}/devops/secrets/s1`, {
         headers: { "X-Sentinel-Service-Token": body.secret }
+      });
+      assert.equal(oldTokenDenied.status, 401);
+
+      const newTokenAllowed = await fetch(`${baseUrl}/devops/secrets/s1`, {
+        headers: { "X-Sentinel-Service-Token": rotated.secret }
+      });
+      assert.equal(newTokenAllowed.status, 200);
+
+      const denied = await fetch(`${baseUrl}/devops/secrets/s2`, {
+        headers: { "X-Sentinel-Service-Token": rotated.secret }
       });
       assert.equal(denied.status, 401);
 
