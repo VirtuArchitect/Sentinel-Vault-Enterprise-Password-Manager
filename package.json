@@ -72,6 +72,7 @@
     "package:phase-evidence": "node scripts/package-phase-evidence.mjs",
     "validate:phase-evidence": "node scripts/validate-phase-evidence-pack.mjs",
     "validate:phase-gate": "node scripts/validate-phase-gate.mjs",
+    "validate:phase-gate-report": "node scripts/validate-phase-gate-report.mjs",
     "prepare:phase-actions": "node scripts/prepare-phase-action-register.mjs",
     "validate:phase-actions": "node scripts/validate-phase-action-register.mjs",
     "prepare:phase-gaps": "node scripts/prepare-phase-gap-matrix.mjs",

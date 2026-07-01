@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -110,6 +110,73 @@ test("phase gate validator can fail release gates when blockers remain", () => {
       assert.equal(report.validated, true);
       assert.equal(report.ready, false);
       assert.ok(report.blockerCount > 0);
+      return true;
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase gate report validator accepts current reports", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-gate-report-${process.pid}-${Date.now()}`);
+  try {
+    createPhaseGateWorkspace(dir);
+    const reportPath = path.join(dir, "phase-gate-validation.json");
+    runScript("scripts/validate-phase-gate.mjs", [
+      "--dir", dir,
+      "--out", reportPath
+    ]);
+
+    const result = JSON.parse(runScript("scripts/validate-phase-gate-report.mjs", [
+      "--dir", dir,
+      "--report", reportPath
+    ]));
+
+    assert.equal(result.format, "sentinel-phase-gate-report-validation-v1");
+    assert.equal(result.ready, false);
+    assert.ok(result.blockerCount > 0);
+    assert.equal(result.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase gate report validator rejects stale reports and not-ready release mode", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-gate-report-stale-${process.pid}-${Date.now()}`);
+  try {
+    createPhaseGateWorkspace(dir);
+    const reportPath = path.join(dir, "phase-gate-validation.json");
+    runScript("scripts/validate-phase-gate.mjs", [
+      "--dir", dir,
+      "--out", reportPath
+    ]);
+
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+    report.ready = true;
+    report.blockerCount = 0;
+    writeFileSync(reportPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-gate-report.mjs", [
+      "--dir", dir,
+      "--report", reportPath
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /phase gate validation report is stale/);
+      return true;
+    });
+
+    runScript("scripts/validate-phase-gate.mjs", [
+      "--dir", dir,
+      "--out", reportPath
+    ]);
+
+    assert.throws(() => runScript("scripts/validate-phase-gate-report.mjs", [
+      "--dir", dir,
+      "--report", reportPath,
+      "--require-ready"
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /phase gate validation report is not ready/);
       return true;
     });
   } finally {

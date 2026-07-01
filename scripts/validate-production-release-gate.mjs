@@ -138,8 +138,10 @@ const checks = {
     ])
     : { ok: false, result: null, error: `Phase evidence pack manifest not found: ${paths.phaseEvidence}` },
   phaseGate: existsSync(paths.phaseGate)
-    ? runJson("scripts/validate-phase-gate.mjs", [
-      "--dir", evidenceDir
+    ? runJson("scripts/validate-phase-gate-report.mjs", [
+      "--dir", evidenceDir,
+      "--report", paths.phaseGate,
+      "--require-ready"
     ])
     : { ok: false, result: null, error: `Phase gate validation report not found: ${paths.phaseGate}` },
   phaseActions: existsSync(paths.phaseActions) && existsSync(paths.phaseGate) && existsSync(paths.externalRequests)

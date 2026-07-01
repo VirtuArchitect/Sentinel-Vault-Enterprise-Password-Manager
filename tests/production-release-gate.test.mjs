@@ -186,7 +186,8 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseCompletion"));
       assert.equal(report.checks.phaseHandoff.ok, true);
       assert.equal(report.checks.phaseEvidence.ok, true);
-      assert.equal(report.checks.phaseGate.ok, true);
+      assert.equal(report.checks.phaseGate.ok, false);
+      assert.ok(report.blockers.some((blocker) => blocker.gate === "phaseGate"));
       assert.equal(report.checks.phaseActions.ok, true);
       assert.equal(report.checks.phaseGaps.ok, true);
       assert.equal(report.checks.phaseDecision.ok, true);
