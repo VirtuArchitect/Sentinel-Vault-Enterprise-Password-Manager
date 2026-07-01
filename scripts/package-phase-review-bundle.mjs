@@ -20,6 +20,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 
 const evidenceDir = path.resolve(args.get("--dir") || "artifacts/deployment/pilot");
 const outputPath = path.resolve(args.get("--out") || path.join(evidenceDir, "phase-review-bundle-manifest.json"));
+const requireApprovedWaivers = args.get("--require-approved-waivers") === true || args.get("--require-approved-waivers") === "true";
 
 const artifactMap = {
   phaseEvidenceManifest: args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json"),
@@ -63,6 +64,7 @@ const phaseSignoffs = JSON.parse(readFileSync(artifactMap.phaseSignoffMatrix, "u
 const phaseIntake = JSON.parse(readFileSync(artifactMap.phaseEvidenceIntake, "utf8"));
 const phaseAttachments = JSON.parse(readFileSync(artifactMap.phaseAttachmentInventory, "utf8"));
 const phaseWaivers = JSON.parse(readFileSync(artifactMap.phaseWaiverRegister, "utf8"));
+const placeholder = /replace-with/i;
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
@@ -87,6 +89,24 @@ assert.equal(phaseAttachments.intakePath, path.resolve(artifactMap.phaseEvidence
 assert.equal(phaseWaivers.inventoryPath, path.resolve(artifactMap.phaseAttachmentInventory), "phase waiver register does not reference selected phase attachment inventory");
 assert.equal(phaseWaivers.decisionPath, path.resolve(artifactMap.phaseDecisionRecord), "phase waiver register does not reference selected phase decision record");
 
+const today = new Date().toISOString().slice(0, 10);
+const waiverSummary = {
+  waiverCount: phaseWaivers.waivers.length,
+  proposedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "proposed").length,
+  approvedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "approved").length,
+  expiredCount: phaseWaivers.waivers.filter((waiver) => waiver.expiresAt <= today).length
+};
+
+if (requireApprovedWaivers) {
+  for (const [index, waiver] of phaseWaivers.waivers.entries()) {
+    assert.equal(waiver.status, "approved", `waiver ${index + 1} must be approved for release review`);
+    assert.match(waiver.expiresAt || "", /^\d{4}-\d{2}-\d{2}$/, `waiver ${index + 1} expiry must be YYYY-MM-DD`);
+    assert.ok(waiver.expiresAt > today, `waiver ${index + 1} approval is expired`);
+    assert.ok(waiver.approvalReference && !placeholder.test(waiver.approvalReference), `waiver ${index + 1} approval reference is required`);
+    assert.ok(waiver.compensatingControl && !placeholder.test(waiver.compensatingControl), `waiver ${index + 1} compensating control is required`);
+  }
+}
+
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 const manifest = {
   format: "sentinel-phase-review-bundle-manifest-v1",
@@ -101,6 +121,10 @@ const manifest = {
   warningCount: phaseGate.warningCount,
   remainingPhaseCount: phaseGate.remainingPhaseCount,
   remainingItemCount: phaseGate.remainingItemCount,
+  waiverPolicy: {
+    requireApprovedWaivers
+  },
+  waiverSummary,
   artifacts
 };
 
@@ -113,5 +137,7 @@ console.log(JSON.stringify({
   artifactCount: Object.keys(artifacts).length,
   ready: manifest.ready,
   validated: manifest.validated,
-  blockerCount: manifest.blockerCount
+  blockerCount: manifest.blockerCount,
+  waiverCount: manifest.waiverSummary.waiverCount,
+  approvedWaiverCount: manifest.waiverSummary.approvedCount
 }, null, 2));

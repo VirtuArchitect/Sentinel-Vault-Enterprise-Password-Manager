@@ -14,6 +14,20 @@ const runScript = (script, args) => execFileSync(process.execPath, [script, ...a
   windowsHide: true
 });
 
+const approveWaivers = (registerPath) => {
+  const register = JSON.parse(readFileSync(registerPath, "utf8"));
+  register.waivers = register.waivers.map((waiver, index) => ({
+    ...waiver,
+    status: "approved",
+    expiresAt: "2099-12-31",
+    approvalReference: `RISK-${String(index + 1).padStart(3, "0")}`,
+    compensatingControl: "Approved temporary control until deployment evidence is attached."
+  }));
+  register.summary.proposedCount = 0;
+  register.summary.approvedCount = register.waivers.length;
+  writeFileSync(registerPath, JSON.stringify(register, null, 2));
+};
+
 const createClosureWorkspace = (dir) => {
   runScript("scripts/prepare-deployment-evidence-workspace.mjs", [
     "--environment", "pilot",
@@ -171,6 +185,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
     assert.equal(archive.format, "sentinel-phase-closure-archive-manifest-v1");
     assert.equal(archive.review.artifactNames.length, 17);
+    assert.equal(archive.review.waiverSummary.waiverCount, 15);
+    assert.equal(archive.review.waiverSummary.proposedCount, 15);
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -179,6 +195,56 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     ]));
     assert.equal(validation.format, "sentinel-phase-closure-archive-validation-v1");
     assert.equal(validation.validated, true);
+    assert.equal(validation.waiverCount, 15);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase closure release mode rejects proposed waivers", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-closure-waivers-${process.pid}-${Date.now()}`);
+  try {
+    createClosureWorkspace(dir);
+    const archivePath = path.join(dir, "phase-closure-archive-manifest.json");
+    runScript("scripts/package-phase-closure-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+
+    assert.throws(() => runScript("scripts/validate-phase-closure-archive.mjs", [
+      "--manifest", archivePath,
+      "--phase-review", path.join(dir, "phase-review-bundle-manifest.json"),
+      "--require-approved-waivers"
+    ]), /must be approved/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase closure release mode accepts approved waivers", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-closure-approved-waivers-${process.pid}-${Date.now()}`);
+  try {
+    createClosureWorkspace(dir);
+    approveWaivers(path.join(dir, "phase-waiver-register.json"));
+    const reviewPath = path.join(dir, "phase-review-bundle-manifest.json");
+    const archivePath = path.join(dir, "phase-closure-archive-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", reviewPath,
+      "--require-approved-waivers"
+    ]);
+    runScript("scripts/package-phase-closure-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+
+    const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
+      "--manifest", archivePath,
+      "--phase-review", reviewPath,
+      "--require-approved-waivers"
+    ]));
+    assert.equal(validation.validated, true);
+    assert.equal(validation.approvedWaiverCount, 15);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

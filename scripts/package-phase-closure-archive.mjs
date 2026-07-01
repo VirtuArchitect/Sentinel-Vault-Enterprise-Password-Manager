@@ -70,6 +70,7 @@ const archive = {
     decision: reviewManifest.decision,
     blockerCount: reviewManifest.blockerCount,
     warningCount: reviewManifest.warningCount,
+    waiverSummary: reviewManifest.waiverSummary,
     artifactCount: artifactNames.length,
     artifactNames
   }
@@ -84,5 +85,7 @@ console.log(JSON.stringify({
   sourceCommit,
   cleanTree: archive.source.cleanTree,
   decision: archive.review.decision,
-  artifactCount: archive.review.artifactCount
+  artifactCount: archive.review.artifactCount,
+  waiverCount: archive.review.waiverSummary?.waiverCount || 0,
+  approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0
 }, null, 2));

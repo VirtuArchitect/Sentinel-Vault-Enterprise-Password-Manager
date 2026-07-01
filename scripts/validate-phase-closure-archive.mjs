@@ -23,6 +23,7 @@ const rootDir = path.resolve(import.meta.dirname, "..");
 const archivePath = path.resolve(args.get("--manifest") || "artifacts/deployment/pilot/phase-closure-archive-manifest.json");
 const reviewManifestPath = args.get("--phase-review") ? path.resolve(args.get("--phase-review")) : null;
 const requireClean = args.get("--require-clean") === true || args.get("--require-clean") === "true";
+const requireApprovedWaivers = args.get("--require-approved-waivers") === true || args.get("--require-approved-waivers") === "true";
 
 const git = (gitArgs) => execFileSync("git", gitArgs, {
   cwd: rootDir,
@@ -70,6 +71,22 @@ assert.equal(archive.review.blockerCount, reviewManifest.blockerCount, "review b
 assert.equal(archive.review.warningCount, reviewManifest.warningCount, "review warning count mismatch");
 assert.equal(archive.review.artifactCount, Object.keys(reviewManifest.artifacts || {}).length, "review artifact count mismatch");
 assert.deepEqual(archive.review.artifactNames, Object.keys(reviewManifest.artifacts || {}), "review artifact names mismatch");
+assert.deepEqual(archive.review.waiverSummary, reviewManifest.waiverSummary, "review waiver summary mismatch");
+
+if (requireApprovedWaivers) {
+  const waiverRegisterPath = reviewManifest.artifacts?.phaseWaiverRegister?.path;
+  assert.ok(waiverRegisterPath, "phase waiver register artifact is required");
+  const phaseWaivers = JSON.parse(readFileSync(waiverRegisterPath, "utf8"));
+  const today = new Date().toISOString().slice(0, 10);
+  const placeholder = /replace-with/i;
+  for (const [index, waiver] of phaseWaivers.waivers.entries()) {
+    assert.equal(waiver.status, "approved", `waiver ${index + 1} must be approved for closure archive`);
+    assert.match(waiver.expiresAt || "", /^\d{4}-\d{2}-\d{2}$/, `waiver ${index + 1} expiry must be YYYY-MM-DD`);
+    assert.ok(waiver.expiresAt > today, `waiver ${index + 1} approval is expired`);
+    assert.ok(waiver.approvalReference && !placeholder.test(waiver.approvalReference), `waiver ${index + 1} approval reference is required`);
+    assert.ok(waiver.compensatingControl && !placeholder.test(waiver.compensatingControl), `waiver ${index + 1} compensating control is required`);
+  }
+}
 
 assert.equal(archive.source.commit, git(["rev-parse", "HEAD"]), "archive source commit does not match current HEAD");
 assert.equal(archive.source.branch, git(["rev-parse", "--abbrev-ref", "HEAD"]), "archive source branch does not match current branch");
@@ -87,5 +104,7 @@ console.log(JSON.stringify({
   cleanTree: archive.source.cleanTree,
   decision: archive.review.decision,
   artifactCount: archive.review.artifactCount,
+  waiverCount: archive.review.waiverSummary?.waiverCount || 0,
+  approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0,
   validated: true
 }, null, 2));

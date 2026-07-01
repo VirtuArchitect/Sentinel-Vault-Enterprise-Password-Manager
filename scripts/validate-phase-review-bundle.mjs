@@ -19,6 +19,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const manifestPath = path.resolve(args.get("--manifest") || "artifacts/deployment/pilot/phase-review-bundle-manifest.json");
+const requireApprovedWaivers = args.get("--require-approved-waivers") === true || args.get("--require-approved-waivers") === "true";
 const requiredArtifactNames = [
   "phaseEvidenceManifest",
   "phaseGateValidation",
@@ -76,6 +77,7 @@ const phaseSignoffs = JSON.parse(readFileSync(manifest.artifacts.phaseSignoffMat
 const phaseIntake = JSON.parse(readFileSync(manifest.artifacts.phaseEvidenceIntake.path, "utf8"));
 const phaseAttachments = JSON.parse(readFileSync(manifest.artifacts.phaseAttachmentInventory.path, "utf8"));
 const phaseWaivers = JSON.parse(readFileSync(manifest.artifacts.phaseWaiverRegister.path, "utf8"));
+const placeholder = /replace-with/i;
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
@@ -109,11 +111,33 @@ assert.equal(manifest.warningCount, phaseGate.warningCount, "manifest warning co
 assert.equal(manifest.remainingPhaseCount, phaseGate.remainingPhaseCount, "manifest remaining phase count does not match phase gate");
 assert.equal(manifest.remainingItemCount, phaseGate.remainingItemCount, "manifest remaining item count does not match phase gate");
 
+const today = new Date().toISOString().slice(0, 10);
+const waiverSummary = {
+  waiverCount: phaseWaivers.waivers.length,
+  proposedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "proposed").length,
+  approvedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "approved").length,
+  expiredCount: phaseWaivers.waivers.filter((waiver) => waiver.expiresAt <= today).length
+};
+
+assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
+
+if (requireApprovedWaivers) {
+  for (const [index, waiver] of phaseWaivers.waivers.entries()) {
+    assert.equal(waiver.status, "approved", `waiver ${index + 1} must be approved for release review`);
+    assert.match(waiver.expiresAt || "", /^\d{4}-\d{2}-\d{2}$/, `waiver ${index + 1} expiry must be YYYY-MM-DD`);
+    assert.ok(waiver.expiresAt > today, `waiver ${index + 1} approval is expired`);
+    assert.ok(waiver.approvalReference && !placeholder.test(waiver.approvalReference), `waiver ${index + 1} approval reference is required`);
+    assert.ok(waiver.compensatingControl && !placeholder.test(waiver.compensatingControl), `waiver ${index + 1} compensating control is required`);
+  }
+}
+
 console.log(JSON.stringify({
   format: "sentinel-phase-review-bundle-validation-v1",
   manifestPath,
   artifactCount: requiredArtifactNames.length,
   ready: manifest.ready,
   validated: true,
-  blockerCount: manifest.blockerCount
+  blockerCount: manifest.blockerCount,
+  waiverCount: waiverSummary.waiverCount,
+  approvedWaiverCount: waiverSummary.approvedCount
 }, null, 2));

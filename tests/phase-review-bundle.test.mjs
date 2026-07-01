@@ -14,6 +14,20 @@ const runScript = (script, args) => execFileSync(process.execPath, [script, ...a
   windowsHide: true
 });
 
+const approveWaivers = (registerPath) => {
+  const register = JSON.parse(readFileSync(registerPath, "utf8"));
+  register.waivers = register.waivers.map((waiver, index) => ({
+    ...waiver,
+    status: "approved",
+    expiresAt: "2099-12-31",
+    approvalReference: `RISK-${String(index + 1).padStart(3, "0")}`,
+    compensatingControl: "Approved temporary control until deployment evidence is attached."
+  }));
+  register.summary.proposedCount = 0;
+  register.summary.approvedCount = register.waivers.length;
+  writeFileSync(registerPath, JSON.stringify(register, null, 2));
+};
+
 const createReviewWorkspace = (dir) => {
   runScript("scripts/prepare-deployment-evidence-workspace.mjs", [
     "--environment", "pilot",
@@ -172,6 +186,9 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.match(manifest.artifacts.phaseEvidenceIntake.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseAttachmentInventory.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseWaiverRegister.sha256, /^[a-f0-9]{64}$/);
+    assert.equal(manifest.waiverSummary.waiverCount, 15);
+    assert.equal(manifest.waiverSummary.proposedCount, 15);
+    assert.equal(manifest.waiverSummary.approvedCount, 0);
     assert.equal(manifest.decision, "hold-phase-closure");
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
@@ -180,6 +197,58 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
     assert.equal(validation.validated, true);
     assert.equal(validation.artifactCount, 17);
+    assert.equal(validation.waiverCount, 15);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review release mode rejects proposed waivers", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-waivers-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+
+    assert.throws(() => runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath,
+      "--require-approved-waivers"
+    ]), /must be approved/);
+
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath,
+      "--require-approved-waivers"
+    ]), /must be approved/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review release mode accepts approved waivers", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-approved-waivers-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    approveWaivers(path.join(dir, "phase-waiver-register.json"));
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    const result = JSON.parse(runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath,
+      "--require-approved-waivers"
+    ]));
+
+    assert.equal(result.approvedWaiverCount, 15);
+
+    const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath,
+      "--require-approved-waivers"
+    ]));
+    assert.equal(validation.approvedWaiverCount, 15);
+    assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
