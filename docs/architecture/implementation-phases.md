@@ -20,6 +20,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - `STORAGE_PROVIDER`, `SQLITE_PATH`, and `DATABASE_URL` configuration boundaries are validated.
 - JSON state migration-readiness inspector and evidence template exist.
 - SQLite provider persists normalized state using Node's built-in SQLite runtime for Windows and single-node production prototypes.
+- JSON-to-SQLite migration script writes the current normalized state snapshot and redacted migration evidence.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 

@@ -39,12 +39,17 @@ Implemented:
 - Initialize a new SQLite database from the current seed state.
 - Preserve the same encrypted secret payloads, audit records, tenant metadata, access requests, integrations, policies, and service-token metadata as JSON mode.
 - Include SQLite database copies in the existing backup manifest flow.
+- Migrate an existing JSON state file into a SQLite database with redacted migration evidence:
+
+```powershell
+pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sentinel-vault.sqlite"
+```
+
 - Test persistence across separate Node.js processes.
 
 Remaining:
 
 - Create relational migration scripts for the current JSON entities.
-- Add import/export from the existing JSON state file to SQLite.
 - Use `scripts/inspect-storage-state.mjs` to prove source state readiness before migration.
 - Use transactions for secret lifecycle operations.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.

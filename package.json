@@ -19,6 +19,7 @@
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
     "inspect:storage": "node scripts/inspect-storage-state.mjs",
+    "migrate:sqlite": "node scripts/migrate-json-to-sqlite.mjs",
     "validate:connector-evidence": "node scripts/validate-connector-evidence.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",
