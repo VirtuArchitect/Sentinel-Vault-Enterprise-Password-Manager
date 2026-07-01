@@ -129,6 +129,8 @@ pnpm release:pentest-scope -- --report ".\artifacts\security\pentest-findings.js
 pnpm validate:pentest-scope -- docs/templates/pentest-scope-evidence.json
 pnpm release:audit-worm -- --ledger ".\artifacts\security\sentinel-audit-ledger.json"
 pnpm validate:audit-worm -- docs/templates/audit-worm-evidence.json
+pnpm release:backup-recovery -- --restore-evidence ".\artifacts\storage\encrypted-backup-restore-evidence.json"
+pnpm validate:backup-recovery -- docs/templates/backup-recovery-evidence.json
 ```
 
 ## Project Structure
