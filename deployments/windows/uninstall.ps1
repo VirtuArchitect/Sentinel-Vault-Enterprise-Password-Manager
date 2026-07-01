@@ -18,6 +18,7 @@ function Assert-Administrator {
 Assert-Administrator
 
 $taskName = "SentinelVault"
+$shortcutPath = Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\Sentinel Vault.url"
 
 if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
   Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -42,6 +43,10 @@ if ($RemoveIis) {
 
 if ($RemoveData -and (Test-Path $InstallDir)) {
   Remove-Item -LiteralPath $InstallDir -Recurse -Force
+}
+
+if (Test-Path $shortcutPath) {
+  Remove-Item -LiteralPath $shortcutPath -Force
 }
 
 Write-Host "Sentinel Vault scheduled task removed."

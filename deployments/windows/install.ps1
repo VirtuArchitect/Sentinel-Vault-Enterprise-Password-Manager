@@ -5,7 +5,8 @@ param(
   [string]$VaultRootKey = "",
   [switch]$ConfigureIis,
   [string]$SiteName = "Sentinel Vault",
-  [int]$SitePort = 8080
+  [int]$SitePort = 8080,
+  [switch]$SkipStartMenuShortcut
 )
 
 $ErrorActionPreference = "Stop"
@@ -57,6 +58,54 @@ function Write-IisWebConfig {
   Set-Content -Path (Join-Path $DistDir "web.config") -Value $webConfig -Encoding UTF8
 }
 
+function Backup-ExistingInstall {
+  param(
+    [string]$CurrentInstallDir
+  )
+
+  if (!(Test-Path (Join-Path $CurrentInstallDir "server.mjs"))) {
+    return $null
+  }
+
+  $rollbackRoot = Join-Path (Split-Path -Parent $CurrentInstallDir) "Sentinel Vault Rollbacks"
+  $backupName = "backup-{0}" -f (Get-Date -Format "yyyyMMdd-HHmmss")
+  $backupDir = Join-Path $rollbackRoot $backupName
+  New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+
+  robocopy $CurrentInstallDir $backupDir /MIR /XD logs data "Sentinel Vault Rollbacks" /NFL /NDL /NJH /NJS /NP | Out-Null
+  if ($LASTEXITCODE -gt 7) {
+    throw "robocopy failed creating rollback backup at $backupDir with exit code $LASTEXITCODE"
+  }
+
+  Set-Content -Path (Join-Path $backupDir "rollback-manifest.txt") -Value @(
+    "CreatedAt=$(Get-Date -Format o)",
+    "InstallDir=$CurrentInstallDir",
+    "SourcePackage=$PSScriptRoot"
+  ) -Encoding UTF8
+
+  return $backupDir
+}
+
+function New-StartMenuShortcut {
+  param(
+    [string]$ShortcutUrl,
+    [string]$IconPath
+  )
+
+  $programsDir = Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs"
+  $shortcutPath = Join-Path $programsDir "Sentinel Vault.url"
+  $shortcut = @(
+    "[InternetShortcut]",
+    "URL=$ShortcutUrl"
+  )
+  if (Test-Path $IconPath) {
+    $shortcut += "IconFile=$IconPath"
+    $shortcut += "IconIndex=0"
+  }
+  Set-Content -Path $shortcutPath -Value $shortcut -Encoding ASCII
+  return $shortcutPath
+}
+
 Assert-Administrator
 
 $packageRoot = $PSScriptRoot
@@ -75,9 +124,14 @@ if ([string]::IsNullOrWhiteSpace($VaultRootKey)) {
   $VaultRootKey = New-SecretKey
 }
 
+$backupDir = Backup-ExistingInstall -CurrentInstallDir $InstallDir
+
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 Copy-Item -Path (Join-Path $sourceApp "*") -Destination $InstallDir -Recurse -Force
 Copy-Item -Path $runner -Destination $InstallDir -Force
+if (Test-Path (Join-Path $packageRoot "assets")) {
+  Copy-Item -Path (Join-Path $packageRoot "assets") -Destination $InstallDir -Recurse -Force
+}
 New-Item -ItemType Directory -Path (Join-Path $InstallDir "logs") -Force | Out-Null
 
 $envContent = @(
@@ -128,8 +182,18 @@ if ($ConfigureIis) {
     -ApplicationPool $SiteName | Out-Null
 }
 
+$consoleUrl = if ($ConfigureIis) { "http://localhost:$SitePort" } else { "http://$HostName`:$Port" }
+if (!$SkipStartMenuShortcut) {
+  $shortcutPath = New-StartMenuShortcut -ShortcutUrl $consoleUrl -IconPath (Join-Path $InstallDir "assets\sentinel-vault-app-icon.svg")
+  Write-Host "Start Menu shortcut: $shortcutPath"
+}
+
 Write-Host "Sentinel Vault installed to $InstallDir"
 Write-Host "Node API: http://$HostName`:$Port"
+if ($backupDir) {
+  Write-Host "Rollback backup: $backupDir"
+  Write-Host "Rollback command: .\rollback.ps1 -BackupDir `"$backupDir`" -InstallDir `"$InstallDir`""
+}
 if ($ConfigureIis) {
   Write-Host "IIS site: http://localhost:$SitePort"
   Write-Host "IIS URL Rewrite and ARR must be installed for API proxying."

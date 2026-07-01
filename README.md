@@ -155,6 +155,11 @@ pnpm package:windows
 
 The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. See `deployments/windows/README.md`.
 
+Windows deployment hardening guides:
+
+- `docs/deployment/windows-code-signing.md`
+- `docs/deployment/tls-iis-checklist.md`
+
 ## Enterprise Roadmap Status
 
 Implemented in this prototype:

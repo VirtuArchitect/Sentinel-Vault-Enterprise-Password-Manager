@@ -47,6 +47,8 @@ Open:
 http://127.0.0.1:5173
 ```
 
+The installer creates a Start Menu shortcut named `Sentinel Vault` unless `-SkipStartMenuShortcut` is passed.
+
 For remote access without IIS, pass a host binding such as:
 
 ```powershell
@@ -109,6 +111,20 @@ C:\Program Files\Sentinel Vault\sentinel.env
 
 The installer restricts `sentinel.env` to Administrators and SYSTEM because it contains `VAULT_ROOT_KEY`.
 
+## Upgrade and Rollback
+
+Running `install.ps1` over an existing install creates a timestamped rollback backup beside the installation directory before files are overwritten.
+
+Rollback from an elevated PowerShell session:
+
+```powershell
+.\rollback.ps1 `
+  -BackupDir "C:\Program Files\Sentinel Vault Rollbacks\backup-YYYYMMDD-HHMMSS" `
+  -InstallDir "C:\Program Files\Sentinel Vault"
+```
+
+The rollback script stops the scheduled task, restores the backed-up application files, and restarts the task if it exists. Runtime `logs` and `data` folders are not restored by default.
+
 ## Uninstall
 
 Remove the scheduled task and leave installed files:
@@ -126,3 +142,8 @@ Remove the scheduled task, IIS site/app pool, and installed files:
 ## Production Notes
 
 This deployment package is suitable for a controlled prototype or internal demo. Before production use, replace the in-memory store with persistent storage, move `VAULT_ROOT_KEY` into a managed secret store, add real SSO/MFA, configure TLS in IIS, and place the service behind enterprise monitoring and backup controls.
+
+See also:
+
+- `docs/deployment/windows-code-signing.md`
+- `docs/deployment/tls-iis-checklist.md`

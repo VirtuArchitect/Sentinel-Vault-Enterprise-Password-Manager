@@ -76,14 +76,14 @@ Implemented:
 - Scheduled Task supervisor.
 - Optional IIS front-end configuration.
 - Package icon asset.
+- Start Menu shortcut.
+- Upgrade backup and rollback script.
+- Code-signing documentation.
+- TLS/IIS setup checklist with certificate guidance.
 
 Remaining:
 
 - MSI/MSIX or signed EXE installer.
-- Start Menu shortcut.
-- Upgrade and rollback flow.
-- Code-signing documentation.
-- TLS/IIS setup checklist with certificate guidance.
 
 ## Phase 7: Security Hardening
 
