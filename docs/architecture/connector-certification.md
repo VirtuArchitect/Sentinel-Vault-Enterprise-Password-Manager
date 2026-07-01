@@ -30,6 +30,14 @@ pnpm preflight:connectors -- --siem-url "https://siem.example/webhook" --siem-se
 
 The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance/replay evidence, validates an ITSM ticket lookup, and writes redacted evidence to `artifacts/integrations/connector-live-preflight.json`.
 
+Generate DevOps service-token compromise-response evidence after rotating or revoking a pipeline token:
+
+```powershell
+pnpm preflight:devops-token -- --base-url "https://sentinel.example" --secret-id "replace-with-secret-id" --blocked-secret-id "replace-with-out-of-scope-secret-id" --revoked-token "$env:SENTINEL_OLD_TOKEN" --replacement-token "$env:SENTINEL_NEW_TOKEN"
+```
+
+The preflight verifies that the revoked token is rejected, the replacement token can retrieve the intended scoped secret, an out-of-scope secret remains blocked, and the output contains only token fingerprints and secret-value hashes.
+
 ## SIEM Connectors
 
 - Verify `X-Sentinel-Signature` with the timestamp, nonce, and raw body envelope.
@@ -52,6 +60,7 @@ The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance
 - Store service tokens as keyed HMAC-SHA256 hashes and expose only hash-version metadata to administrators.
 - Log last-used source, secret ID, and use count.
 - Confirm build logs do not expose retrieved secret values.
+- Run `pnpm preflight:devops-token` after rotation or suspected pipeline compromise and attach the redacted evidence to the incident or change ticket.
 
 ## Certification Status
 

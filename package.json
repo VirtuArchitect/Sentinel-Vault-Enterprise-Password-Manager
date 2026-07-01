@@ -33,6 +33,7 @@
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
+    "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",
     "package:windows:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1",

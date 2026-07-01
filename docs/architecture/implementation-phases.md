@@ -80,6 +80,7 @@ Implemented:
 - Scoped DevOps service-token retrieval API.
 - Last-used, use-count, and rotation metadata for service tokens.
 - Keyed HMAC service-token hashing with public hash-version metadata and legacy SHA-256 hash migration on successful scoped use.
+- DevOps service-token compromise-response preflight evidence for revoked-token rejection, replacement-token retrieval, scope enforcement, and redacted output.
 - SIEM webhook delivery worker with bounded retries.
 - HMAC signing for SIEM webhook payloads.
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
