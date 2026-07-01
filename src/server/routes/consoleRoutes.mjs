@@ -16,6 +16,7 @@ import {
   getSecretHealthReport,
   requestSecretAccess,
   revealSecret,
+  restoreDeletedSecret,
   restoreSecretVersion,
   revokeAccessRequest,
   rotateSecret,
@@ -117,6 +118,14 @@ consoleRoutes.patch("/secrets/:id", auth, can("vault:write"), (req, res, next) =
 consoleRoutes.delete("/secrets/:id", auth, can("vault:write"), (req, res, next) => {
   try {
     res.json(deleteSecret(req.user, req.params.id));
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/secrets/:id/restore", auth, can("vault:write"), (req, res, next) => {
+  try {
+    res.json(restoreDeletedSecret(req.user, req.params.id));
   } catch (err) {
     next(err);
   }

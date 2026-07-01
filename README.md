@@ -22,7 +22,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Add, reveal, rotate, share, request access, and approve temporary access workflows
 - Password, API key, token, certificate, SSH key, directory account, registry token, and connection string secret metadata
 - Secret health reporting for stale, reused, high-risk, and rotated records
-- Secret edit, soft delete, version restore, and scoped DevOps service-token retrieval/rotation APIs
+- Secret edit, soft delete, deleted-items restore, version-history restore, and scoped DevOps service-token retrieval/rotation APIs
 - Password generator with configurable character classes and quality feedback
 - Audit trail for login, reveal, rotate, share, create, policy, and access approval actions
 - Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
@@ -166,6 +166,7 @@ Implemented in this prototype:
 - JIT access request and approval records
 - Ticket-linked approval workflow metadata and high-risk multi-approval support
 - Temporary reveal access after approval
+- Console workflows for editing entries, reviewing deleted items, and restoring previous versions
 - Policy validation and session timeout enforcement
 - Tamper-evident audit event hash chaining for security-sensitive actions
 - Secret fingerprinting for reuse detection without storing plaintext

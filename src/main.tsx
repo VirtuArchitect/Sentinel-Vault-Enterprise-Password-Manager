@@ -13,11 +13,13 @@ import {
   Folder,
   FolderLock,
   Globe,
+  History,
   KeyRound,
   LockKeyhole,
   LogOut,
   Plus,
   RefreshCw,
+  RotateCcw,
   Save,
   Search,
   Settings,
@@ -142,8 +144,10 @@ function App() {
   const [reveal, setReveal] = useState<{ name: string; password: string; expiresIn: number } | null>(null);
   const [toast, setToast] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
+  const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
   const load = async (activeToken = token) => {
@@ -214,8 +218,14 @@ function App() {
     const text = [secret.name, secret.username, secret.url, secret.tags.join(" ")].join(" ").toLowerCase();
     return groupMatch && text.includes(query.toLowerCase());
   });
-  const selectedSecret = data.secrets.find((secret) => secret.id === selectedSecretId) || filteredSecrets[0] || data.secrets[0];
+  const deletedSecrets = data.deletedSecrets.filter((secret) => {
+    const text = [secret.name, secret.username, secret.url, secret.tags.join(" ")].join(" ").toLowerCase();
+    return text.includes(query.toLowerCase());
+  });
+  const visibleSecrets = selectedGroup === "deleted" ? deletedSecrets : filteredSecrets;
+  const selectedSecret = visibleSecrets.find((secret) => secret.id === selectedSecretId) || visibleSecrets[0] || (selectedGroup === "deleted" ? undefined : data.secrets[0]);
   const selectedVault = data.vaults.find((vault) => vault.id === selectedSecret?.vaultId);
+  const viewingDeleted = selectedGroup === "deleted" || Boolean(selectedSecret?.deletedAt);
 
   const submitSecret = (event: React.FormEvent) => {
     event.preventDefault();
@@ -228,6 +238,43 @@ function App() {
       setAddOpen(false);
       setAddSecret(blankSecret(data.vaults[0]?.id || ""));
     }, "Entry added to database");
+  };
+
+  const startEditSecret = (secret: Secret) => {
+    setEditSecret({
+      vaultId: secret.vaultId,
+      type: secret.type,
+      name: secret.name,
+      username: secret.username,
+      password: "",
+      repeat: "",
+      url: secret.url,
+      tags: secret.tags.join(", "),
+      notes: secret.notes
+    });
+    setEditOpen(true);
+  };
+
+  const submitEditSecret = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selectedSecret) return;
+    if (editSecret.password && editSecret.password !== editSecret.repeat) {
+      setToast("Password and repeat fields do not match");
+      return;
+    }
+    action(async () => {
+      const patch: Record<string, unknown> = {
+        type: editSecret.type,
+        name: editSecret.name,
+        username: editSecret.username,
+        url: editSecret.url,
+        tags: editSecret.tags,
+        notes: editSecret.notes
+      };
+      if (editSecret.password) patch.password = editSecret.password;
+      await api(`/api/secrets/${selectedSecret.id}`, { method: "PATCH", body: JSON.stringify(patch) }, token);
+      setEditOpen(false);
+    }, "Entry updated");
   };
 
   const revealSecret = (secret: Secret) => {
@@ -270,13 +317,13 @@ function App() {
         <button title="New database"><Database size={18} /></button>
         <button title="Save database"><Save size={18} /></button>
         <button title="Add entry" disabled={!can("vault:write")} onClick={() => setAddOpen(true)}><FilePlus2 size={18} /></button>
-        <button title="Edit selected entry" disabled={!selectedSecret}><Edit3 size={18} /></button>
-        <button title="Delete selected entry" disabled><Trash2 size={18} /></button>
+        <button title="Edit selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && startEditSecret(selectedSecret)}><Edit3 size={18} /></button>
+        <button title="Delete selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items")}><Trash2 size={18} /></button>
         <span className="divider" />
         <button title="Copy user name" disabled={!selectedSecret} onClick={() => selectedSecret && copyUsername(selectedSecret)}><User size={18} /></button>
-        <button title="Reveal password" disabled={!selectedSecret} onClick={() => selectedSecret && revealSecret(selectedSecret)}><KeyRound size={18} /></button>
-        <button title="Rotate password" disabled={!selectedSecret || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><RefreshCw size={18} /></button>
-        <button title="Share entry" disabled={!selectedSecret || !can("vault:share")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor")}><UserCog size={18} /></button>
+        <button title="Reveal password" disabled={!selectedSecret || viewingDeleted} onClick={() => selectedSecret && revealSecret(selectedSecret)}><KeyRound size={18} /></button>
+        <button title="Rotate password" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><RefreshCw size={18} /></button>
+        <button title="Share entry" disabled={!selectedSecret || viewingDeleted || !can("vault:share")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor")}><UserCog size={18} /></button>
         <span className="divider" />
         <button title="Lock workspace" onClick={() => setLocked(true)}><LockKeyhole size={18} /></button>
         <button title="Sign out" onClick={signOut}><LogOut size={18} /></button>
@@ -299,6 +346,7 @@ function App() {
           ))}
           <TreeButton active={selectedGroup === "shared"} icon={<Users />} label="Shared Entries" meta="delegated" onClick={() => setSelectedGroup("shared")} />
           <TreeButton active={selectedGroup === "risk"} icon={<ShieldCheck />} label="High Risk" meta={`${data.metrics.highRisk} flagged`} onClick={() => setSelectedGroup("risk")} />
+          <TreeButton active={selectedGroup === "deleted"} icon={<Trash2 />} label="Deleted Items" meta={`${data.deletedSecrets.length} recoverable`} onClick={() => setSelectedGroup("deleted")} />
           <div className="tree-footer">
             <strong>{data.metrics.pendingRequests}</strong>
             <span>Pending access requests</span>
@@ -321,21 +369,21 @@ function App() {
                 <div className="table-header" role="row">
                   <span>Title</span><span>User Name</span><span>Password</span><span>URL</span><span>Modified</span><span>Quality</span>
                 </div>
-                {filteredSecrets.map((secret) => (
+                {visibleSecrets.map((secret) => (
                   <button className={`entry-row ${selectedSecret?.id === secret.id ? "selected" : ""}`} key={secret.id} onClick={() => setSelectedSecretId(secret.id)} role="row">
                     <span><Globe size={16} />{secret.name}<small>{secret.type.replace("_", " ")}</small></span>
                     <span>{secret.username}</span>
                     <span>••••••••••••</span>
                     <span>{secret.url}</span>
-                    <span>{new Date(secret.rotatedAt).toLocaleDateString()}</span>
+                    <span>{new Date(secret.deletedAt || secret.rotatedAt).toLocaleDateString()}</span>
                     <span><meter min={0} max={100} value={secret.strength} />{secret.strength}%</span>
                   </button>
                 ))}
-                {!filteredSecrets.length && (
+                {!visibleSecrets.length && (
                   <div className="empty-state" role="row">
                     <Search size={22} />
-                    <strong>No matching entries</strong>
-                    <span>Adjust the search text or select a different vault group.</span>
+                    <strong>{selectedGroup === "deleted" ? "No deleted entries" : "No matching entries"}</strong>
+                    <span>{selectedGroup === "deleted" ? "Deleted credentials will appear here until restored." : "Adjust the search text or select a different vault group."}</span>
                   </div>
                 )}
               </div>
@@ -347,9 +395,16 @@ function App() {
                     <p>{selectedVault?.name} · {selectedVault?.classification} · {selectedSecret.tags.join(", ") || "No tags"}</p>
                   </div>
                   <div className="detail-actions">
-                    <button onClick={() => copyUsername(selectedSecret)}><Clipboard size={16} />Copy User</button>
-                    <button onClick={() => revealSecret(selectedSecret)}><Eye size={16} />Reveal</button>
-                    <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><Shuffle size={16} />Rotate</button>
+                    {viewingDeleted ? (
+                      <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }, token); setSelectedGroup("all"); }, "Entry restored")}><RotateCcw size={16} />Restore</button>
+                    ) : (
+                      <>
+                        <button onClick={() => copyUsername(selectedSecret)}><Clipboard size={16} />Copy User</button>
+                        <button onClick={() => revealSecret(selectedSecret)}><Eye size={16} />Reveal</button>
+                        <button disabled={!can("vault:write")} onClick={() => startEditSecret(selectedSecret)}><Edit3 size={16} />Edit</button>
+                        <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><Shuffle size={16} />Rotate</button>
+                      </>
+                    )}
                   </div>
                   <dl>
                     <div><dt>User Name</dt><dd>{selectedSecret.username}</dd></div>
@@ -358,8 +413,11 @@ function App() {
                     <div><dt>Risk</dt><dd className={`risk ${selectedSecret.risk}`}>{selectedSecret.risk}</dd></div>
                     <div><dt>Approval</dt><dd>{selectedSecret.approvalsRequired ? "Required" : "Standard"}</dd></div>
                     <div><dt>Shared With</dt><dd>{selectedSecret.sharedWith.length} identities</dd></div>
+                    <div><dt>Versions</dt><dd>{selectedSecret.history.length}</dd></div>
+                    {selectedSecret.deletedAt && <div><dt>Deleted</dt><dd>{new Date(selectedSecret.deletedAt).toLocaleString()}</dd></div>}
                   </dl>
                   <textarea value={`${selectedSecret.notes || "Entry notes"}\nOwner unit: ${selectedVault?.ownerUnit || "Unknown"}\nRotation policy: ${data.policies.rotationDays} days\nLast modified: ${new Date(selectedSecret.rotatedAt).toLocaleString()}`} readOnly />
+                  <VersionHistory secret={selectedSecret} canRestore={can("vault:write") && !viewingDeleted} onRestore={(index) => action(async () => { await api(`/api/secrets/${selectedSecret.id}/versions/${index}/restore`, { method: "POST" }, token); }, "Entry version restored")} />
                 </section>
               )}
               {!selectedSecret && (
@@ -382,8 +440,8 @@ function App() {
       </section>
 
       <section className="statusbar">
-        <span>{data.vaults.length} groups / {filteredSecrets.length} entries</span>
-        <span>{selectedSecret ? `1 of ${filteredSecrets.length} selected` : "No entry selected"}</span>
+        <span>{data.vaults.length} groups / {visibleSecrets.length} entries</span>
+        <span>{selectedSecret ? `1 of ${visibleSecrets.length} selected` : "No entry selected"}</span>
         <span>{data.identity.name} / SIEM {data.integrations.siem.mode}</span>
       </section>
 
@@ -441,6 +499,43 @@ function App() {
         </div>
       )}
 
+      {editOpen && selectedSecret && (
+        <div className="modal-backdrop" onClick={() => setEditOpen(false)}>
+          <dialog open className="entry-dialog" onClick={(event) => event.stopPropagation()}>
+            <header>
+              <Edit3 size={28} />
+              <div><h2>Edit Entry</h2><p>Update credential metadata or rotate the stored secret value.</p></div>
+            </header>
+            <form onSubmit={submitEditSecret}>
+              <div className="dialog-tabs"><span className="active">Entry</span><span>History</span><span>Security</span></div>
+              <label>Group<select value={editSecret.vaultId} disabled>{data.vaults.map((vault) => <option value={vault.id} key={vault.id}>{vault.name}</option>)}</select></label>
+              <label>Secret type<select value={editSecret.type} onChange={(event) => setEditSecret({ ...editSecret, type: event.target.value })}>
+                <option value="password">Password</option>
+                <option value="api_key">API key</option>
+                <option value="ssh_key">SSH key</option>
+                <option value="certificate">Certificate</option>
+                <option value="token">Token</option>
+                <option value="connection_string">Connection string</option>
+              </select></label>
+              <label>Title<input value={editSecret.name} onChange={(event) => setEditSecret({ ...editSecret, name: event.target.value })} /></label>
+              <label>User name<input value={editSecret.username} onChange={(event) => setEditSecret({ ...editSecret, username: event.target.value })} /></label>
+              <label>New password<div className="password-line"><input value={editSecret.password} placeholder="Leave blank to keep current value" onChange={(event) => setEditSecret({ ...editSecret, password: event.target.value })} /><button type="button" onClick={() => {
+                const password = generateCredentialPassword(generator);
+                setEditSecret((current) => ({ ...current, password, repeat: password }));
+              }}><WandSparkles size={16} /></button></div></label>
+              <label>Repeat<input value={editSecret.repeat} onChange={(event) => setEditSecret({ ...editSecret, repeat: event.target.value })} /></label>
+              <label>URL<input value={editSecret.url} onChange={(event) => setEditSecret({ ...editSecret, url: event.target.value })} /></label>
+              <label>Tags<input value={editSecret.tags} onChange={(event) => setEditSecret({ ...editSecret, tags: event.target.value })} /></label>
+              <label>Notes<textarea value={editSecret.notes} onChange={(event) => setEditSecret({ ...editSecret, notes: event.target.value })} /></label>
+              <footer>
+                <button type="button" className="secondary" onClick={() => setEditOpen(false)}>Cancel</button>
+                <button className="primary" disabled={!can("vault:write")}>Save Entry</button>
+              </footer>
+            </form>
+          </dialog>
+        </div>
+      )}
+
       {reveal && (
         <div className="modal-backdrop" onClick={() => setReveal(null)}>
           <dialog open onClick={(event) => event.stopPropagation()}>
@@ -491,6 +586,30 @@ function AuditTable({ events }: { events: AuditEvent[] }) {
     <div className="utility-table">
       <div className="table-header audit"><span>Time</span><span>Action</span><span>Actor</span><span>Target</span><span>Detail</span></div>
       {events.map((event) => <div className="audit-line" key={event.id}><span>{new Date(event.ts).toLocaleString()}</span><strong>{event.action}</strong><span>{event.actor}</span><span>{event.target}</span><small>{event.detail}</small></div>)}
+    </div>
+  );
+}
+
+function VersionHistory({ secret, canRestore, onRestore }: { secret: Secret; canRestore: boolean; onRestore: (index: number) => void }) {
+  if (!secret.history.length) {
+    return (
+      <div className="version-history empty-version-history">
+        <History size={16} />
+        <span>No previous versions stored for this entry.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="version-history">
+      <header><History size={16} />Version History</header>
+      {secret.history.map((version) => (
+        <div className="version-line" key={`${secret.id}-${version.index}`}>
+          <span>{new Date(version.rotatedAt).toLocaleString()}</span>
+          <small>{version.rotatedByName}</small>
+          <button disabled={!canRestore} onClick={() => onRestore(version.index)}>Restore</button>
+        </div>
+      ))}
     </div>
   );
 }

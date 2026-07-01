@@ -38,12 +38,12 @@ Implemented:
 
 - Add, reveal, rotate, share, request access, approve, deny, revoke, soft delete, and restore APIs.
 - RBAC and object-level vault checks.
+- Edit-secret UI.
+- Deleted-items view with restore action.
+- Version-history UI with restore action.
 
 Remaining:
 
-- Edit-secret UI.
-- Deleted-items view.
-- Version-history UI.
 - Vault/group creation and membership management.
 - User enable/disable and role management UI.
 

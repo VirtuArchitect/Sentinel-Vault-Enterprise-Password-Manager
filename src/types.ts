@@ -33,6 +33,15 @@ export type Secret = {
   approvalsRequired: boolean;
   notes: string;
   strength: number;
+  deletedAt: string | null;
+  history: SecretVersion[];
+};
+
+export type SecretVersion = {
+  index: number;
+  rotatedAt: string;
+  rotatedBy: string;
+  rotatedByName: string;
 };
 
 export type AuditEvent = {
@@ -61,6 +70,7 @@ export type ConsoleData = {
   users: UserRecord[];
   vaults: VaultRecord[];
   secrets: Secret[];
+  deletedSecrets: Secret[];
   policies: Policies;
   identity: IdentityStatus;
   session: SessionStatus;
@@ -76,6 +86,7 @@ export type ConsoleData = {
     stale: number;
     highRisk: number;
     reused: number;
+    deleted: number;
     pendingRequests: number;
   };
 };

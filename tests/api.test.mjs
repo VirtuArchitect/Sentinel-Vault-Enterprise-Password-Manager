@@ -246,6 +246,22 @@ test("secret edit, version restore, and delete workflows work", async () => {
 
     const deleted = await jsonFetch(`${baseUrl}/secrets/${secret.id}`, ada.token, { method: "DELETE" });
     assert.equal(deleted.status, 200);
+
+    const deletedConsoleResponse = await jsonFetch(`${baseUrl}/console`, ada.token);
+    const deletedConsole = await deletedConsoleResponse.json();
+    assert.equal(deletedConsole.secrets.some((candidate) => candidate.id === secret.id), false);
+    const deletedSecret = deletedConsole.deletedSecrets.find((candidate) => candidate.id === secret.id);
+    assert.ok(deletedSecret);
+    assert.ok(deletedSecret.deletedAt);
+    assert.ok(deletedSecret.history.length >= 1);
+
+    const restoreDeleted = await jsonFetch(`${baseUrl}/secrets/${secret.id}/restore`, ada.token, { method: "POST" });
+    assert.equal(restoreDeleted.status, 200);
+
+    const restoredConsoleResponse = await jsonFetch(`${baseUrl}/console`, ada.token);
+    const restoredConsole = await restoredConsoleResponse.json();
+    assert.ok(restoredConsole.secrets.find((candidate) => candidate.id === secret.id));
+    assert.equal(restoredConsole.deletedSecrets.some((candidate) => candidate.id === secret.id), false);
   });
 });
 

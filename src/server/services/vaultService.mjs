@@ -107,6 +107,32 @@ const reusedFingerprints = () => {
   return counts;
 };
 
+const publicSecret = (secret) => ({
+  id: secret.id,
+  vaultId: secret.vaultId,
+  type: secret.type,
+  name: secret.name,
+  username: secret.username,
+  url: secret.url,
+  tags: secret.tags,
+  risk: secret.risk,
+  rotatedAt: secret.rotatedAt,
+  sharedWith: secret.sharedWith,
+  approvalsRequired: secret.approvalsRequired,
+  notes: secret.notes,
+  strength: secretStrength(secret.encrypted),
+  deletedAt: secret.deletedAt || null,
+  history: (secret.history || []).map((version, index) => {
+    const rotatedBy = store.findUserById(version.rotatedBy);
+    return {
+      index,
+      rotatedAt: version.rotatedAt,
+      rotatedBy: version.rotatedBy,
+      rotatedByName: rotatedBy?.name || "Unknown user"
+    };
+  })
+});
+
 export const getSecretHealthReport = () => {
   const reused = reusedFingerprints();
   return store.state.secrets.map((secret) => ({
@@ -128,21 +154,11 @@ export const getConsolePayload = (user) => {
   const secrets = store.state.secrets
     .filter((secret) => readableIds.has(secret.vaultId) || secret.sharedWith.includes(user.id) || activeGrantFor(user, secret))
     .filter((secret) => !secret.deletedAt)
-    .map((secret) => ({
-      id: secret.id,
-      vaultId: secret.vaultId,
-      type: secret.type,
-      name: secret.name,
-      username: secret.username,
-      url: secret.url,
-      tags: secret.tags,
-      risk: secret.risk,
-      rotatedAt: secret.rotatedAt,
-      sharedWith: secret.sharedWith,
-      approvalsRequired: secret.approvalsRequired,
-      notes: secret.notes,
-      strength: secretStrength(secret.encrypted)
-    }));
+    .map(publicSecret);
+  const deletedSecrets = store.state.secrets
+    .filter((secret) => readableIds.has(secret.vaultId) || secret.sharedWith.includes(user.id))
+    .filter((secret) => secret.deletedAt)
+    .map(publicSecret);
   const visibleSecretIds = new Set(secrets.map((secret) => secret.id));
   const accessRequests = store.state.accessRequests
     .filter((request) => hasPermission(user.role, "policy:write") || request.requesterId === user.id || visibleSecretIds.has(request.secretId))
@@ -153,6 +169,7 @@ export const getConsolePayload = (user) => {
     users: hasPermission(user.role, "users:read") ? store.state.users.map(publicUser) : [],
     vaults: readableVaults,
     secrets,
+    deletedSecrets,
     policies: store.state.policies,
     identity: getIdentityStatus(),
     session: getSessionStatus(),
@@ -168,6 +185,7 @@ export const getConsolePayload = (user) => {
       stale: store.state.secrets.filter(isStale).length,
       highRisk: store.state.secrets.filter((secret) => secret.risk === "high").length,
       reused: getSecretHealthReport().filter((secret) => secret.reused).length,
+      deleted: deletedSecrets.length,
       pendingRequests: store.state.accessRequests.filter((request) => request.status === "pending").length
     }
   };
@@ -258,6 +276,19 @@ export const deleteSecret = (user, id) => {
   requireVaultAccess(user, secret);
   secret.deletedAt = new Date().toISOString();
   audit(user.id, "DELETE_SECRET", secret.name, "Credential moved to deleted state");
+  return { ok: true };
+};
+
+export const restoreDeletedSecret = (user, id) => {
+  const secret = requireSecret(id);
+  requireVaultAccess(user, secret);
+  if (!secret.deletedAt) {
+    const error = new Error("Secret is not deleted");
+    error.status = 400;
+    throw error;
+  }
+  secret.deletedAt = null;
+  audit(user.id, "RESTORE_DELETED_SECRET", secret.name, "Credential restored from deleted state");
   return { ok: true };
 };
 
