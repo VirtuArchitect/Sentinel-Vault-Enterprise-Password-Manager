@@ -91,6 +91,7 @@ Implemented:
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.
+- SIEM receiver signing-key rotation evidence template and validator.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 

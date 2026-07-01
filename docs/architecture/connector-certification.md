@@ -22,6 +22,12 @@ Use `docs/templates/connector-certification-evidence.json` and validate it with:
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 ```
 
+For SIEM signing-key rotation evidence, use `docs/templates/siem-receiver-rotation-evidence.json` and validate it with:
+
+```powershell
+pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.json
+```
+
 Generate live non-production receiver evidence with:
 
 ```powershell

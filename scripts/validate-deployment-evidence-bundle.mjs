@@ -20,7 +20,8 @@ const validators = {
   pentestScope: ["scripts/validate-pentest-scope-evidence.mjs"],
   auditWorm: ["scripts/validate-audit-worm-evidence.mjs"],
   backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"],
-  deviceTrust: ["scripts/validate-device-trust-evidence.mjs"]
+  deviceTrust: ["scripts/validate-device-trust-evidence.mjs"],
+  siemReceiverRotation: ["scripts/validate-siem-receiver-rotation-evidence.mjs"]
 };
 
 const artifactFormats = {

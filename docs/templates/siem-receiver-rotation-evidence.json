@@ -1,0 +1,45 @@
+{
+  "format": "sentinel-siem-receiver-rotation-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "receiver": {
+    "system": "replace-with-siem-system",
+    "endpointHost": "replace-with-host",
+    "owner": "replace-with-owner",
+    "supportQueue": "replace-with-queue"
+  },
+  "rotation": {
+    "activeKeyId": "replace-with-active-key-id",
+    "previousKeyId": "replace-with-previous-key-id",
+    "rotatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "previousKeyRetireAfter": "YYYY-MM-DDTHH:mm:ssZ",
+    "changeTicket": "replace-with-ticket"
+  },
+  "checks": {
+    "activeKeyAccepted": "planned",
+    "previousKeyAcceptedDuringWindow": "planned",
+    "previousKeyRejectedAfterWindow": "planned",
+    "signatureVerified": "planned",
+    "timestampRejectedOutsideReplayWindow": "planned",
+    "nonceReplayRejected": "planned",
+    "deliveryIdStored": "planned",
+    "redactedLogsReviewed": "planned",
+    "receiverAlertingConfirmed": "planned"
+  },
+  "samples": {
+    "activeDeliveryId": "replace-with-delivery-id",
+    "previousKeyDeliveryId": "replace-with-delivery-id",
+    "replayAttemptId": "replace-with-replay-test-id",
+    "receiverEvidencePath": "replace-with-evidence-path"
+  },
+  "redaction": {
+    "signingSecretsFound": false,
+    "payloadSecretValuesFound": false,
+    "tokenValuesFound": false
+  },
+  "approvals": {
+    "siemOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner"
+  }
+}

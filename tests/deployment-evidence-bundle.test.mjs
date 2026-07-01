@@ -32,6 +32,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     auditWorm: "audit-worm-evidence.json",
     backupRecovery: "backup-recovery-evidence.json",
     deviceTrust: "device-trust-evidence.json",
+    siemReceiverRotation: "siem-receiver-rotation-evidence.json",
     storageMigration: "storage-migration-evidence.json",
     releaseProvenance: "release-provenance-template.json"
   };
@@ -74,6 +75,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.auditWorm.validated, true);
     assert.equal(validation.results.backupRecovery.validated, true);
     assert.equal(validation.results.deviceTrust.validated, true);
+    assert.equal(validation.results.siemReceiverRotation.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -96,6 +98,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         auditWorm: "evidence/audit-worm-evidence.json",
         backupRecovery: "evidence/backup-recovery-evidence.json",
         deviceTrust: "evidence/device-trust-evidence.json",
+        siemReceiverRotation: "evidence/siem-receiver-rotation-evidence.json",
         storageMigration: "evidence/storage-migration-evidence.json",
         releaseProvenance: "evidence/release-provenance-template.json"
       }
