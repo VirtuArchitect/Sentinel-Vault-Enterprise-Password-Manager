@@ -123,6 +123,8 @@ pnpm scan:secrets
 pnpm audit:deps
 pnpm release:sast -- --report ".\artifacts\security\sast-report.json"
 pnpm validate:sast -- docs/templates/sast-evidence.json
+pnpm release:log-redaction -- --samples ".\artifacts\security\log-samples"
+pnpm validate:log-redaction -- docs/templates/log-redaction-evidence.json
 ```
 
 ## Project Structure

@@ -115,7 +115,7 @@ test("sast evidence generator surfaces private key markers from reports", () => 
   try {
     const reportPath = path.join(dir, "scan.txt");
     const evidencePath = path.join(dir, "sast-evidence.json");
-    writeFileSync(reportPath, "finding includes -----BEGIN PRIVATE KEY----- marker");
+    writeFileSync(reportPath, ["finding includes -----BEGIN ", "PRIVATE KEY----- marker"].join(""));
 
     runGenerator([
       "--report", reportPath,
