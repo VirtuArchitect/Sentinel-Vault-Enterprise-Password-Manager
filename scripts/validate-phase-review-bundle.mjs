@@ -24,7 +24,9 @@ const requiredArtifactNames = [
   "phaseGateValidation",
   "phaseGateValidationMarkdown",
   "phaseActionRegister",
-  "phaseActionRegisterMarkdown"
+  "phaseActionRegisterMarkdown",
+  "phaseGapMatrix",
+  "phaseGapMatrixMarkdown"
 ];
 
 const hashFile = (filePath) => {
@@ -58,12 +60,15 @@ for (const artifactName of requiredArtifactNames) {
 const phaseEvidence = JSON.parse(readFileSync(manifest.artifacts.phaseEvidenceManifest.path, "utf8"));
 const phaseGate = JSON.parse(readFileSync(manifest.artifacts.phaseGateValidation.path, "utf8"));
 const phaseActions = JSON.parse(readFileSync(manifest.artifacts.phaseActionRegister.path, "utf8"));
+const phaseGaps = JSON.parse(readFileSync(manifest.artifacts.phaseGapMatrix.path, "utf8"));
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
 assert.equal(phaseActions.format, "sentinel-phase-action-register-v1");
+assert.equal(phaseGaps.format, "sentinel-phase-gap-matrix-v1");
 assert.equal(phaseGate.paths.phaseEvidenceManifest, manifest.artifacts.phaseEvidenceManifest.path, "phase gate does not reference phase evidence manifest");
 assert.equal(phaseActions.phaseGatePath, manifest.artifacts.phaseGateValidation.path, "phase action register does not reference phase gate report");
+assert.equal(phaseGaps.summary.phaseCount, phaseActions.actions.length, "phase gap matrix action count does not match phase action register");
 assert.equal(manifest.environment, phaseEvidence.environment, "manifest environment does not match phase evidence");
 assert.equal(manifest.target, phaseEvidence.target, "manifest target does not match phase evidence");
 assert.equal(manifest.ready, phaseGate.ready, "manifest ready flag does not match phase gate");
