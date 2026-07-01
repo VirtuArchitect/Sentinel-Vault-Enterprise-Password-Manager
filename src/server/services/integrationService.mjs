@@ -3,18 +3,22 @@ import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
 
 const signPayload = (payload, secret) => crypto.createHmac("sha256", secret).update(payload, "utf8").digest("hex");
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export const getIntegrationStatus = () => ({
   siem: {
     configured: Boolean(config.integrations.siemWebhookUrl),
     mode: config.integrations.siemWebhookUrl ? "webhook" : "outbox",
+    webhookUrl: config.integrations.siemWebhookUrl,
     signing: Boolean(config.integrations.siemWebhookSecret),
     pending: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && ["queued", "retrying"].includes(item.status)).length || 0,
     failed: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && item.status === "failed").length || 0
   },
   itsm: {
     configured: Boolean(config.integrations.itsmBaseUrl),
-    mode: config.integrations.itsmBaseUrl ? "ticket-reference" : "manual"
+    mode: config.integrations.itsmBaseUrl ? "ticket-reference" : "manual",
+    baseUrl: config.integrations.itsmBaseUrl,
+    ticketPrefixes: config.integrations.itsmTicketPrefixes
   },
   devopsApi: {
     enabled: config.integrations.devopsApiEnabled,
@@ -23,6 +27,38 @@ export const getIntegrationStatus = () => ({
   },
   outboxDepth: store.state.integrationOutbox?.length || 0
 });
+
+export const validateTicketReference = (ticketRef) => {
+  if (!config.integrations.itsmBaseUrl) return { valid: true, required: false };
+  const text = String(ticketRef || "").trim().toUpperCase();
+  const prefixes = config.integrations.itsmTicketPrefixes;
+  const valid = prefixes.some((prefix) => new RegExp(`^${escapeRegex(prefix)}-\\d{3,}$`).test(text));
+  return {
+    valid,
+    required: true,
+    prefixes,
+    message: valid ? "" : `Ticket reference must start with ${prefixes.join(", ")} and include a numeric identifier`
+  };
+};
+
+export const updateIntegrationConfig = (patch = {}) => {
+  if (patch.siemWebhookUrl !== undefined) config.integrations.siemWebhookUrl = String(patch.siemWebhookUrl || "").trim();
+  if (patch.siemWebhookSecret !== undefined && String(patch.siemWebhookSecret || "").trim()) {
+    config.integrations.siemWebhookSecret = String(patch.siemWebhookSecret).trim();
+  }
+  if (patch.siemMaxAttempts !== undefined) config.integrations.siemMaxAttempts = Number(patch.siemMaxAttempts);
+  if (patch.siemRetrySeconds !== undefined) config.integrations.siemRetrySeconds = Number(patch.siemRetrySeconds);
+  if (patch.itsmBaseUrl !== undefined) config.integrations.itsmBaseUrl = String(patch.itsmBaseUrl || "").trim();
+  if (patch.itsmTicketPrefixes !== undefined) {
+    config.integrations.itsmTicketPrefixes = String(patch.itsmTicketPrefixes || "")
+      .split(",")
+      .map((prefix) => prefix.trim().toUpperCase())
+      .filter(Boolean);
+  }
+  if (patch.devopsApiEnabled !== undefined) config.integrations.devopsApiEnabled = Boolean(patch.devopsApiEnabled);
+
+  return getIntegrationStatus();
+};
 
 export const enqueueIntegrationEvent = (event) => {
   store.state.integrationOutbox = store.state.integrationOutbox || [];

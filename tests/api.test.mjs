@@ -412,6 +412,51 @@ test("siem webhook delivery signs payloads and records retries", async () => {
   }
 });
 
+test("integration config updates and ITSM ticket validation are enforced", async () => {
+  const previousItsmBaseUrl = config.integrations.itsmBaseUrl;
+  const previousPrefixes = config.integrations.itsmTicketPrefixes;
+  const previousDevops = config.integrations.devopsApiEnabled;
+  const previousAccessRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
+  try {
+    await withApi(async (baseUrl) => {
+      const ada = await login(baseUrl, "ada@defence.local");
+      const morgan = await login(baseUrl, "morgan@defence.local");
+
+      const update = await jsonFetch(`${baseUrl}/integrations/config`, ada.token, {
+        method: "PATCH",
+        body: JSON.stringify({
+          itsmBaseUrl: "https://itsm.example.test",
+          itsmTicketPrefixes: "INC,CHG",
+          devopsApiEnabled: true
+        })
+      });
+      assert.equal(update.status, 200);
+      const updated = await update.json();
+      assert.equal(updated.integrations.itsm.configured, true);
+      assert.deepEqual(updated.integrations.itsm.ticketPrefixes, ["INC", "CHG"]);
+      assert.equal(updated.integrations.devopsApi.enabled, true);
+
+      const invalidTicket = await fetch(`${baseUrl}/access-requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${morgan.token}` },
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "TASK-12345" })
+      });
+      assert.equal(invalidTicket.status, 400);
+
+      const validTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+        method: "POST",
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-12345" })
+      });
+      assert.equal(validTicket.status, 201);
+    });
+  } finally {
+    config.integrations.itsmBaseUrl = previousItsmBaseUrl;
+    config.integrations.itsmTicketPrefixes = previousPrefixes;
+    config.integrations.devopsApiEnabled = previousDevops;
+    store.state.accessRequests = previousAccessRequests;
+  }
+});
+
 test("compliance report summarizes implemented controls", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");

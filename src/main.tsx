@@ -149,12 +149,20 @@ function App() {
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
   const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
   const [newVault, setNewVault] = useState({ name: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+  const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", devopsApiEnabled: false });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
   const load = async (activeToken = token) => {
     if (!activeToken) return;
     const fresh = await api<ConsoleData>("/api/console", {}, activeToken);
     setData(fresh);
+    setIntegrationDraft((current) => ({
+      ...current,
+      siemWebhookUrl: fresh.integrations.siem.webhookUrl,
+      itsmBaseUrl: fresh.integrations.itsm.baseUrl,
+      itsmTicketPrefixes: fresh.integrations.itsm.ticketPrefixes.join(","),
+      devopsApiEnabled: fresh.integrations.devopsApi.enabled
+    }));
     const firstVault = fresh.vaults[0]?.id || "";
     setAddSecret((current) => ({ ...current, vaultId: current.vaultId || firstVault }));
     if (!selectedSecretId && fresh.secrets[0]) setSelectedSecretId(fresh.secrets[0].id);
@@ -310,6 +318,14 @@ function App() {
     }, "Vault group created");
   };
 
+  const submitIntegrations = (event: React.FormEvent) => {
+    event.preventDefault();
+    action(async () => {
+      await api("/api/integrations/config", { method: "PATCH", body: JSON.stringify(integrationDraft) }, token);
+      setIntegrationDraft((current) => ({ ...current, siemWebhookSecret: "" }));
+    }, "Integration configuration updated");
+  };
+
   const decideAccessRequest = (request: AccessRequest, decision: "approve" | "deny") => {
     action(async () => {
       await api(`/api/access-requests/${request.id}/${decision}`, { method: "POST", body: JSON.stringify({ minutes: 30 }) }, token);
@@ -450,7 +466,7 @@ function App() {
           {tab === "audit" && <AuditTable events={data.audit} />}
           {tab === "users" && <UserTable users={data.users} canManage={can("policy:write")} onChange={updateUserAdmin} />}
           {tab === "policy" && <PolicyPanel policies={data.policies} canWrite={can("policy:write")} onChange={updatePolicy} />}
-          {tab === "manage" && <ManagementPanel data={data} canManage={can("policy:write")} newVault={newVault} onVaultChange={setNewVault} onVaultSubmit={submitVault} />}
+          {tab === "manage" && <ManagementPanel data={data} canManage={can("policy:write")} newVault={newVault} onVaultChange={setNewVault} onVaultSubmit={submitVault} integrationDraft={integrationDraft} onIntegrationChange={setIntegrationDraft} onIntegrationSubmit={submitIntegrations} />}
         </section>
       </section>
 
@@ -654,7 +670,16 @@ function UserTable({ users, canManage, onChange }: { users: UserRecord[]; canMan
   );
 }
 
-function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubmit }: { data: ConsoleData; canManage: boolean; newVault: { name: string; classification: string; ownerUnit: string; members: string }; onVaultChange: (vault: { name: string; classification: string; ownerUnit: string; members: string }) => void; onVaultSubmit: (event: React.FormEvent) => void }) {
+function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubmit, integrationDraft, onIntegrationChange, onIntegrationSubmit }: {
+  data: ConsoleData;
+  canManage: boolean;
+  newVault: { name: string; classification: string; ownerUnit: string; members: string };
+  onVaultChange: (vault: { name: string; classification: string; ownerUnit: string; members: string }) => void;
+  onVaultSubmit: (event: React.FormEvent) => void;
+  integrationDraft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean };
+  onIntegrationChange: (draft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean }) => void;
+  onIntegrationSubmit: (event: React.FormEvent) => void;
+}) {
   return (
     <div className="options-panel management-panel">
       <h2><Settings size={18} />Management</h2>
@@ -682,6 +707,15 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
         <label>Owner unit<input value={newVault.ownerUnit} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, ownerUnit: event.target.value })} /></label>
         <label>Members<input value={newVault.members} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, members: event.target.value })} /></label>
         <button className="secondary" disabled={!canManage || !newVault.name.trim()}><Plus size={16} />Create Group</button>
+      </form>
+      <form className="vault-admin-form" onSubmit={onIntegrationSubmit}>
+        <h3><Settings size={16} />Integration Configuration</h3>
+        <label>SIEM webhook<input value={integrationDraft.siemWebhookUrl} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, siemWebhookUrl: event.target.value })} /></label>
+        <label>SIEM signing secret<input type="password" value={integrationDraft.siemWebhookSecret} placeholder={data.integrations.siem.signing ? "Configured" : "Not configured"} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, siemWebhookSecret: event.target.value })} /></label>
+        <label>ITSM base URL<input value={integrationDraft.itsmBaseUrl} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, itsmBaseUrl: event.target.value })} /></label>
+        <label>Ticket prefixes<input value={integrationDraft.itsmTicketPrefixes} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, itsmTicketPrefixes: event.target.value })} /></label>
+        <label className="inline-check"><input type="checkbox" checked={integrationDraft.devopsApiEnabled} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, devopsApiEnabled: event.target.checked })} />Enable DevOps API</label>
+        <button className="secondary" disabled={!canManage}><Save size={16} />Save Integrations</button>
       </form>
     </div>
   );

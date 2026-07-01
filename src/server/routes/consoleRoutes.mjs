@@ -3,7 +3,7 @@ import { auth } from "../middleware/auth.mjs";
 import { can } from "../middleware/permissions.mjs";
 import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
-import { getIntegrationStatus } from "../services/integrationService.mjs";
+import { getIntegrationStatus, updateIntegrationConfig } from "../services/integrationService.mjs";
 import { audit } from "../services/auditService.mjs";
 import { createVault, updateUser, updateVault } from "../services/adminService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
@@ -38,6 +38,16 @@ consoleRoutes.get("/reports/secret-health", auth, can("audit:read"), (_req, res)
 
 consoleRoutes.get("/integrations/status", auth, can("audit:read"), (_req, res) => {
   res.json({ integrations: getIntegrationStatus() });
+});
+
+consoleRoutes.patch("/integrations/config", auth, can("policy:write"), (req, res, next) => {
+  try {
+    const integrations = updateIntegrationConfig(req.body);
+    audit(req.user.id, "INTEGRATION_CONFIG_UPDATE", "Enterprise integrations", "Updated SIEM, ITSM, or DevOps integration configuration", req.ip);
+    res.json({ integrations });
+  } catch (err) {
+    next(err);
+  }
 });
 
 consoleRoutes.get("/service-tokens", auth, can("policy:write"), (_req, res) => {

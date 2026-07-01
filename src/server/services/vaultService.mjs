@@ -7,6 +7,7 @@ import { audit } from "./auditService.mjs";
 import { verifyAuditChain } from "./auditService.mjs";
 import { getIdentityStatus } from "./identityService.mjs";
 import { getIntegrationStatus } from "./integrationService.mjs";
+import { validateTicketReference } from "./integrationService.mjs";
 import { getSessionStatus } from "./sessionService.mjs";
 
 export const canAccessVault = (user, vault) => Boolean(vault && (vault.members.includes(user.id) || user.role === "SECURITY_ADMIN"));
@@ -365,6 +366,12 @@ export const requestSecretAccess = (user, secretId, reason, options = {}) => {
     throw error;
   }
   const requestedMinutes = clampInteger(options.minutes || 30, 5, 240, "minutes");
+  const ticketValidation = validateTicketReference(options.ticketRef);
+  if (!ticketValidation.valid) {
+    const error = new Error(ticketValidation.message);
+    error.status = 400;
+    throw error;
+  }
   const existing = store.state.accessRequests.find((request) => request.secretId === secretId && request.requesterId === user.id && request.status === "pending");
   if (existing) return publicRequest(existing);
   const request = {

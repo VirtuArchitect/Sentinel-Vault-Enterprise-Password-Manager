@@ -34,6 +34,10 @@ export const config = {
     siemMaxAttempts: Number(process.env.SIEM_MAX_ATTEMPTS || 5),
     siemRetrySeconds: Number(process.env.SIEM_RETRY_SECONDS || 60),
     itsmBaseUrl: process.env.ITSM_BASE_URL || "",
+    itsmTicketPrefixes: String(process.env.ITSM_TICKET_PREFIXES || "INC,CHG,REQ")
+      .split(",")
+      .map((prefix) => prefix.trim().toUpperCase())
+      .filter(Boolean),
     devopsApiEnabled: process.env.DEVOPS_API_ENABLED === "true",
     outboxLimit: Number(process.env.INTEGRATION_OUTBOX_LIMIT || 100)
   },
@@ -65,6 +69,9 @@ export const validateConfig = () => {
   }
   if (!Number.isInteger(config.integrations.siemRetrySeconds) || config.integrations.siemRetrySeconds < 5 || config.integrations.siemRetrySeconds > 3600) {
     issues.push("SIEM_RETRY_SECONDS must be an integer between 5 and 3600.");
+  }
+  if (!Array.isArray(config.integrations.itsmTicketPrefixes) || !config.integrations.itsmTicketPrefixes.length) {
+    issues.push("ITSM_TICKET_PREFIXES must include at least one prefix.");
   }
   return issues;
 };
