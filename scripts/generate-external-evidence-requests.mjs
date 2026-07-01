@@ -84,12 +84,15 @@ const requests = [
     ],
     evidenceTemplates: [
       "docs/templates/connector-certification-evidence.json",
+      "docs/templates/itsm-worknote-evidence.json",
       "docs/templates/siem-receiver-rotation-evidence.json",
       "docs/templates/devops-token-response-evidence.json"
     ],
     commands: [
       "pnpm preflight:connectors -- --siem-url <receiver-url> --ticket-ref <approved-ticket>",
       "pnpm release:connector-evidence -- --preflight <connector-live-preflight.json> --out <connector-certification-evidence.json>",
+      "pnpm release:itsm-worknotes -- --status production --report <itsm-worknote-samples.json> --ticket-ref <approved-ticket> --out <itsm-worknote-evidence.json>",
+      "pnpm validate:itsm-worknotes -- <itsm-worknote-evidence.json>",
       "pnpm release:siem-rotation -- --report <siem-receiver-rotation.json> --out <siem-receiver-rotation-evidence.json>",
       "pnpm validate:connector-evidence -- <connector-certification-evidence.json>",
       "pnpm validate:siem-rotation -- <siem-receiver-rotation-evidence.json>"

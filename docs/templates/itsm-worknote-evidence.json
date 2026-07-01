@@ -1,0 +1,61 @@
+{
+  "format": "sentinel-itsm-worknote-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "system": "replace-with-itsm-system",
+  "reviewedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "ticketRef": "replace-with-ticket",
+  "workNotes": [
+    {
+      "action": "access_requested",
+      "workNoteId": "replace-with-worknote-id",
+      "createdAt": "YYYY-MM-DDTHH:mm:ssZ",
+      "bodySha256": "replace-with-sha256",
+      "redacted": "planned",
+      "ticketRef": "replace-with-ticket"
+    },
+    {
+      "action": "access_approved",
+      "workNoteId": "replace-with-worknote-id",
+      "createdAt": "YYYY-MM-DDTHH:mm:ssZ",
+      "bodySha256": "replace-with-sha256",
+      "redacted": "planned",
+      "ticketRef": "replace-with-ticket"
+    },
+    {
+      "action": "access_denied",
+      "workNoteId": "replace-with-worknote-id",
+      "createdAt": "YYYY-MM-DDTHH:mm:ssZ",
+      "bodySha256": "replace-with-sha256",
+      "redacted": "planned",
+      "ticketRef": "replace-with-ticket"
+    },
+    {
+      "action": "access_revoked",
+      "workNoteId": "replace-with-worknote-id",
+      "createdAt": "YYYY-MM-DDTHH:mm:ssZ",
+      "bodySha256": "replace-with-sha256",
+      "redacted": "planned",
+      "ticketRef": "replace-with-ticket"
+    }
+  ],
+  "checks": {
+    "ticketLookupPassed": "planned",
+    "allowedStateConfirmed": "planned",
+    "changeWindowConfirmed": "planned",
+    "requestLifecycleCovered": "planned",
+    "workNotesRedacted": "planned",
+    "rollbackReviewed": "planned"
+  },
+  "redaction": {
+    "containsSecretValues": "planned",
+    "containsSessionTokens": "planned",
+    "containsCustomerOnlyFields": "planned"
+  },
+  "approvals": {
+    "integrationOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

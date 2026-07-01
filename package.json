@@ -43,6 +43,8 @@
     "release:tenant-isolation": "node scripts/generate-tenant-isolation-evidence.mjs",
     "release:connector-evidence": "node scripts/generate-connector-certification-evidence.mjs",
     "validate:connector-evidence": "node scripts/validate-connector-evidence.mjs",
+    "release:itsm-worknotes": "node scripts/generate-itsm-worknote-evidence.mjs",
+    "validate:itsm-worknotes": "node scripts/validate-itsm-worknote-evidence.mjs",
     "release:devops-token-response": "node scripts/generate-devops-token-response-evidence.mjs",
     "validate:devops-token-response": "node scripts/validate-devops-token-response-evidence.mjs",
     "prepare:deployment-evidence": "node scripts/prepare-deployment-evidence-workspace.mjs",

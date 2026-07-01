@@ -145,6 +145,8 @@ pnpm release:source-migration -- --status planned --out ".\artifacts\import\sour
 pnpm validate:source-migration -- docs/templates/source-migration-evidence.json
 pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
+pnpm release:itsm-worknotes -- --status planned --out ".\artifacts\integrations\itsm-worknote-evidence.json"
+pnpm validate:itsm-worknotes -- docs/templates/itsm-worknote-evidence.json
 pnpm release:devops-token-response -- --preflight ".\artifacts\integrations\devops-token-response-evidence.json"
 pnpm validate:devops-token-response -- docs/templates/devops-token-response-evidence.json
 pnpm release:identity-evidence -- --preflight ".\artifacts\identity\identity-provider-preflight.json"

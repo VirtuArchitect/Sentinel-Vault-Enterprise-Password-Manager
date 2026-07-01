@@ -12,6 +12,7 @@ const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 
 const validators = {
   connector: ["scripts/validate-connector-evidence.mjs"],
+  itsmWorkNotes: ["scripts/validate-itsm-worknote-evidence.mjs"],
   devopsTokenResponse: ["scripts/validate-devops-token-response-evidence.mjs"],
   postgresHa: ["scripts/validate-postgres-ha-approval-evidence.mjs"],
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],

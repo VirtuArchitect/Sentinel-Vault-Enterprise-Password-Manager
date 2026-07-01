@@ -103,6 +103,7 @@ Implemented:
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.
 - Connector certification evidence generator for live preflight summaries, least-privilege scope review, replay protection, redaction evidence, failure modes, rollback, and approvals.
+- ITSM work-note evidence template, generator, validator, and deployment-bundle gate for redacted access request, approval, denial, and revocation work-note samples.
 - SIEM receiver signing-key rotation evidence template and validator.
 - SIEM receiver signing-key rotation evidence generator for receiver metadata, key-window checks, replay rejection, delivery samples, redaction review, and approvals.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
@@ -134,7 +135,7 @@ Implemented:
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:
-- Completed production live receiver and ITSM work-note evidence files for each deployment environment.
+- Completed production live receiver, SIEM rotation, and ITSM work-note evidence files for each deployment environment.
 
 ## Phase 6: Windows Installer Hardening
 

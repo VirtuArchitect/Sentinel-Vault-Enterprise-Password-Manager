@@ -22,6 +22,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
   mkdirSync(evidenceDir, { recursive: true });
   const copies = {
     connector: "connector-certification-evidence.json",
+    itsmWorkNotes: "itsm-worknote-evidence.json",
     devopsTokenResponse: "devops-token-response-evidence.json",
     postgresHa: "postgres-ha-approval-evidence.json",
     browserRollout: "browser-extension-rollout-evidence.json",
@@ -77,6 +78,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.format, "sentinel-deployment-evidence-bundle-validation-v1");
     assert.equal(validation.status, "planned");
     assert.equal(validation.results.connector.validated, true);
+    assert.equal(validation.results.itsmWorkNotes.validated, true);
     assert.equal(validation.results.devopsTokenResponse.validated, true);
     assert.equal(validation.results.postgresHa.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
@@ -106,6 +108,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
     const bundlePath = writeBundleFixture(dir, {
       evidence: {
         connector: "evidence/missing.json",
+        itsmWorkNotes: "evidence/itsm-worknote-evidence.json",
         devopsTokenResponse: "evidence/devops-token-response-evidence.json",
         postgresHa: "evidence/postgres-ha-approval-evidence.json",
         browserRollout: "evidence/browser-extension-rollout-evidence.json",

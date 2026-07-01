@@ -186,8 +186,8 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.match(manifest.artifacts.phaseEvidenceIntake.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseAttachmentInventory.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseWaiverRegister.sha256, /^[a-f0-9]{64}$/);
-    assert.equal(manifest.waiverSummary.waiverCount, 17);
-    assert.equal(manifest.waiverSummary.proposedCount, 17);
+    assert.equal(manifest.waiverSummary.waiverCount, 18);
+    assert.equal(manifest.waiverSummary.proposedCount, 18);
     assert.equal(manifest.waiverSummary.approvedCount, 0);
     assert.equal(manifest.decision, "hold-phase-closure");
 
@@ -197,7 +197,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
     assert.equal(validation.validated, true);
     assert.equal(validation.artifactCount, 17);
-    assert.equal(validation.waiverCount, 17);
+    assert.equal(validation.waiverCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -241,13 +241,13 @@ test("phase review release mode accepts approved waivers", () => {
       "--require-approved-waivers"
     ]));
 
-    assert.equal(result.approvedWaiverCount, 17);
+    assert.equal(result.approvedWaiverCount, 18);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath,
       "--require-approved-waivers"
     ]));
-    assert.equal(validation.approvedWaiverCount, 17);
+    assert.equal(validation.approvedWaiverCount, 18);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
