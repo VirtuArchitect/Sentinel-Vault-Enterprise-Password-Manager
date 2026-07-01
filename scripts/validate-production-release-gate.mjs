@@ -68,6 +68,12 @@ const checks = {
   deploymentEvidence: existsSync(paths.bundle)
     ? runJson("scripts/validate-deployment-evidence-bundle.mjs", [paths.bundle])
     : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },
+  deploymentRedaction: existsSync(paths.bundle)
+    ? runJson("scripts/report-deployment-redaction.mjs", [
+      "--bundle", paths.bundle,
+      "--fail-on-findings"
+    ])
+    : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },
   phaseReadiness: existsSync(paths.bundle) && existsSync(paths.externalRequests)
     ? runJson("scripts/report-phase-readiness.mjs", [
       "--bundle", paths.bundle,
@@ -125,6 +131,15 @@ if (readiness) {
       blockerCount: readiness.blockers?.length || 0
     });
   }
+}
+
+if (checks.deploymentRedaction.result && !checks.deploymentRedaction.result.readyForRelease) {
+  blockers.push({
+    gate: "deployment-redaction",
+    severity: "blocking",
+    message: "Deployment evidence redaction report has findings",
+    findingCount: checks.deploymentRedaction.result.summary?.findingCount || 0
+  });
 }
 
 if (review) {

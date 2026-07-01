@@ -110,6 +110,7 @@ Implemented:
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
 - Deployment evidence workspace manifest and validator that hash the copied bundle, README, and evidence templates before operator edits.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
+- Deployment evidence redaction reporter and release-gate check that scan every bundle evidence file for private keys, service tokens, provider tokens, and generic secret assignments.
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
 - External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.
 - Combined Phase 2-8 completion audit and readiness reporter that composes roadmap, deployment evidence status, and strict external evidence request validation.
