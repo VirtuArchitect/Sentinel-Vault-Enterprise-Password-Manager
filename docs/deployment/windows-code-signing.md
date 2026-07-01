@@ -32,6 +32,9 @@ Example verification:
 ```powershell
 Get-AuthenticodeSignature .\SentinelVault-Windows.zip
 Get-AuthenticodeSignature .\SentinelVault-Windows-Setup.exe
+pnpm verify:windows:signatures
 ```
 
 The status must be `Valid` and the signer must match the expected publishing certificate.
+
+Record release evidence with `docs/templates/windows-release-evidence.json`.

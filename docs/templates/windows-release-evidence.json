@@ -1,0 +1,37 @@
+{
+  "format": "sentinel-windows-release-evidence-v1",
+  "releaseVersion": "replace-with-version",
+  "releaseDate": "YYYY-MM-DD",
+  "buildHost": "replace-with-build-host",
+  "sourceCommit": "replace-with-git-sha",
+  "checks": {
+    "pnpmVerify": "passed",
+    "secretScan": "passed",
+    "dependencyAudit": "passed",
+    "windowsPackage": "passed",
+    "signatureVerification": "replace-with-valid-or-not-signed"
+  },
+  "artifacts": [
+    {
+      "name": "SentinelVault-Windows.zip",
+      "sha256": "replace-with-sha256",
+      "authenticodeStatus": "replace-with-status",
+      "signerThumbprint": "replace-with-thumbprint"
+    },
+    {
+      "name": "SentinelVault-Windows-Setup.exe",
+      "sha256": "replace-with-sha256",
+      "authenticodeStatus": "replace-with-status",
+      "signerThumbprint": "replace-with-thumbprint"
+    }
+  ],
+  "approvals": {
+    "releaseOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsReviewer": "replace-with-reviewer"
+  },
+  "rollback": {
+    "tested": false,
+    "procedure": "deployments/windows/README.md#upgrade-and-rollback"
+  }
+}
