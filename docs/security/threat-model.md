@@ -38,7 +38,7 @@ Out of scope until implemented:
 | --- | --- | --- |
 | Brute-force login | Login rate limit, temporary account lockout, and OIDC/Entra MFA claim enforcement | IP/device trust policy and provider conformance evidence |
 | Direct-object access | Role, vault, and tenant metadata checks in service layer | Broader negative tests and production tenant isolation model |
-| Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
+| Secret disclosure in logs | API avoids intentional value logging and uses a structured logger with recursive sensitive-field, bearer-token, and error redaction | Centralized log shipping redaction tests in the target SIEM |
 | Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, and key ceremony evidence templates exist | Provider SDK integration and completed provider evidence |
 | Audit tampering | Tamper-evident audit hash chaining, signed ledger export, and append-only JSONL ledger for file-backed deployments | External signing service and WORM storage |
 | Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, and restore-validation dry runs | Offline recovery ceremony and scheduled restore drills |

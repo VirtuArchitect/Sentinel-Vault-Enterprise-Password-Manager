@@ -190,7 +190,7 @@ test("cors allows configured origins and rejects unexpected origins", async () =
     assert.equal(allowed.headers.get("access-control-allow-origin"), "http://127.0.0.1:5173");
 
     const rejected = await fetch(baseUrl.replace("/api", "/healthz"), { headers: { Origin: "https://evil.example" } });
-    assert.equal(rejected.status, 500);
+    assert.equal(rejected.status, 403);
   });
 });
 

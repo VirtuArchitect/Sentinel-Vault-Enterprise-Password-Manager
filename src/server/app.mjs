@@ -22,7 +22,9 @@ export const createApp = async () => {
   app.use(cors({
     origin(origin, callback) {
       if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
-      callback(new Error("Origin not allowed by Sentinel Vault CORS policy"));
+      const error = new Error("Origin not allowed by Sentinel Vault CORS policy");
+      error.status = 403;
+      callback(error);
     }
   }));
   app.use(express.json({ limit: "1mb" }));

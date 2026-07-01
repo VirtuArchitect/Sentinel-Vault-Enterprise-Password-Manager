@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
+import { logger } from "../logging/logger.mjs";
 
 const replayWindowSeconds = 300;
 const signPayload = (payload, secret) => crypto.createHmac("sha256", secret).update(payload, "utf8").digest("hex");
@@ -202,7 +203,7 @@ export const startIntegrationDeliveryWorker = () => {
   if (!config.integrations.siemWebhookUrl || config.isTest) return null;
   const interval = setInterval(() => {
     deliverQueuedIntegrationEvents().catch((err) => {
-      console.error("Sentinel Vault SIEM delivery worker failed", err);
+      logger.error("siem.delivery_worker_failed", { err });
     });
   }, Math.max(5, config.integrations.siemRetrySeconds) * 1000);
   interval.unref?.();
