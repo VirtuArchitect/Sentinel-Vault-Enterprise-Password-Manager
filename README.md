@@ -195,6 +195,13 @@ Validate native companion and credential-provider release evidence:
 pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
 ```
 
+Prepare an environment-specific deployment evidence workspace:
+
+```powershell
+pnpm prepare:deployment-evidence -- --environment "pilot" --owner "Platform Security" --out-dir ".\artifacts\deployment\pilot"
+pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
+```
+
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
 ```powershell
