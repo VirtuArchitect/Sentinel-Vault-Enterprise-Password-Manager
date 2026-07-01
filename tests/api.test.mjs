@@ -88,6 +88,7 @@ test("console payload respects users and audit permissions", async () => {
     assert.equal(consoleData.integrations.siem.mode, "outbox");
     assert.equal(typeof consoleData.session.activeSessions, "number");
     assert.equal(consoleData.session.ttlMinutes, 15);
+    assert.equal(typeof consoleData.session.reviewable, "number");
   });
 });
 
@@ -102,6 +103,34 @@ test("logout revokes the active session token", async () => {
 
     const afterLogout = await jsonFetch(`${baseUrl}/console`, ada.token);
     assert.equal(afterLogout.status, 401);
+  });
+});
+
+test("security admins can review and revoke active sessions", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const morgan = await login(baseUrl, "morgan@defence.local");
+
+    const denied = await jsonFetch(`${baseUrl}/sessions`, morgan.token);
+    assert.equal(denied.status, 403);
+
+    const sessionsResponse = await jsonFetch(`${baseUrl}/sessions`, ada.token);
+    assert.equal(sessionsResponse.status, 200);
+    const body = await sessionsResponse.json();
+    assert.ok(body.sessions.length >= 2);
+    const morganSession = body.sessions
+      .filter((session) => session.userId === "u2")
+      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
+    assert.ok(morganSession);
+    assert.ok(morganSession.id);
+    assert.ok(morganSession.source);
+    assert.ok(morganSession.userAgent);
+
+    const revoke = await jsonFetch(`${baseUrl}/sessions/${morganSession.id}/revoke`, ada.token, { method: "POST" });
+    assert.equal(revoke.status, 200);
+
+    const afterRevoke = await jsonFetch(`${baseUrl}/console`, morgan.token);
+    assert.equal(afterRevoke.status, 401);
   });
 });
 

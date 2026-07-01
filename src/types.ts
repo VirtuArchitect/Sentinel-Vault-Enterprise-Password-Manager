@@ -98,6 +98,7 @@ export type AuditIntegrity = {
 export type SessionStatus = {
   activeSessions: number;
   ttlMinutes: number;
+  reviewable: number;
 };
 
 export type IntegrationStatus = {

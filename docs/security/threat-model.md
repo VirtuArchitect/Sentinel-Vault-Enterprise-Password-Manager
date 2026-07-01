@@ -40,7 +40,7 @@ Out of scope until implemented:
 | Compromised root key | Production requires non-demo key | KMS/HSM integration and key rotation |
 | Audit tampering | Tamper-evident audit hash chaining | Append-only storage and external signing |
 | Backup exposure | Admin-only backup endpoint with SHA-256 manifests | Backup encryption and restore workflow validation |
-| Session replay | Expiring in-memory sessions and logout invalidation | Device review, forced admin revocation, refresh-token design |
+| Session replay | Expiring in-memory sessions, logout invalidation, admin session review, and forced revocation | Persistent device inventory and refresh-token design |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Supply-chain compromise | Lockfile, CI verify, and high-severity dependency audit | Secret scanning in CI |
 | Misconfigured IIS/TLS | IIS guidance exists | TLS automation, headers review, deployment checklist |
@@ -55,7 +55,7 @@ Out of scope until implemented:
 6. Add KMS/HSM key-management design.
 7. Add OIDC/Entra token-validation review before implementation.
 8. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
-9. Add session/device review and forced admin revocation.
+9. Add persistent session/device inventory for future refresh-token workflows.
 10. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test

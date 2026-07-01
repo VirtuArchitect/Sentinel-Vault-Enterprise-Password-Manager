@@ -46,7 +46,7 @@ authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
     return res.status(401).json({ error: "Invalid credentials" });
   }
   clearLoginFailure(email);
-  const token = createSession(user.id);
+  const token = createSession(user.id, { source: req.ip, userAgent: req.get("user-agent") || "unknown" });
   audit(user.id, "LOGIN", "Sentinel Vault Console", "MFA assertion accepted", req.ip);
   res.json({ token, user: publicUser(user) });
 });

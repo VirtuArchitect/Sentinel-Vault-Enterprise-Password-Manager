@@ -4,7 +4,9 @@ import { can } from "../middleware/permissions.mjs";
 import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
+import { audit } from "../services/auditService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken } from "../services/serviceTokenService.mjs";
+import { listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
   approveAccessRequest,
   createSecret,
@@ -50,6 +52,16 @@ consoleRoutes.post("/storage/backup", auth, can("policy:write"), (_req, res) => 
 
 consoleRoutes.get("/storage/backups/verify", auth, can("policy:write"), (_req, res) => {
   res.json({ backups: store.validateBackups() });
+});
+
+consoleRoutes.get("/sessions", auth, can("policy:write"), (_req, res) => {
+  res.json({ sessions: listSessions() });
+});
+
+consoleRoutes.post("/sessions/:id/revoke", auth, can("policy:write"), (req, res) => {
+  const revoked = revokeSessionById(req.params.id);
+  if (revoked) audit(req.user.id, "SESSION_REVOKE", req.params.id, "Administrator revoked an active session", req.ip);
+  res.status(revoked ? 200 : 404).json(revoked ? { ok: true } : { error: "Session not found" });
 });
 
 consoleRoutes.post("/service-tokens", auth, can("policy:write"), (req, res, next) => {

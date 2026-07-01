@@ -97,6 +97,7 @@ Implemented:
 - Temporary account lockout after repeated failed login attempts.
 - Server-side logout and session invalidation.
 - Active session count and TTL surfaced in the Management panel.
+- Admin session review and forced active-session revocation APIs.
 - Service-token last-used source, last-used secret, and use-count metadata.
 - Dependency audit in CI.
 - Tamper-evident audit hash chaining.
@@ -110,7 +111,7 @@ Remaining:
 - Append-only audit storage and external signing.
 - Encrypted backup and restore workflow validation.
 - KMS/HSM design and implementation.
-- Full session/device review and forced admin revocation.
+- Persistent session/device inventory for future refresh-token workflows.
 
 ## Phase 8: Browser and Desktop Extensions
 

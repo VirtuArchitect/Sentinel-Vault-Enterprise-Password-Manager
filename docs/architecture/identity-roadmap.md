@@ -31,9 +31,10 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 ## Session Requirements
 
-- Add logout endpoint and server-side session invalidation.
+- Server-side logout and session invalidation are implemented.
+- Admin session review and forced revocation APIs are implemented for active in-memory sessions.
 - Add refresh or renewal only after replay protections are defined.
-- Record device/session metadata for admin review.
+- Session source and user-agent metadata are recorded for admin review.
 - Enforce idle timeout and absolute timeout.
 - Avoid persistent sessions for the local demo unless explicitly configured.
 
