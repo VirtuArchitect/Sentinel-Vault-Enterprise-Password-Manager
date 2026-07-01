@@ -513,7 +513,8 @@ function ManagementPanel({ data }: { data: ConsoleData }) {
         <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.ttlMinutes} min TTL</dd></div>
         <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion}</dd></div>
         <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
-        <div><dt>Backups</dt><dd>{data.storage.backups.length} retained</dd></div>
+        <div><dt>Backups</dt><dd>{data.storage.backups.length} retained / {data.storage.backups.filter((backup) => backup.verified).length} verified</dd></div>
+        <div><dt>Audit integrity</dt><dd>{data.auditIntegrity.verified ? "Verified" : "Attention"} / {data.auditIntegrity.checked} chained</dd></div>
         <div><dt>SIEM</dt><dd>{data.integrations.siem.mode}</dd></div>
         <div><dt>DevOps tokens</dt><dd>{data.integrations.devopsApi.tokenCount}</dd></div>
         <div><dt>Secret health</dt><dd>{data.metrics.highRisk} high risk / {data.metrics.stale} stale / {data.metrics.reused} reused</dd></div>

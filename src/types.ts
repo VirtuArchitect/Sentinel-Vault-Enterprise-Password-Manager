@@ -67,6 +67,7 @@ export type ConsoleData = {
   crypto: CryptoStatus;
   integrations: IntegrationStatus;
   storage: StorageStatus;
+  auditIntegrity: AuditIntegrity;
   audit: AuditEvent[];
   accessRequests: AccessRequest[];
   metrics: {
@@ -84,7 +85,14 @@ export type StorageStatus = {
   statePath: string;
   stateVersion: number;
   exists: boolean;
-  backups: Array<{ file: string; size: number; createdAt: string }>;
+  backups: Array<{ file: string; size: number; createdAt: string; verified?: boolean; verificationReason?: string | null; sha256?: string | null }>;
+};
+
+export type AuditIntegrity = {
+  verified: boolean;
+  checked: number;
+  brokenAt: string | null;
+  reason?: string;
 };
 
 export type SessionStatus = {

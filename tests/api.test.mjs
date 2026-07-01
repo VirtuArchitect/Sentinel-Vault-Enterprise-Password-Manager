@@ -6,6 +6,7 @@ const { createApp } = await import("../src/server/app.mjs");
 const { config } = await import("../src/server/config.mjs");
 const { store } = await import("../src/server/data/store.mjs");
 const { hashPassword } = await import("../src/server/crypto/passwords.mjs");
+const { verifyAuditChain } = await import("../src/server/services/auditService.mjs");
 
 let nextPort = 18100;
 
@@ -252,6 +253,7 @@ test("compliance report summarizes implemented controls", async () => {
     assert.ok(body.report.standards.includes("ISO/IEC 27001"));
     assert.ok(body.report.summary.implemented >= 1);
     assert.ok(body.report.controls.some((control) => control.control === "audit_logging"));
+    assert.ok(body.report.controls.some((control) => control.control === "audit_integrity"));
 
     const exportResponse = await jsonFetch(`${baseUrl}/reports/compliance/export`, ada.token);
     assert.equal(exportResponse.status, 200);
@@ -321,6 +323,26 @@ test("storage status and backup endpoints are admin-only", async () => {
 
     const backup = await jsonFetch(`${baseUrl}/storage/backup`, ada.token, { method: "POST" });
     assert.equal(backup.status, 200);
+
+    const verification = await jsonFetch(`${baseUrl}/storage/backups/verify`, ada.token);
+    assert.equal(verification.status, 200);
+    const verificationBody = await verification.json();
+    assert.ok(Array.isArray(verificationBody.backups));
+  });
+});
+
+test("new audit events are hash chained and verified", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const reveal = await jsonFetch(`${baseUrl}/secrets/s1/reveal`, ada.token, { method: "POST" });
+    assert.equal(reveal.status, 200);
+    const latest = store.state.audit[0];
+    assert.equal(latest.action, "REVEAL_SECRET");
+    assert.ok(latest.hash);
+    assert.ok("previousHash" in latest);
+    const integrity = verifyAuditChain(store.state.audit);
+    assert.equal(integrity.verified, true);
+    assert.ok(integrity.checked >= 1);
   });
 });
 

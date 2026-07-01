@@ -31,7 +31,7 @@ Planned work:
 - Create migration scripts for the current JSON entities.
 - Add import/export from the existing JSON state file.
 - Use transactions for secret lifecycle operations.
-- Add backup integrity validation before reporting backup success.
+- Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
 - Add tests that run the same API suite against JSON and SQLite modes.
 
 No SQLite runtime dependency has been added yet. The repository instructions require asking before new runtime dependencies.

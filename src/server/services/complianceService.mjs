@@ -3,6 +3,7 @@ import { getCryptoStatus } from "../crypto/vaultCrypto.mjs";
 import { getIdentityStatus } from "./identityService.mjs";
 import { getIntegrationStatus } from "./integrationService.mjs";
 import { getSecretHealthReport } from "./vaultService.mjs";
+import { verifyAuditChain } from "./auditService.mjs";
 
 const evidence = (control, status, detail) => ({ control, status, detail });
 
@@ -14,6 +15,7 @@ export const getComplianceReport = () => {
   const stale = health.filter((secret) => secret.stale).length;
   const reused = health.filter((secret) => secret.reused).length;
   const auditEvents = store.state.audit.length;
+  const auditIntegrity = verifyAuditChain();
 
   const controls = [
     evidence("encryption_at_rest", "implemented", `${crypto.algorithm} with ${crypto.keyDerivation} and key version ${crypto.keyVersion}`),
@@ -22,6 +24,7 @@ export const getComplianceReport = () => {
     evidence("least_privilege", "implemented", "RBAC and object-level vault checks are enforced in service methods"),
     evidence("jit_access", store.state.policies.justInTimeAccess ? "implemented" : "partial", `${store.state.accessRequests.length} access request records`),
     evidence("audit_logging", auditEvents > 0 ? "implemented" : "partial", `${auditEvents} audit events retained`),
+    evidence("audit_integrity", auditIntegrity.verified ? "implemented" : "attention", `${auditIntegrity.checked} chained audit events verified`),
     evidence("secret_rotation", stale === 0 ? "implemented" : "attention", `${stale} stale secrets against ${store.state.policies.rotationDays} day policy`),
     evidence("reuse_prevention", reused === 0 ? "implemented" : "attention", `${reused} reused secrets detected`),
     evidence("siem_export", integrations.siem.configured ? "implemented" : "partial", `SIEM mode: ${integrations.siem.mode}`)

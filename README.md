@@ -153,13 +153,13 @@ Implemented in this prototype:
 
 - Encrypted in-memory vault records and secret metadata
 - JSON-backed local persistence for prototype state
-- JSON state schema versioning and backup support for prototype deployments
+- JSON state schema versioning, backup manifests, and backup integrity checks for prototype deployments
 - RBAC-protected API routes with object-level vault checks
 - JIT access request and approval records
 - Ticket-linked approval workflow metadata and high-risk multi-approval support
 - Temporary reveal access after approval
 - Policy validation and session timeout enforcement
-- Audit events for security-sensitive actions
+- Tamper-evident audit event hash chaining for security-sensitive actions
 - Secret fingerprinting for reuse detection without storing plaintext
 - Compliance report endpoint for audit-ready control summaries
 

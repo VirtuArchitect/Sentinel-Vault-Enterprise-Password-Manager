@@ -45,7 +45,11 @@ consoleRoutes.get("/storage/status", auth, can("policy:write"), (_req, res) => {
 });
 
 consoleRoutes.post("/storage/backup", auth, can("policy:write"), (_req, res) => {
-  res.json({ backupPath: store.createBackup() });
+  res.json({ backup: store.createBackup() });
+});
+
+consoleRoutes.get("/storage/backups/verify", auth, can("policy:write"), (_req, res) => {
+  res.json({ backups: store.validateBackups() });
 });
 
 consoleRoutes.post("/service-tokens", auth, can("policy:write"), (req, res, next) => {

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { config } from "../config.mjs";
 import { createSeedState } from "./seedData.mjs";
 
@@ -45,16 +46,46 @@ const loadState = () => {
 
 const state = loadState();
 
+const sha256File = (filePath) => crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("base64url");
+
+const readBackupManifest = (backupPath) => {
+  const manifestPath = `${backupPath}.sha256.json`;
+  if (!fs.existsSync(manifestPath)) return null;
+  return JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+};
+
+const validateBackup = (backupPath) => {
+  if (!fs.existsSync(backupPath)) return { verified: false, reason: "missing_backup" };
+  const manifest = readBackupManifest(backupPath);
+  if (!manifest) return { verified: false, reason: "missing_manifest" };
+  const actual = sha256File(backupPath);
+  return {
+    verified: actual === manifest.sha256,
+    reason: actual === manifest.sha256 ? null : "hash_mismatch",
+    sha256: manifest.sha256,
+    checkedAt: new Date().toISOString()
+  };
+};
+
 const listBackups = () => {
   if (config.isTest || !fs.existsSync(backupDir)) return [];
   return fs.readdirSync(backupDir)
     .filter((file) => file.endsWith(".json"))
+    .filter((file) => !file.endsWith(".sha256.json"))
     .sort()
     .reverse()
     .map((file) => {
       const fullPath = path.join(backupDir, file);
       const stats = fs.statSync(fullPath);
-      return { file, size: stats.size, createdAt: stats.birthtime.toISOString() };
+      const validation = validateBackup(fullPath);
+      return {
+        file,
+        size: stats.size,
+        createdAt: stats.birthtime.toISOString(),
+        verified: validation.verified,
+        verificationReason: validation.reason,
+        sha256: validation.sha256 || null
+      };
     });
 };
 
@@ -64,7 +95,14 @@ const createBackup = () => {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const backupPath = path.join(backupDir, `sentinel-state-${stamp}.json`);
   fs.copyFileSync(statePath, backupPath);
-  return backupPath;
+  const manifest = {
+    file: path.basename(backupPath),
+    sha256: sha256File(backupPath),
+    createdAt: new Date().toISOString(),
+    algorithm: "sha256"
+  };
+  fs.writeFileSync(`${backupPath}.sha256.json`, JSON.stringify(manifest, null, 2));
+  return { path: backupPath, manifest };
 };
 
 const save = () => {
@@ -80,6 +118,10 @@ export const store = {
   state,
   save,
   createBackup,
+  validateBackups() {
+    if (config.isTest || !fs.existsSync(backupDir)) return [];
+    return listBackups();
+  },
   getStorageStatus() {
     return {
       mode: "json",

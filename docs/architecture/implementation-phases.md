@@ -99,14 +99,16 @@ Implemented:
 - Active session count and TTL surfaced in the Management panel.
 - Service-token last-used source, last-used secret, and use-count metadata.
 - Dependency audit in CI.
+- Tamper-evident audit hash chaining.
+- Backup SHA-256 manifests and admin verification API.
 - Threat model.
 - Security review checklist.
 
 Remaining:
 
 - Secret scanning in CI.
-- Append-only or signed audit log strategy.
-- Encrypted backup and restore validation.
+- Append-only audit storage and external signing.
+- Encrypted backup and restore workflow validation.
 - KMS/HSM design and implementation.
 - Full session/device review and forced admin revocation.
 
