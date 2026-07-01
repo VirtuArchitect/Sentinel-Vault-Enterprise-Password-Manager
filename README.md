@@ -188,6 +188,7 @@ Implemented in this prototype:
 - Admin workflows for vault group creation, membership updates, and user role/status management
 - Tenant hierarchy metadata and tenant-aware vault groups
 - Safe bulk administration metadata import/export for tenants, vaults, users, and policies
+- Bulk secret import with encrypted escrow and independent approval
 - Policy validation and session timeout enforcement
 - Tamper-evident audit event hash chaining for security-sensitive actions
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments

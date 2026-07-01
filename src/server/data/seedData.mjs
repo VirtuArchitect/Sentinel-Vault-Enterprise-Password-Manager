@@ -42,6 +42,7 @@ export const createSeedState = () => ({
     seedSecret({ id: "s3", vaultId: "v3", type: "registry_token", name: "Secure Build Registry", username: "robot.deploy", password: "Q4$pL7#cN1@zV9!eH", url: "https://registry.defence.local", tags: ["devsecops"], risk: "medium", rotatedAt: "2026-06-24T06:45:00Z", sharedWith: ["u3"], notes: "CI/CD deployment token." })
   ],
   serviceTokens: [],
+  secretImports: [],
   accessRequests: [
     {
       id: "ar1",

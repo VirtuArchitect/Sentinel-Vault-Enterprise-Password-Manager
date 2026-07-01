@@ -7,6 +7,7 @@ import { getIntegrationStatus, updateIntegrationConfig } from "../services/integ
 import { audit, exportSignedAuditLedger, verifySignedAuditLedger } from "../services/auditService.mjs";
 import { createTenant, createVault, exportAdminMetadata, importAdminMetadata, updateTenant, updateUser, updateVault } from "../services/adminService.mjs";
 import { createOfflineCache, verifyOfflineCache } from "../services/offlineCacheService.mjs";
+import { approveSecretImport, createSecretImport, denySecretImport, listSecretImports } from "../services/secretImportService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listDevices, listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
@@ -127,6 +128,34 @@ consoleRoutes.patch("/vaults/:id", auth, can("policy:write"), (req, res, next) =
 consoleRoutes.patch("/users/:id", auth, can("policy:write"), (req, res, next) => {
   try {
     res.json({ user: updateUser(req.user, req.params.id, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.get("/secret-imports", auth, can("policy:write"), (_req, res) => {
+  res.json({ imports: listSecretImports() });
+});
+
+consoleRoutes.post("/secret-imports", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.status(201).json({ importBatch: createSecretImport(req.user, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/secret-imports/:id/approve", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ importBatch: approveSecretImport(req.user, req.params.id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/secret-imports/:id/deny", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ importBatch: denySecretImport(req.user, req.params.id, req.body.reason) });
   } catch (err) {
     next(err);
   }

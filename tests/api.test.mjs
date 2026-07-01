@@ -221,6 +221,74 @@ test("security admins can export and import safe administration metadata", async
   });
 });
 
+test("bulk secret import uses encrypted escrow and independent approval", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    await jsonFetch(`${baseUrl}/users/u3`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ role: "SECURITY_ADMIN" })
+    });
+    const iris = await login(baseUrl, "iris@defence.local");
+
+    const duplicate = await jsonFetch(`${baseUrl}/secret-imports`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        vaultId: "v1",
+        entries: [{ name: "Duplicate Import", username: "svc_duplicate_import", password: "E7#hP9!qZ2@Lw8$mV4" }]
+      })
+    });
+    assert.equal(duplicate.status, 400);
+
+    const create = await jsonFetch(`${baseUrl}/secret-imports`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        vaultId: "v1",
+        reason: "Bulk onboarding from approved escrow",
+        entries: [{
+          type: "password",
+          name: "Imported Escrow Secret",
+          username: "svc_imported",
+          password: "ImportedEscrowSecret!2026",
+          url: "https://imported.defence.local",
+          tags: ["import", "escrow"],
+          risk: "medium"
+        }]
+      })
+    });
+    assert.equal(create.status, 201);
+    const created = await create.json();
+    assert.equal(created.importBatch.status, "pending");
+    assert.equal(created.importBatch.entryCount, 1);
+    assert.equal(JSON.stringify(created).includes("ImportedEscrowSecret!2026"), false);
+    assert.equal(JSON.stringify(created).includes("encrypted"), false);
+
+    const selfApprove = await jsonFetch(`${baseUrl}/secret-imports/${created.importBatch.id}/approve`, ada.token, { method: "POST" });
+    assert.equal(selfApprove.status, 403);
+
+    const approve = await jsonFetch(`${baseUrl}/secret-imports/${created.importBatch.id}/approve`, iris.token, { method: "POST" });
+    assert.equal(approve.status, 200);
+    const approved = await approve.json();
+    assert.equal(approved.importBatch.status, "approved");
+    assert.equal(approved.importBatch.importedSecretIds.length, 1);
+
+    const consoleResponse = await jsonFetch(`${baseUrl}/console`, ada.token);
+    const consoleData = await consoleResponse.json();
+    const imported = consoleData.secrets.find((secret) => secret.name === "Imported Escrow Secret");
+    assert.ok(imported);
+    assert.equal(imported.username, "svc_imported");
+
+    const listed = await jsonFetch(`${baseUrl}/secret-imports`, ada.token);
+    const listedBody = await listed.json();
+    assert.equal(JSON.stringify(listedBody).includes("ImportedEscrowSecret!2026"), false);
+    assert.equal(JSON.stringify(listedBody).includes("encrypted"), false);
+
+    await jsonFetch(`${baseUrl}/users/u3`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ role: "AUDITOR" })
+    });
+  });
+});
+
 test("logout revokes the active session token", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");

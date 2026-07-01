@@ -48,9 +48,10 @@ Implemented:
 - Tenant-aware vault creation and update.
 - Safe bulk administration metadata export for tenants, vaults, users, and policies.
 - Safe bulk administration metadata import for tenants and vaults.
+- Bulk secret import with encrypted escrow, duplicate detection, and independent approval.
 
 Remaining:
-- Production bulk secret import with escrow, duplicate detection, and two-person review.
+- Deployment-specific import runbooks and source-system mapping templates.
 
 ## Phase 5: Enterprise Integrations
 

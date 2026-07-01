@@ -37,6 +37,7 @@ const normalizeState = (candidate) => {
     })),
     secrets: candidate?.secrets || seeded.secrets,
     serviceTokens: candidate?.serviceTokens || seeded.serviceTokens,
+    secretImports: candidate?.secretImports || seeded.secretImports,
     accessRequests: candidate?.accessRequests || seeded.accessRequests,
     integrationOutbox: candidate?.integrationOutbox || seeded.integrationOutbox,
     audit: candidate?.audit || seeded.audit,
@@ -237,6 +238,9 @@ export const store = {
   },
   findServiceTokenById(id) {
     return state.serviceTokens.find((token) => token.id === id);
+  },
+  findSecretImportById(id) {
+    return state.secretImports.find((batch) => batch.id === id);
   },
   findAccessRequestById(id) {
     return state.accessRequests.find((request) => request.id === id);
