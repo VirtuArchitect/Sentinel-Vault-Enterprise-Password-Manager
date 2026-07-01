@@ -8,6 +8,10 @@ param(
   [string]$Password = "",
   [switch]$IUnderstandAutotypeRisk,
   [switch]$Tray,
+  [string]$OfflineCachePath = "",
+  [switch]$ProtectOfflineCache,
+  [switch]$ShowOfflineCache,
+  [switch]$RemoveExpiredOfflineCache,
   [switch]$Watch,
   [switch]$ClearNow,
   [switch]$SelfTest
@@ -18,6 +22,7 @@ Set-StrictMode -Version Latest
 
 $stateDir = Join-Path $env:LOCALAPPDATA "SentinelVault"
 $markerPath = Join-Path $stateDir "clipboard-marker.json"
+$protectedOfflineCachePath = Join-Path $stateDir "offline-cache.dpapi"
 
 function Get-SentinelHash {
   param([Parameter(Mandatory = $true)][string]$Text)
@@ -29,6 +34,28 @@ function Get-SentinelHash {
   } finally {
     $sha256.Dispose()
   }
+}
+
+function ConvertTo-Base64UrlBytes {
+  param([Parameter(Mandatory = $true)][string]$Value)
+  $base64 = $Value.Replace("-", "+").Replace("_", "/")
+  switch ($base64.Length % 4) {
+    2 { $base64 += "==" }
+    3 { $base64 += "=" }
+  }
+  return [Convert]::FromBase64String($base64)
+}
+
+function Protect-SentinelBytes {
+  param([Parameter(Mandatory = $true)][byte[]]$Bytes)
+  Add-Type -AssemblyName System.Security
+  return [System.Security.Cryptography.ProtectedData]::Protect($Bytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
+}
+
+function Unprotect-SentinelBytes {
+  param([Parameter(Mandatory = $true)][byte[]]$Bytes)
+  Add-Type -AssemblyName System.Security
+  return [System.Security.Cryptography.ProtectedData]::Unprotect($Bytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser)
 }
 
 function Save-SentinelMarker {
@@ -185,10 +212,68 @@ function Start-SentinelTray {
   $notifyIcon.Dispose()
 }
 
+function Protect-SentinelOfflineCache {
+  param([Parameter(Mandatory = $true)][string]$InputPath)
+  if (!(Test-Path -LiteralPath $InputPath)) {
+    throw "Offline cache file not found: $InputPath"
+  }
+  New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
+  $raw = Get-Content -LiteralPath $InputPath -Raw
+  $parsed = $raw | ConvertFrom-Json
+  if (!$parsed.cache.manifest.readOnly -or $parsed.cache.manifest.plaintextIncluded -ne $false) {
+    throw "Offline cache artifact must be read-only and must not include plaintext."
+  }
+  $protected = Protect-SentinelBytes -Bytes ([System.Text.Encoding]::UTF8.GetBytes($raw))
+  [System.IO.File]::WriteAllBytes($protectedOfflineCachePath, $protected)
+  Write-Host "Protected offline cache for current Windows user:"
+  Write-Host $protectedOfflineCachePath
+}
+
+function Read-SentinelOfflineCache {
+  if (!(Test-Path -LiteralPath $protectedOfflineCachePath)) {
+    throw "No DPAPI-protected offline cache found at $protectedOfflineCachePath"
+  }
+  $protected = [System.IO.File]::ReadAllBytes($protectedOfflineCachePath)
+  $raw = [System.Text.Encoding]::UTF8.GetString((Unprotect-SentinelBytes -Bytes $protected))
+  return $raw | ConvertFrom-Json
+}
+
+function Show-SentinelOfflineCache {
+  $cache = Read-SentinelOfflineCache
+  $manifest = $cache.cache.manifest
+  $expired = [DateTimeOffset]::Parse($manifest.expiresAt) -le [DateTimeOffset]::UtcNow
+  [ordered]@{
+    format = $manifest.format
+    readOnly = $manifest.readOnly
+    exportedFor = $manifest.exportedFor
+    exportedAt = $manifest.exportedAt
+    expiresAt = $manifest.expiresAt
+    expired = $expired
+    keyVersion = $manifest.keyVersion
+    vaults = $manifest.vaults
+    secrets = $manifest.secrets
+    plaintextIncluded = $manifest.plaintextIncluded
+    protectedPath = $protectedOfflineCachePath
+  } | ConvertTo-Json
+}
+
+function Remove-ExpiredSentinelOfflineCache {
+  $cache = Read-SentinelOfflineCache
+  $expiresAt = [DateTimeOffset]::Parse($cache.cache.manifest.expiresAt)
+  if ($expiresAt -le [DateTimeOffset]::UtcNow) {
+    Remove-Item -LiteralPath $protectedOfflineCachePath -Force
+    Write-Host "Removed expired Sentinel offline cache."
+    return
+  }
+  Write-Host "Offline cache is still valid until $($cache.cache.manifest.expiresAt)."
+}
+
 if ($SelfTest) {
   $sample = "sentinel-self-test"
   $hash = Get-SentinelHash -Text $sample
   if ($hash.Length -ne 64) { throw "SHA-256 marker hash failed self-test." }
+  $roundTrip = [System.Text.Encoding]::UTF8.GetString((Unprotect-SentinelBytes -Bytes (Protect-SentinelBytes -Bytes ([System.Text.Encoding]::UTF8.GetBytes($sample)))))
+  if ($roundTrip -ne $sample) { throw "DPAPI round-trip failed self-test." }
   if ("Invoke-SentinelAutoType".Length -lt 1) { throw "Autotype function self-test failed." }
   Write-Host "Sentinel Vault companion self-test passed."
   exit 0
@@ -207,6 +292,21 @@ if ($Tray) {
   exit 0
 }
 
+if ($ProtectOfflineCache) {
+  Protect-SentinelOfflineCache -InputPath $OfflineCachePath
+  exit 0
+}
+
+if ($ShowOfflineCache) {
+  Show-SentinelOfflineCache
+  exit 0
+}
+
+if ($RemoveExpiredOfflineCache) {
+  Remove-ExpiredSentinelOfflineCache
+  exit 0
+}
+
 if ($AutoType) {
   Invoke-SentinelAutoType -TargetWindowTitle $WindowTitle -UserNameValue $Username -PasswordValue $Password
   exit 0
@@ -219,5 +319,5 @@ if ($Value) {
 if ($Watch) {
   Watch-SentinelClipboard
 } elseif (!$Value) {
-  Write-Host "Use -Tray for the desktop helper UI, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
+  Write-Host "Use -Tray for the desktop helper UI, -ProtectOfflineCache to store an exported cache with DPAPI, -ShowOfflineCache to inspect its manifest, -Value to copy a Sentinel-owned value, -Watch to clear it after TTL, -ClearNow to clear the current Sentinel-owned value, or -AutoType with -IUnderstandAutotypeRisk for a guarded proof of concept."
 }

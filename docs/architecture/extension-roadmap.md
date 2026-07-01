@@ -24,6 +24,7 @@
 - Enforce read-only mode while offline and queue no write operations.
 - Expire offline cache according to tenant policy.
 - The API now exports a per-user AES-GCM encrypted read-only cache artifact and verifies cache signatures without exposing plaintext secret material.
+- The Windows companion can DPAPI-protect exported cache artifacts for the current Windows user and inspect the manifest without exposing secret payloads.
 
 ## Native Autotype
 

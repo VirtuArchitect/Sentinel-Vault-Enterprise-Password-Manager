@@ -136,6 +136,7 @@ Implemented:
 - Clipboard auto-clear companion implementation with Sentinel-owned marker hashes.
 - Windows tray UI mode for console launch and Sentinel-owned clipboard clear.
 - Encrypted read-only offline cache export and verification APIs.
+- DPAPI-protected Windows offline cache storage and manifest inspection helper.
 - Guarded native autotype proof of concept in the Windows companion.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
@@ -143,5 +144,5 @@ Implemented:
 Remaining:
 
 - Browser extension packaging, enterprise policy deployment, and store review.
-- Windows DPAPI/native offline cache unlock helper.
+- Dedicated native offline cache browsing UI and scheduled cleanup.
 - Credential-provider proof of concept and formal autotype security review.

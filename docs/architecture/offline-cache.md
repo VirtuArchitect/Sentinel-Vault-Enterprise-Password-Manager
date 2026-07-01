@@ -23,4 +23,26 @@ Plaintext passwords are never written into the offline cache artifact.
 
 ## Remaining Native Work
 
-A production Windows offline reader should protect its local unlock key with DPAPI or an approved enterprise KMS/HSM flow, enforce read-only mode in the UI, and delete expired artifacts automatically.
+The Windows companion can protect an exported cache artifact with DPAPI for the current Windows user:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 `
+  -ProtectOfflineCache `
+  -OfflineCachePath ".\sentinel-offline-cache.json"
+```
+
+Inspect the DPAPI-protected cache manifest without exposing secret payloads:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 -ShowOfflineCache
+```
+
+Remove an expired protected cache:
+
+```powershell
+.\companions\windows\sentinel-tray-helper.ps1 -RemoveExpiredOfflineCache
+```
+
+## Remaining Native Work
+
+A production offline reader should add a dedicated read-only UI for browsing decrypted records after online verification, perform automatic cleanup on a schedule, and use an approved enterprise KMS/HSM flow where DPAPI alone is not sufficient.
