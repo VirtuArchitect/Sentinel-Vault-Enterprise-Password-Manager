@@ -185,8 +185,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
     assert.equal(archive.format, "sentinel-phase-closure-archive-manifest-v1");
     assert.equal(archive.review.artifactNames.length, 17);
-    assert.equal(archive.review.waiverSummary.waiverCount, 20);
-    assert.equal(archive.review.waiverSummary.proposedCount, 20);
+    assert.equal(archive.review.waiverSummary.waiverCount, 21);
+    assert.equal(archive.review.waiverSummary.proposedCount, 21);
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -195,7 +195,7 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     ]));
     assert.equal(validation.format, "sentinel-phase-closure-archive-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.waiverCount, 20);
+    assert.equal(validation.waiverCount, 21);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -244,7 +244,7 @@ test("phase closure release mode accepts approved waivers", () => {
       "--require-approved-waivers"
     ]));
     assert.equal(validation.validated, true);
-    assert.equal(validation.approvedWaiverCount, 20);
+    assert.equal(validation.approvedWaiverCount, 21);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

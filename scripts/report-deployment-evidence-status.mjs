@@ -19,6 +19,7 @@ const validators = {
   itsmWorkNotes: ["scripts/validate-itsm-worknote-evidence.mjs"],
   devopsTokenResponse: ["scripts/validate-devops-token-response-evidence.mjs"],
   postgresHa: ["scripts/validate-postgres-ha-approval-evidence.mjs"],
+  browserIdentity: ["scripts/validate-browser-extension-identity-evidence.mjs"],
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],

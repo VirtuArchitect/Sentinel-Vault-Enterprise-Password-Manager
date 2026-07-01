@@ -1,0 +1,43 @@
+{
+  "format": "sentinel-browser-extension-identity-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "extensionName": "Sentinel Vault Autofill",
+  "packageSha256": "replace-with-sha256",
+  "chrome": {
+    "enabled": true,
+    "extensionId": "replace-with-chrome-extension-id",
+    "channel": "private-chrome-web-store",
+    "publisher": "replace-with-publisher",
+    "reviewStatus": "planned",
+    "policyAssignment": "planned"
+  },
+  "edge": {
+    "enabled": true,
+    "extensionId": "replace-with-edge-extension-id",
+    "channel": "private-edge-addons",
+    "publisher": "replace-with-publisher",
+    "reviewStatus": "planned",
+    "policyAssignment": "planned"
+  },
+  "controls": {
+    "manifestV3Confirmed": "planned",
+    "leastPrivilegeReviewed": "planned",
+    "runtimeHostsApproved": "planned",
+    "nativeHostAllowlistReviewed": "planned",
+    "privacyStatementApproved": "planned",
+    "screenshotsRedacted": "planned",
+    "rollbackOwnerAssigned": "planned"
+  },
+  "approvals": {
+    "endpointPlatformOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "businessOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  },
+  "redaction": {
+    "containsCredentials": "planned",
+    "containsInternalHostnames": "planned",
+    "containsCustomerData": "planned"
+  }
+}

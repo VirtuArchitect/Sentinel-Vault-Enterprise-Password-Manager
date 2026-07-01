@@ -173,10 +173,13 @@ const requests = [
       "Store/private-channel review result and packaged artifact hash"
     ],
     evidenceTemplates: [
+      "docs/templates/browser-extension-identity-evidence.json",
       "docs/templates/browser-extension-rollout-evidence.json"
     ],
     commands: [
       "pnpm package:extension",
+      "pnpm release:browser-identity -- --status production --artifact <sentinel-vault-autofill.zip> --report <browser-extension-identity-report.json> --out <browser-extension-identity-evidence.json>",
+      "pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>",
       "pnpm release:browser-rollout -- --artifact <sentinel-vault-autofill.zip> --extension-id <production-extension-id> --out <browser-rollout-evidence.json>",
       "pnpm render:browser-policy -- --evidence <browser-rollout-evidence.json> --out <browser-policy.json>",
       "pnpm validate:browser-rollout -- <browser-rollout-evidence.json>"

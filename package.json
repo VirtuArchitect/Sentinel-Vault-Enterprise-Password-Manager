@@ -20,6 +20,8 @@
     "release:native-companion": "node scripts/generate-native-companion-evidence.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
     "package:extension": "node scripts/package-browser-extension.mjs",
+    "release:browser-identity": "node scripts/generate-browser-extension-identity-evidence.mjs",
+    "validate:browser-identity": "node scripts/validate-browser-extension-identity-evidence.mjs",
     "release:browser-rollout": "node scripts/generate-browser-rollout-evidence.mjs",
     "render:browser-policy": "node scripts/render-browser-policy.mjs",
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",

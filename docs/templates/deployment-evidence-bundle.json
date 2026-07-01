@@ -9,6 +9,7 @@
     "itsmWorkNotes": "docs/templates/itsm-worknote-evidence.json",
     "devopsTokenResponse": "docs/templates/devops-token-response-evidence.json",
     "postgresHa": "docs/templates/postgres-ha-approval-evidence.json",
+    "browserIdentity": "docs/templates/browser-extension-identity-evidence.json",
     "browserRollout": "docs/templates/browser-extension-rollout-evidence.json",
     "nativeCompanion": "docs/templates/native-companion-evidence.json",
     "identityProvider": "docs/templates/identity-provider-evidence.json",

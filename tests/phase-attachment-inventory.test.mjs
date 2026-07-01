@@ -99,9 +99,9 @@ test("phase attachment inventory reports missing and attached intake files", () 
     ]));
 
     assert.equal(result.format, "sentinel-phase-attachment-inventory-result-v1");
-    assert.equal(result.expectedFileCount, 20);
+    assert.equal(result.expectedFileCount, 21);
     assert.equal(result.attachedFileCount, 1);
-    assert.equal(result.missingFileCount, 19);
+    assert.equal(result.missingFileCount, 20);
     assert.equal(result.redactionFindingCount, 0);
     assert.ok(existsSync(inventoryPath));
     assert.ok(existsSync(markdownPath));
