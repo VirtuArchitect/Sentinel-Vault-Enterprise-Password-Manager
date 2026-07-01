@@ -124,6 +124,7 @@ Implemented:
 - Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.
 - Phase evidence intake generator and validator that turn external owner requests into deployment-specific intake folders, expected files, validation commands, and redaction checks.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
+- Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with approval, expiry, and compensating-control fields.
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.

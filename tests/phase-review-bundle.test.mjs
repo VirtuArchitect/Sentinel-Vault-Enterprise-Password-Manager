@@ -133,6 +133,16 @@ const createReviewWorkspace = (dir) => {
     "--inventory", path.join(dir, "phase-attachment-inventory.json"),
     "--intake", path.join(dir, "phase-evidence-intake.json")
   ]);
+  runScript("scripts/prepare-phase-waiver-register.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-waiver-register.json"),
+    "--markdown-out", path.join(dir, "phase-waiver-register.md")
+  ]);
+  runScript("scripts/validate-phase-waiver-register.mjs", [
+    "--register", path.join(dir, "phase-waiver-register.json"),
+    "--attachments", path.join(dir, "phase-attachment-inventory.json"),
+    "--phase-decision", path.join(dir, "phase-decision-record.json")
+  ]);
 };
 
 test("phase review bundle hashes final review artifacts", () => {
@@ -146,14 +156,14 @@ test("phase review bundle hashes final review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-review-bundle-result-v1");
-    assert.equal(result.artifactCount, 15);
+    assert.equal(result.artifactCount, 17);
     assert.equal(result.validated, true);
     assert.equal(result.ready, false);
     assert.ok(existsSync(manifestPath));
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     assert.equal(manifest.format, "sentinel-phase-review-bundle-manifest-v1");
-    assert.equal(Object.keys(manifest.artifacts).length, 15);
+    assert.equal(Object.keys(manifest.artifacts).length, 17);
     assert.match(manifest.artifacts.phaseGateValidation.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseActionRegister.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseGapMatrix.sha256, /^[a-f0-9]{64}$/);
@@ -161,6 +171,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.match(manifest.artifacts.phaseSignoffMatrix.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseEvidenceIntake.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseAttachmentInventory.sha256, /^[a-f0-9]{64}$/);
+    assert.match(manifest.artifacts.phaseWaiverRegister.sha256, /^[a-f0-9]{64}$/);
     assert.equal(manifest.decision, "hold-phase-closure");
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
@@ -168,7 +179,7 @@ test("phase review bundle hashes final review artifacts", () => {
     ]));
     assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 15);
+    assert.equal(validation.artifactCount, 17);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -77,6 +77,8 @@ jobs:
           pnpm validate:phase-intake -- --intake "${RUNNER_TEMP}/deployment-evidence/phase-evidence-intake.json" --external-requests "${RUNNER_TEMP}/deployment-evidence/external-evidence-requests.json" --phase-gaps "${RUNNER_TEMP}/deployment-evidence/phase-gap-matrix.json" --phase-signoffs "${RUNNER_TEMP}/deployment-evidence/phase-signoff-matrix.json"
           pnpm prepare:phase-attachments -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-attachment-inventory.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/phase-attachment-inventory.md"
           pnpm validate:phase-attachments -- --inventory "${RUNNER_TEMP}/deployment-evidence/phase-attachment-inventory.json" --intake "${RUNNER_TEMP}/deployment-evidence/phase-evidence-intake.json"
+          pnpm prepare:phase-waivers -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-waiver-register.json" --markdown-out "${RUNNER_TEMP}/deployment-evidence/phase-waiver-register.md"
+          pnpm validate:phase-waivers -- --register "${RUNNER_TEMP}/deployment-evidence/phase-waiver-register.json" --attachments "${RUNNER_TEMP}/deployment-evidence/phase-attachment-inventory.json" --phase-decision "${RUNNER_TEMP}/deployment-evidence/phase-decision-record.json"
           pnpm package:phase-review -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-review-bundle-manifest.json"
           pnpm validate:phase-review -- --manifest "${RUNNER_TEMP}/deployment-evidence/phase-review-bundle-manifest.json"
           pnpm package:phase-closure -- --dir "${RUNNER_TEMP}/deployment-evidence" --out "${RUNNER_TEMP}/deployment-evidence/phase-closure-archive-manifest.json"

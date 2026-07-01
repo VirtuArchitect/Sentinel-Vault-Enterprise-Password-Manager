@@ -133,6 +133,16 @@ const createClosureWorkspace = (dir) => {
     "--inventory", path.join(dir, "phase-attachment-inventory.json"),
     "--intake", path.join(dir, "phase-evidence-intake.json")
   ]);
+  runScript("scripts/prepare-phase-waiver-register.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-waiver-register.json"),
+    "--markdown-out", path.join(dir, "phase-waiver-register.md")
+  ]);
+  runScript("scripts/validate-phase-waiver-register.mjs", [
+    "--register", path.join(dir, "phase-waiver-register.json"),
+    "--attachments", path.join(dir, "phase-attachment-inventory.json"),
+    "--phase-decision", path.join(dir, "phase-decision-record.json")
+  ]);
   runScript("scripts/package-phase-review-bundle.mjs", [
     "--dir", dir,
     "--out", path.join(dir, "phase-review-bundle-manifest.json")
@@ -155,12 +165,12 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(result.format, "sentinel-phase-closure-archive-result-v1");
     assert.match(result.sourceCommit, /^[a-f0-9]{40}$/);
     assert.equal(result.decision, "hold-phase-closure");
-    assert.equal(result.artifactCount, 15);
+    assert.equal(result.artifactCount, 17);
     assert.ok(existsSync(archivePath));
 
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
     assert.equal(archive.format, "sentinel-phase-closure-archive-manifest-v1");
-    assert.equal(archive.review.artifactNames.length, 15);
+    assert.equal(archive.review.artifactNames.length, 17);
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
