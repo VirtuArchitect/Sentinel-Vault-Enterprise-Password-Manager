@@ -2,7 +2,9 @@ import crypto from "node:crypto";
 import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
 
+const replayWindowSeconds = 300;
 const signPayload = (payload, secret) => crypto.createHmac("sha256", secret).update(payload, "utf8").digest("hex");
+const signDelivery = ({ timestamp, nonce, payload }, secret) => signPayload(`${timestamp}.${nonce}.${payload}`, secret);
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export const getIntegrationStatus = () => ({
@@ -11,6 +13,7 @@ export const getIntegrationStatus = () => ({
     mode: config.integrations.siemWebhookUrl ? "webhook" : "outbox",
     webhookUrl: config.integrations.siemWebhookUrl,
     signing: Boolean(config.integrations.siemWebhookSecret),
+    replayWindowSeconds,
     pending: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && ["queued", "retrying"].includes(item.status)).length || 0,
     failed: store.state.integrationOutbox?.filter((item) => item.target === "siem-webhook" && item.status === "failed").length || 0
   },
@@ -93,19 +96,33 @@ export const deliverQueuedIntegrationEvents = async ({ fetchImpl = globalThis.fe
 
     attempted += 1;
     item.attempts = Number(item.attempts || 0) + 1;
+    const deliveryId = crypto.randomUUID();
+    const deliveryTs = new Date().toISOString();
+    const deliveryNonce = crypto.randomBytes(16).toString("base64url");
     const payload = JSON.stringify({
       id: item.id,
       ts: item.ts,
+      delivery: {
+        id: deliveryId,
+        ts: deliveryTs,
+        replayWindowSeconds
+      },
       kind: item.kind,
       event: item.event
     });
     const headers = {
       "Content-Type": "application/json",
-      "User-Agent": "SentinelVault-SIEM/1.0"
+      "User-Agent": "SentinelVault-SIEM/1.0",
+      "X-Sentinel-Delivery-Id": deliveryId,
+      "X-Sentinel-Timestamp": deliveryTs,
+      "X-Sentinel-Nonce": deliveryNonce,
+      "X-Sentinel-Replay-Window": String(replayWindowSeconds)
     };
     if (config.integrations.siemWebhookSecret) {
-      headers["X-Sentinel-Signature"] = `sha256=${signPayload(payload, config.integrations.siemWebhookSecret)}`;
+      headers["X-Sentinel-Signature"] = `sha256=${signDelivery({ timestamp: deliveryTs, nonce: deliveryNonce, payload }, config.integrations.siemWebhookSecret)}`;
     }
+    item.lastDeliveryId = deliveryId;
+    item.lastDeliveryAt = deliveryTs;
 
     try {
       const response = await fetchImpl(config.integrations.siemWebhookUrl, {

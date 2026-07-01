@@ -63,11 +63,12 @@ Implemented:
 - Last-used, use-count, and rotation metadata for service tokens.
 - SIEM webhook delivery worker with bounded retries.
 - HMAC signing for SIEM webhook payloads.
+- SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
 - ITSM ticket validation.
 - Integration configuration UI.
 
 Remaining:
-- Receiver-side replay guidance and production connector certification.
+- Production connector certification.
 
 ## Phase 6: Windows Installer Hardening
 

@@ -126,7 +126,7 @@ export type SessionStatus = {
 };
 
 export type IntegrationStatus = {
-  siem: { configured: boolean; mode: string; webhookUrl: string; signing: boolean; pending: number; failed: number };
+  siem: { configured: boolean; mode: string; webhookUrl: string; signing: boolean; replayWindowSeconds: number; pending: number; failed: number };
   itsm: { configured: boolean; mode: string; baseUrl: string; ticketPrefixes: string[] };
   devopsApi: { enabled: boolean; mode: string; tokenCount: number };
   outboxDepth: number;

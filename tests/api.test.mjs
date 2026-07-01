@@ -451,7 +451,20 @@ test("siem webhook delivery signs payloads and records retries", async () => {
     assert.deepEqual(delivered, { attempted: 1, delivered: 1, failed: 0 });
     assert.equal(store.state.integrationOutbox[0].status, "delivered");
     assert.equal(deliveredCalls[0].url, "https://siem.example.test/events");
-    const expectedSignature = crypto.createHmac("sha256", config.integrations.siemWebhookSecret).update(deliveredCalls[0].options.body, "utf8").digest("hex");
+    assert.ok(deliveredCalls[0].options.headers["X-Sentinel-Delivery-Id"]);
+    assert.ok(deliveredCalls[0].options.headers["X-Sentinel-Timestamp"]);
+    assert.ok(deliveredCalls[0].options.headers["X-Sentinel-Nonce"]);
+    assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Replay-Window"], "300");
+    const parsedDelivery = JSON.parse(deliveredCalls[0].options.body).delivery;
+    assert.equal(parsedDelivery.id, deliveredCalls[0].options.headers["X-Sentinel-Delivery-Id"]);
+    assert.equal(parsedDelivery.ts, deliveredCalls[0].options.headers["X-Sentinel-Timestamp"]);
+    assert.equal(parsedDelivery.replayWindowSeconds, 300);
+    const signedEnvelope = [
+      deliveredCalls[0].options.headers["X-Sentinel-Timestamp"],
+      deliveredCalls[0].options.headers["X-Sentinel-Nonce"],
+      deliveredCalls[0].options.body
+    ].join(".");
+    const expectedSignature = crypto.createHmac("sha256", config.integrations.siemWebhookSecret).update(signedEnvelope, "utf8").digest("hex");
     assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Signature"], `sha256=${expectedSignature}`);
 
     store.state.integrationOutbox = [];
