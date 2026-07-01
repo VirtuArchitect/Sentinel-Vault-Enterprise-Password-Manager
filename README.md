@@ -141,6 +141,8 @@ pnpm release:siem-rotation -- --report ".\artifacts\integrations\siem-receiver-r
 pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.json
 pnpm release:tls-iis -- --report ".\artifacts\windows\tls-iis-review.json"
 pnpm validate:tls-iis -- docs/templates/tls-iis-evidence.json
+pnpm release:attestation -- --provenance ".\artifacts\release\release-provenance.json"
+pnpm validate:release-attestation -- docs/templates/release-attestation-evidence.json
 ```
 
 ## Project Structure

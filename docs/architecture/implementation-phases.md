@@ -130,6 +130,7 @@ Implemented:
 - Windows release evidence validator for signed MSI/MSIX/EXE artifacts and rollback evidence.
 - Windows release evidence generator for artifact hashes, source commit, release host metadata, and planned signing status.
 - Release attestation evidence template and validator for provenance, artifact hashes, signer identity, redaction, and approvals.
+- Release attestation evidence generator for source provenance, lockfile and artifact hashes, attestation statements, signature metadata, release checks, redaction review, and approvals.
 - Deployment evidence bundle validator that includes Windows release evidence with the wider production gate.
 - Windows artifact signing helper with certificate-store and PFX support.
 - MSI WiX authoring scaffold and WiX build/validation script.
