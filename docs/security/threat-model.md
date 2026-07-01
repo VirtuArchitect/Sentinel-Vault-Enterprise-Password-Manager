@@ -38,7 +38,7 @@ Out of scope until implemented:
 | Direct-object access | Role and vault checks in service layer | Broader negative tests and tenant model |
 | Secret disclosure in logs | API does not intentionally log values | Redaction policy and structured logger |
 | Compromised root key | Production requires non-demo key | KMS/HSM integration and key rotation |
-| Audit tampering | Tamper-evident audit hash chaining | Append-only storage and external signing |
+| Audit tampering | Tamper-evident audit hash chaining, signed ledger export, and append-only JSONL ledger for file-backed deployments | External signing service and WORM storage |
 | Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, and restore-validation dry runs | Offline recovery ceremony and scheduled restore drills |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, forced revocation, and persistent device inventory metadata | Refresh-token design and device trust policy |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
@@ -50,12 +50,10 @@ Out of scope until implemented:
 ## Security Backlog
 
 1. Add MFA verification.
-2. Add append-only audit storage and external signing.
-3. Add encrypted backup and restore workflow validation.
-4. Add KMS/HSM key-management design.
-5. Add OIDC/Entra token-validation review before implementation.
-6. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
-7. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
+2. Add KMS/HSM key-management design.
+3. Add OIDC/Entra token-validation review before implementation.
+4. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
+5. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test
 

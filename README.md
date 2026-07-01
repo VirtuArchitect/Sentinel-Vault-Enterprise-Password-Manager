@@ -177,6 +177,7 @@ Implemented in this prototype:
 - Admin workflows for vault group creation, membership updates, and user role/status management
 - Policy validation and session timeout enforcement
 - Tamper-evident audit event hash chaining for security-sensitive actions
+- Signed audit ledger export and append-only JSONL ledger for file-backed deployments
 - Secret fingerprinting for reuse detection without storing plaintext
 - Compliance report endpoint for audit-ready control summaries
 

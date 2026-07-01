@@ -7,7 +7,7 @@ const { createApp } = await import("../src/server/app.mjs");
 const { config } = await import("../src/server/config.mjs");
 const { store } = await import("../src/server/data/store.mjs");
 const { hashPassword } = await import("../src/server/crypto/passwords.mjs");
-const { verifyAuditChain } = await import("../src/server/services/auditService.mjs");
+const { exportSignedAuditLedger, verifyAuditChain, verifySignedAuditLedger } = await import("../src/server/services/auditService.mjs");
 const { buildContentSecurityPolicy, buildSecurityHeaders } = await import("../src/server/middleware/securityHeaders.mjs");
 const { deliverQueuedIntegrationEvents, enqueueIntegrationEvent } = await import("../src/server/services/integrationService.mjs");
 
@@ -589,10 +589,25 @@ test("new audit events are hash chained and verified", async () => {
     const latest = store.state.audit[0];
     assert.equal(latest.action, "REVEAL_SECRET");
     assert.ok(latest.hash);
+    assert.ok(latest.signature);
     assert.ok("previousHash" in latest);
     const integrity = verifyAuditChain(store.state.audit);
     assert.equal(integrity.verified, true);
     assert.ok(integrity.checked >= 1);
+
+    const ledger = exportSignedAuditLedger(store.state.audit);
+    assert.equal(ledger.manifest.signatureAlgorithm, "HMAC-SHA256");
+    assert.equal(verifySignedAuditLedger(ledger).verified, true);
+
+    const exportResponse = await jsonFetch(`${baseUrl}/reports/audit-ledger/export`, ada.token);
+    assert.equal(exportResponse.status, 200);
+    const exportBody = await exportResponse.json();
+    assert.ok(exportBody.ledger.manifest.payloadHash);
+
+    const verifyResponse = await jsonFetch(`${baseUrl}/reports/audit-ledger/verify`, ada.token);
+    assert.equal(verifyResponse.status, 200);
+    const verifyBody = await verifyResponse.json();
+    assert.equal(verifyBody.verification.verified, true);
   });
 });
 

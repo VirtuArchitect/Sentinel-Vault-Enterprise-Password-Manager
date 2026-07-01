@@ -104,6 +104,7 @@ Implemented:
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - Tamper-evident audit hash chaining.
+- Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
 - Backup SHA-256 manifests and admin verification API.
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
 - Threat model.
@@ -111,7 +112,6 @@ Implemented:
 
 Remaining:
 
-- Append-only audit storage and external signing.
 - KMS/HSM design and implementation.
 
 ## Phase 8: Browser and Desktop Extensions
