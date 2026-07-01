@@ -32,7 +32,9 @@ const requiredArtifactNames = [
   "phaseSignoffMatrix",
   "phaseSignoffMatrixMarkdown",
   "phaseEvidenceIntake",
-  "phaseEvidenceIntakeMarkdown"
+  "phaseEvidenceIntakeMarkdown",
+  "phaseAttachmentInventory",
+  "phaseAttachmentInventoryMarkdown"
 ];
 
 const hashFile = (filePath) => {
@@ -70,6 +72,7 @@ const phaseGaps = JSON.parse(readFileSync(manifest.artifacts.phaseGapMatrix.path
 const phaseDecision = JSON.parse(readFileSync(manifest.artifacts.phaseDecisionRecord.path, "utf8"));
 const phaseSignoffs = JSON.parse(readFileSync(manifest.artifacts.phaseSignoffMatrix.path, "utf8"));
 const phaseIntake = JSON.parse(readFileSync(manifest.artifacts.phaseEvidenceIntake.path, "utf8"));
+const phaseAttachments = JSON.parse(readFileSync(manifest.artifacts.phaseAttachmentInventory.path, "utf8"));
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
@@ -78,6 +81,7 @@ assert.equal(phaseGaps.format, "sentinel-phase-gap-matrix-v1");
 assert.equal(phaseDecision.format, "sentinel-phase-decision-record-v1");
 assert.equal(phaseSignoffs.format, "sentinel-phase-signoff-matrix-v1");
 assert.equal(phaseIntake.format, "sentinel-phase-evidence-intake-v1");
+assert.equal(phaseAttachments.format, "sentinel-phase-attachment-inventory-v1");
 assert.equal(phaseGate.paths.phaseEvidenceManifest, manifest.artifacts.phaseEvidenceManifest.path, "phase gate does not reference phase evidence manifest");
 assert.equal(phaseActions.phaseGatePath, manifest.artifacts.phaseGateValidation.path, "phase action register does not reference phase gate report");
 assert.equal(phaseGaps.summary.phaseCount, phaseActions.actions.length, "phase gap matrix action count does not match phase action register");
@@ -88,6 +92,7 @@ assert.equal(phaseSignoffs.decisionPath, manifest.artifacts.phaseDecisionRecord.
 assert.equal(phaseSignoffs.actionRegisterPath, manifest.artifacts.phaseActionRegister.path, "phase signoff matrix does not reference phase action register");
 assert.equal(phaseIntake.signoffMatrixPath, manifest.artifacts.phaseSignoffMatrix.path, "phase evidence intake does not reference phase signoff matrix");
 assert.equal(phaseIntake.gapMatrixPath, manifest.artifacts.phaseGapMatrix.path, "phase evidence intake does not reference phase gap matrix");
+assert.equal(phaseAttachments.intakePath, manifest.artifacts.phaseEvidenceIntake.path, "phase attachment inventory does not reference phase evidence intake");
 assert.equal(manifest.environment, phaseEvidence.environment, "manifest environment does not match phase evidence");
 assert.equal(manifest.target, phaseEvidence.target, "manifest target does not match phase evidence");
 assert.equal(manifest.ready, phaseGate.ready, "manifest ready flag does not match phase gate");
