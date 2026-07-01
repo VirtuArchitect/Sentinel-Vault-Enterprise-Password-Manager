@@ -22,6 +22,7 @@
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
     "preflight:kms-hsm": "node scripts/preflight-kms-hsm-gateway.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",
+    "preflight:identity": "node scripts/preflight-identity-provider.mjs",
     "validate:restore-drill": "node scripts/validate-encrypted-backup-restore.mjs",
     "convert:source-export": "node scripts/convert-source-export.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",

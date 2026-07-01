@@ -38,6 +38,7 @@ Status: Backend OIDC/Entra ID-token validation and PKCE browser redirect impleme
 - OIDC and Entra ID placeholders exist in configuration.
 - External provider role, group-claim, tenant, and MFA-claim settings are validated.
 - Identity-provider evidence template and validator exist for OIDC/Entra readiness.
+- Live identity-provider preflight evidence for OIDC discovery, JWKS, RS256 token validation, MFA claim, audience, and role-mapping conformance.
 - `POST /api/login/federated` validates RS256 ID tokens with OIDC discovery/JWKS, issuer, audience, expiry, MFA claim, group-to-role mapping, and local enabled-user provisioning.
 - `GET /api/identity/status` and the console login screen switch between local demo unlock and external ID-token sign-in.
 - `POST /api/login/federated/start` and `/callback` implement authorization-code PKCE with short-lived state, nonce validation, and replay rejection.

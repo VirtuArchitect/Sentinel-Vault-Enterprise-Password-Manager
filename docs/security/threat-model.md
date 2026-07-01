@@ -36,7 +36,7 @@ Out of scope until implemented:
 
 | Threat | Current mitigation | Remaining work |
 | --- | --- | --- |
-| Brute-force login | Login rate limit, temporary account lockout, and OIDC/Entra MFA claim enforcement | IP/device trust policy and provider conformance evidence |
+| Brute-force login | Login rate limit, temporary account lockout, OIDC/Entra MFA claim enforcement, and identity-provider conformance preflight evidence | IP/device trust policy |
 | Direct-object access | Role, vault, and tenant metadata checks in service layer | Broader negative tests and production tenant isolation model |
 | Secret disclosure in logs | API avoids intentional value logging and uses a structured logger with recursive sensitive-field, bearer-token, and error redaction | Centralized log shipping redaction tests in the target SIEM |
 | Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, and key ceremony evidence templates exist | Provider SDK integration and completed provider evidence |
@@ -51,11 +51,9 @@ Out of scope until implemented:
 
 ## Security Backlog
 
-1. Add provider-specific OIDC/Entra conformance evidence.
-2. Add provider SDK-backed KMS/HSM integration after dependency and environment approval.
-3. Add signed native Windows credential-provider implementation after approval.
-4. Add Windows installer hardening review for filesystem ACLs, service identity, and upgrade flow.
-5. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
+1. Add provider SDK-backed KMS/HSM integration after dependency and environment approval.
+2. Add signed native Windows credential-provider implementation after approval.
+3. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test
 

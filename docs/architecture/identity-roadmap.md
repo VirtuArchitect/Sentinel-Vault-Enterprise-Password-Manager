@@ -31,6 +31,14 @@ Deployment evidence is captured in `docs/templates/identity-provider-evidence.js
 pnpm validate:identity-evidence docs/templates/identity-provider-evidence.json
 ```
 
+Live OIDC/Entra conformance evidence can be generated with:
+
+```powershell
+pnpm preflight:identity -- --issuer "https://login.microsoftonline.com/tenant-id/v2.0" --client-id "replace-with-client-id" --id-token "$env:OIDC_PREFLIGHT_ID_TOKEN"
+```
+
+The preflight verifies discovery, authorization and token endpoints, JWKS reachability, RS256 signing keys, and, when a token is supplied, issuer, audience, expiry, MFA claim, and group-to-role mapping. Output is redacted to token hashes, key hashes, group hashes, and claim counts.
+
 When evidence is marked `pilot` or `production`, the validator rejects placeholders and requires issuer/JWKS, audience, signature, expiry, MFA claim, role mapping, logout revocation, rollback, and approval checks to pass.
 
 ## MFA Requirements
@@ -55,4 +63,4 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 ## Implementation Notes
 
-No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation plus authorization-code PKCE. The console can redirect to the provider or submit an externally acquired ID token in federated mode. Future production hardening should add provider-specific conformance tests, refresh-token replay protections, and optional approved identity SDK support.
+No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation plus authorization-code PKCE. The console can redirect to the provider or submit an externally acquired ID token in federated mode. Future production hardening should add refresh-token replay protections and optional approved identity SDK support.
