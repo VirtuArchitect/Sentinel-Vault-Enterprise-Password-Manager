@@ -1,0 +1,47 @@
+{
+  "format": "sentinel-windows-install-hardening-evidence-v1",
+  "deploymentStatus": "planned",
+  "environment": "replace-with-environment",
+  "reviewDate": "YYYY-MM-DD",
+  "installHost": "replace-with-hostname",
+  "installPath": "C:\\Program Files\\Sentinel Vault",
+  "storageProvider": "sqlite",
+  "nodeBinding": {
+    "host": "127.0.0.1",
+    "port": 5173,
+    "iisFrontend": false,
+    "tlsTermination": "not-applicable"
+  },
+  "serviceIdentity": {
+    "supervisor": "scheduled-task",
+    "runAs": "SYSTEM",
+    "interactiveLogonAllowed": false,
+    "leastPrivilegeReview": "planned"
+  },
+  "filesystemAcls": {
+    "installDirRestricted": "planned",
+    "sentinelEnvRestricted": "planned",
+    "dataDirRestricted": "planned",
+    "logsDirWritableByServiceOnly": "planned",
+    "rollbackDirRestricted": "planned"
+  },
+  "runtimeSecrets": {
+    "vaultRootKeyNotDemo": "planned",
+    "sentinelEnvExcludedFromBackups": "planned",
+    "plaintextSecretsAbsentFromLogs": "planned"
+  },
+  "installerChecks": {
+    "cleanInstall": "not-run",
+    "upgradeBackupCreated": "not-run",
+    "rollbackRestoresPreviousVersion": "not-run",
+    "uninstallRemovesScheduledTask": "not-run",
+    "healthCheckPassed": "not-run",
+    "iisReverseProxyValidated": "not-applicable"
+  },
+  "approvals": {
+    "windowsOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsReviewer": "replace-with-reviewer",
+    "changeTicket": "replace-with-ticket"
+  }
+}

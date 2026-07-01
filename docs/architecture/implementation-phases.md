@@ -115,6 +115,7 @@ Implemented:
 - Windows artifact signing helper with certificate-store and PFX support.
 - MSI WiX authoring scaffold and WiX build/validation script.
 - MSIX manifest authoring scaffold and Windows SDK build/validation script.
+- Windows install hardening evidence template and validator for ACL, service identity, IIS/TLS, health check, upgrade, rollback, and uninstall gates.
 
 Remaining:
 

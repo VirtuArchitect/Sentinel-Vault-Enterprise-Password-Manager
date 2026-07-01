@@ -235,6 +235,14 @@ C:\Program Files\Sentinel Vault\sentinel.env
 
 The installer restricts `sentinel.env` to Administrators and SYSTEM because it contains `VAULT_ROOT_KEY`.
 
+Record Windows install hardening evidence with:
+
+```powershell
+pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evidence.json
+```
+
+Pilot and production evidence must show restricted filesystem ACLs, non-interactive service identity, localhost Node binding, non-demo runtime secrets, clean install, upgrade backup, rollback, uninstall, and health-check results. If IIS is enabled, the evidence must also include TLS termination and reverse-proxy validation.
+
 ## Upgrade and Rollback
 
 Running `install.ps1` over an existing install creates a timestamped rollback backup beside the installation directory before files are overwritten.

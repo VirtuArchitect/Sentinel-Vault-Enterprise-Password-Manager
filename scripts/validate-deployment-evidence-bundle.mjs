@@ -15,7 +15,8 @@ const validators = {
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
-  kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"]
+  kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
+  windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"]
 };
 
 const artifactFormats = {

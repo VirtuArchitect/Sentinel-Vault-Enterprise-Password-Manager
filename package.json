@@ -31,6 +31,7 @@
     "validate:connector-evidence": "node scripts/validate-connector-evidence.mjs",
     "validate:deployment-evidence": "node scripts/validate-deployment-evidence-bundle.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
+    "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",
