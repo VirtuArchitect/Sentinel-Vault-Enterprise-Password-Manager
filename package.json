@@ -12,6 +12,7 @@
     "test": "node --test tests/*.test.mjs",
     "audit:deps": "pnpm audit --audit-level high",
     "scan:secrets": "node scripts/scan-secrets.mjs",
+    "release:provenance": "node scripts/generate-release-provenance.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
     "package:extension": "node scripts/package-browser-extension.mjs",
     "render:browser-policy": "node scripts/render-browser-policy.mjs",

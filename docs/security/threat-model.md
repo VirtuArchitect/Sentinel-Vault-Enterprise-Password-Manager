@@ -44,7 +44,7 @@ Out of scope until implemented:
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
 | Webhook spoofing | SIEM payload HMAC signing and bounded delivery retries | Key rotation and receiver-side replay-window guidance |
 | Unapproved privileged work | ITSM ticket-reference validation for access requests | Live ITSM API validation and approval-state lookup |
-| Supply-chain compromise | Lockfile, CI verify, secret scanning, and high-severity dependency audit | Broader SAST and release provenance |
+| Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, and generated release provenance | Broader SAST and signed release attestations |
 | Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
 
 ## Security Backlog

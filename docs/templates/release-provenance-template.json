@@ -1,0 +1,45 @@
+{
+  "format": "sentinel-release-provenance-v1",
+  "generatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "source": {
+    "commit": "replace-with-git-sha",
+    "branch": "main",
+    "dirty": false,
+    "remote": "https://github.com/VirtuArchitect/Sentinel-Vault-Enterprise-Password-Manager.git"
+  },
+  "package": {
+    "name": "sentinel-vault-console",
+    "version": "1.0.0",
+    "description": "Defence-grade enterprise password manager web console prototype.",
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.7.0",
+      "onFail": "download"
+    }
+  },
+  "lockfile": {
+    "path": "pnpm-lock.yaml",
+    "exists": true,
+    "sha256": "replace-with-lockfile-sha256"
+  },
+  "dependencies": [
+    {
+      "name": "replace-with-dependency",
+      "range": "replace-with-version-range"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "replace-with-artifact-path",
+      "exists": true,
+      "sha256": "replace-with-artifact-sha256",
+      "size": 0
+    }
+  ],
+  "requiredChecks": [
+    "pnpm verify",
+    "pnpm scan:secrets",
+    "pnpm audit:deps",
+    "pnpm verify:windows:signatures for Windows release artifacts"
+  ]
+}
