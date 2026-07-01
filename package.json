@@ -33,6 +33,7 @@
     "validate:deployment-evidence": "node scripts/validate-deployment-evidence-bundle.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
+    "validate:pentest-scope": "node scripts/validate-pentest-scope-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
     "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",

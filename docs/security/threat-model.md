@@ -46,14 +46,13 @@ Out of scope until implemented:
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, use counts, rotation, keyed HMAC token hashes, legacy hash migration on successful use, and DevOps token response preflight evidence | Production pipeline compromise response exercises |
 | Webhook spoofing | SIEM payload HMAC signing, delivery IDs, nonces, timestamps, bounded delivery retries, and replay-window guidance | Key rotation and completed receiver evidence |
 | Unapproved privileged work | Live ITSM ticket lookup rejects invalid or inactive tickets before access requests are created | Provider-specific approval-state lookup and work-note updates |
-| Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, generated release provenance, and Windows signing helper | Broader SAST and signed release attestations from a certificate-backed host |
+| Supply-chain compromise | Lockfile, CI verify, secret scanning, high-severity dependency audit, generated release provenance, Windows signing helper, and penetration-test scope evidence | Broader SAST and signed release attestations from a certificate-backed host |
 | Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
 
 ## Security Backlog
 
 1. Add provider SDK-backed KMS/HSM integration after dependency and environment approval.
 2. Add signed native Windows credential-provider implementation after approval.
-3. Add documented penetration-test scope using `PENTEST_SCOPE_TEMPLATE.md`.
 
 ## Abuse Cases To Test
 

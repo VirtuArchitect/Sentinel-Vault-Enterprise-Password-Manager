@@ -144,6 +144,7 @@ Implemented:
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - Release provenance generator for source commit, lockfile, dependency inventory, and artifact hashes.
+- Penetration-test scope evidence template and validator for authorized scope, required abuse cases, redaction requirements, remediation, retest, and approvals.
 - Tamper-evident audit hash chaining.
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
 - Backup SHA-256 manifests and admin verification API.
