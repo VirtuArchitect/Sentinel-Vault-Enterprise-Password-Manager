@@ -19,6 +19,7 @@
     "render:browser-policy": "node scripts/render-browser-policy.mjs",
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
+    "preflight:kms-hsm": "node scripts/preflight-kms-hsm-gateway.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",
     "validate:restore-drill": "node scripts/validate-encrypted-backup-restore.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",

@@ -141,6 +141,7 @@ Implemented:
 - Key-provider boundary for local root key, external KMS, and HSM readiness.
 - KMS/HSM key ceremony runbook and provider evidence template.
 - KMS/HSM provider evidence validator.
+- KMS/HSM HTTP gateway preflight for live status and sign-operation evidence without adding cloud SDK dependencies.
 - Threat model.
 - Security review checklist.
 
