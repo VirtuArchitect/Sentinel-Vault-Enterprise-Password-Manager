@@ -26,6 +26,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - `pnpm test:sqlite` runs the API and service suite against the SQLite provider, and CI executes it on Node.js 24.
 - Secret lifecycle operations use a repository-level transaction boundary with rollback for state, audit, integration outbox, and deferred commit hooks.
 - `pnpm validate:restore-drill` performs encrypted-backup restore dry runs and writes restore evidence without changing live state.
+- `pnpm validate:storage-migration` validates storage migration-readiness evidence before cutover or deployment bundle assembly.
 - Postgres target schema and `pnpm plan:postgres` migration-planning evidence are available without adding a runtime database dependency.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.

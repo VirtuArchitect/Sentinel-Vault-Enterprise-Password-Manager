@@ -33,6 +33,7 @@
     "convert:source-export": "node scripts/convert-source-export.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
     "inspect:storage": "node scripts/inspect-storage-state.mjs",
+    "validate:storage-migration": "node scripts/validate-storage-migration-evidence.mjs",
     "migrate:sqlite": "node scripts/migrate-json-to-sqlite.mjs",
     "plan:postgres": "node scripts/plan-postgres-migration.mjs",
     "release:tenant-isolation": "node scripts/generate-tenant-isolation-evidence.mjs",
