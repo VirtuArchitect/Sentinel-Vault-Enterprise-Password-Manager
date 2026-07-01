@@ -56,12 +56,23 @@ const parseBulletsAfter = (body, heading) => {
   return [...section.matchAll(/^- (.+)$/gm)].map((match) => match[1].trim());
 };
 
+const parseImplicitImplementedBullets = (body) => {
+  const statusMatch = body.match(/^Status:\s*.+$/m);
+  if (!statusMatch) return [];
+  const start = statusMatch.index + statusMatch[0].length;
+  const rest = body.slice(start);
+  const nextSection = rest.search(/^\w[\w ]+:\s*$/m);
+  const section = nextSection >= 0 ? rest.slice(0, nextSection) : rest;
+  return [...section.matchAll(/^- (.+)$/gm)].map((match) => match[1].trim());
+};
+
 const phases = phaseHeadings.map((match, index) => {
   const number = Number.parseInt(match[1], 10);
   const nextHeading = phaseHeadings[index + 1]?.index ?? roadmap.length;
   const body = roadmap.slice(match.index, nextHeading);
   const status = body.match(/^Status:\s*(.+)$/m)?.[1]?.trim() || "Unknown";
-  const implemented = parseBulletsAfter(body, "Implemented");
+  const explicitImplemented = parseBulletsAfter(body, "Implemented");
+  const implemented = explicitImplemented.length > 0 ? explicitImplemented : parseImplicitImplementedBullets(body);
   const explicitRemaining = parseBulletsAfter(body, "Remaining");
   const statusIndicatesRemaining = /\b(pending|partially implemented|started)\b/i.test(status);
   const remaining = explicitRemaining.length > 0 || !statusIndicatesRemaining ? explicitRemaining : [status];

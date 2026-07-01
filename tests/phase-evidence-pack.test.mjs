@@ -35,6 +35,10 @@ const prepareEvidencePackInputs = (dir) => {
     "--out", path.join(dir, "phase-completion-audit.json"),
     "--markdown-out", path.join(dir, "phase-completion-audit.md")
   ]);
+  runScript("scripts/validate-phase-completion-audit.mjs", [
+    "--audit", path.join(dir, "phase-completion-audit.json"),
+    "--external-requests", path.join(dir, "external-evidence-requests.json")
+  ]);
   runScript("scripts/report-phase-readiness.mjs", [
     "--bundle", workspace.bundlePath,
     "--external-requests", path.join(dir, "external-evidence-requests.json"),

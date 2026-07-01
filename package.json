@@ -48,6 +48,7 @@
     "validate:external-evidence": "node scripts/validate-external-evidence-requests.mjs",
     "report:phase-readiness": "node scripts/report-phase-readiness.mjs",
     "report:phase-completion": "node scripts/report-phase-completion-audit.mjs",
+    "validate:phase-completion": "node scripts/validate-phase-completion-audit.mjs",
     "prepare:phase-handoff": "node scripts/prepare-phase-handoff-checklist.mjs",
     "validate:phase-handoff": "node scripts/validate-phase-handoff-checklist.mjs",
     "package:phase-evidence": "node scripts/package-phase-evidence.mjs",
