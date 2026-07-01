@@ -20,6 +20,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 
 const manifestPath = path.resolve(args.get("--manifest") || "artifacts/deployment/pilot/phase-evidence-pack-manifest.json");
 const requiredArtifactNames = [
+  "deploymentWorkspaceManifest",
   "deploymentBundle",
   "deploymentStatus",
   "externalRequests",
@@ -61,13 +62,18 @@ for (const artifactName of requiredArtifactNames) {
 
 const readiness = JSON.parse(readFileSync(manifest.artifacts.phaseReadiness.path, "utf8"));
 const externalRequests = JSON.parse(readFileSync(manifest.artifacts.externalRequests.path, "utf8"));
+const workspaceManifest = JSON.parse(readFileSync(manifest.artifacts.deploymentWorkspaceManifest.path, "utf8"));
 const deploymentStatus = JSON.parse(readFileSync(manifest.artifacts.deploymentStatus.path, "utf8"));
 const phaseCompletion = JSON.parse(readFileSync(manifest.artifacts.phaseCompletionAudit.path, "utf8"));
 
 assert.equal(readiness.format, "sentinel-phase-readiness-report-v1");
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
+assert.equal(workspaceManifest.format, "sentinel-deployment-evidence-workspace-manifest-v1");
 assert.equal(deploymentStatus.format, "sentinel-deployment-evidence-status-v1");
 assert.equal(phaseCompletion.format, "sentinel-phase-completion-audit-v1");
+assert.equal(workspaceManifest.environment, readiness.bundle.environment, "workspace manifest environment does not match readiness report");
+assert.equal(workspaceManifest.status, readiness.bundle.status, "workspace manifest status does not match readiness report");
+assert.equal(path.resolve(workspaceManifest.outputDir, workspaceManifest.bundle.path), manifest.artifacts.deploymentBundle.path, "workspace manifest bundle path does not match phase evidence bundle");
 assert.equal(manifest.environment, readiness.bundle.environment, "manifest environment does not match readiness report");
 assert.equal(manifest.target, readiness.target, "manifest target does not match readiness report");
 assert.equal(manifest.bundleStatus, readiness.bundle.status, "manifest bundle status does not match readiness report");

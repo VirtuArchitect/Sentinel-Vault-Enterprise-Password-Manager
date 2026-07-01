@@ -115,7 +115,7 @@ Implemented:
 - CI coverage for deployment readiness and handoff tooling, including expected failure of placeholder deployment evidence under the strict release gate.
 - Phase handoff checklist generator that converts readiness blockers and external evidence requests into owner-action checklists.
 - Phase handoff checklist validator that detects stale or edited owner-action checklists before release gate review.
-- Phase evidence pack manifest generator that records SHA-256 hashes for readiness, handoff, and deployment evidence review artifacts.
+- Phase evidence pack manifest generator that records SHA-256 hashes for the deployment workspace manifest, readiness, handoff, and deployment evidence review artifacts.
 - Phase evidence pack validator that recomputes artifact hashes and checks manifest metadata against readiness and deployment status reports.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 

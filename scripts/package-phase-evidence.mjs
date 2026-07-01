@@ -22,6 +22,7 @@ const evidenceDir = path.resolve(args.get("--dir") || "artifacts/deployment/pilo
 const outputPath = path.resolve(args.get("--out") || path.join(evidenceDir, "phase-evidence-pack-manifest.json"));
 
 const artifactMap = {
+  deploymentWorkspaceManifest: args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json"),
   deploymentBundle: args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json"),
   deploymentStatus: args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json"),
   externalRequests: args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json"),
@@ -48,13 +49,17 @@ for (const [name, filePath] of Object.entries(artifactMap)) {
 
 const readiness = JSON.parse(readFileSync(artifactMap.phaseReadiness, "utf8"));
 const externalRequests = JSON.parse(readFileSync(artifactMap.externalRequests, "utf8"));
+const workspaceManifest = JSON.parse(readFileSync(artifactMap.deploymentWorkspaceManifest, "utf8"));
 const deploymentStatus = JSON.parse(readFileSync(artifactMap.deploymentStatus, "utf8"));
 const phaseCompletion = JSON.parse(readFileSync(artifactMap.phaseCompletionAudit, "utf8"));
 
 assert.equal(readiness.format, "sentinel-phase-readiness-report-v1");
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
+assert.equal(workspaceManifest.format, "sentinel-deployment-evidence-workspace-manifest-v1");
 assert.equal(deploymentStatus.format, "sentinel-deployment-evidence-status-v1");
 assert.equal(phaseCompletion.format, "sentinel-phase-completion-audit-v1");
+assert.equal(workspaceManifest.environment, readiness.bundle.environment, "workspace manifest environment does not match readiness report");
+assert.equal(workspaceManifest.status, readiness.bundle.status, "workspace manifest status does not match readiness report");
 
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 

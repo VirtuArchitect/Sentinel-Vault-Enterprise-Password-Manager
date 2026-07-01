@@ -63,7 +63,7 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-evidence-pack-result-v1");
-    assert.equal(result.artifactCount, 9);
+    assert.equal(result.artifactCount, 10);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(manifestPath));
@@ -73,7 +73,8 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.equal(manifest.environment, "pilot");
     assert.equal(manifest.requestCount, 7);
     assert.equal(manifest.remainingExternallyCovered, true);
-    assert.equal(Object.keys(manifest.artifacts).length, 9);
+    assert.equal(Object.keys(manifest.artifacts).length, 10);
+    assert.ok(manifest.artifacts.deploymentWorkspaceManifest);
     assert.match(manifest.artifacts.phaseReadiness.sha256, /^[a-f0-9]{64}$/);
     assert.ok(manifest.artifacts.phaseHandoffChecklist.bytes > 0);
     assert.equal(manifest.deploymentEvidenceSummary.total, 21);
@@ -98,7 +99,7 @@ test("phase evidence pack validator accepts unchanged manifests", () => {
 
     assert.equal(validation.format, "sentinel-phase-evidence-pack-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 9);
+    assert.equal(validation.artifactCount, 10);
     assert.equal(validation.ready, false);
   } finally {
     rmSync(dir, { recursive: true, force: true });
