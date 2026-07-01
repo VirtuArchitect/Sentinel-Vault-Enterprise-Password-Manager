@@ -24,6 +24,7 @@ const seedSecret = (secret) => ({
 export const createSeedState = () => ({
   users: userSeeds.map(([id, name, email, role, unit]) => ({ id, name, email, role, unit, mfa: true, ...hashPassword(seededPassword) })),
   sessions: new Map(),
+  deviceInventory: [],
   loginFailures: new Map(),
   vaults: [
     { id: "v1", name: "Mission Systems", classification: "SECRET", ownerUnit: "Strategic Systems", members: ["u1", "u2"], health: 98 },

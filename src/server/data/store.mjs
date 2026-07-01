@@ -28,6 +28,7 @@ const normalizeState = (candidate) => {
     sessions: new Map(),
     loginFailures: new Map(),
     users: candidate?.users || seeded.users,
+    deviceInventory: candidate?.deviceInventory || seeded.deviceInventory,
     vaults: candidate?.vaults || seeded.vaults,
     secrets: candidate?.secrets || seeded.secrets,
     serviceTokens: candidate?.serviceTokens || seeded.serviceTokens,

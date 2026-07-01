@@ -183,6 +183,8 @@ test("security admins can review and revoke active sessions", async () => {
     assert.equal(sessionsResponse.status, 200);
     const body = await sessionsResponse.json();
     assert.ok(body.sessions.length >= 2);
+    assert.ok(body.devices.length >= 2);
+    assert.ok(body.devices.some((device) => device.userId === "u2"));
     const morganSession = body.sessions
       .filter((session) => session.userId === "u2")
       .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
@@ -193,6 +195,10 @@ test("security admins can review and revoke active sessions", async () => {
 
     const revoke = await jsonFetch(`${baseUrl}/sessions/${morganSession.id}/revoke`, ada.token, { method: "POST" });
     assert.equal(revoke.status, 200);
+
+    const afterSessions = await jsonFetch(`${baseUrl}/sessions`, ada.token);
+    const afterSessionsBody = await afterSessions.json();
+    assert.ok(afterSessionsBody.devices.some((device) => device.lastSessionId === morganSession.id && device.revokedAt));
 
     const afterRevoke = await jsonFetch(`${baseUrl}/console`, morgan.token);
     assert.equal(afterRevoke.status, 401);

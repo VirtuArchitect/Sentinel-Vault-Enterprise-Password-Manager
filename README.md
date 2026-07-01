@@ -28,6 +28,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Enterprise policy controls for MFA, JIT access, rotation, clipboard TTL, minimum length, and session duration with server-side validation
 - JIT approval metadata with ticket references, requested duration, approval counts, and high-risk approval requirements
 - Session expiry enforcement and permission-scoped console payloads
+- Persistent device inventory metadata for admin session review without storing bearer tokens
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 - Integration status, signed SIEM webhook delivery with retries, ITSM ticket validation, configuration controls, and DevOps API readiness

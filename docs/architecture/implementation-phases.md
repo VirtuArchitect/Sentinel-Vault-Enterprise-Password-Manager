@@ -99,6 +99,7 @@ Implemented:
 - Server-side logout and session invalidation.
 - Active session count and TTL surfaced in the Management panel.
 - Admin session review and forced active-session revocation APIs.
+- Persistent device inventory metadata for future refresh-token workflows.
 - Service-token last-used source, last-used secret, and use-count metadata.
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
@@ -112,7 +113,6 @@ Remaining:
 
 - Append-only audit storage and external signing.
 - KMS/HSM design and implementation.
-- Persistent session/device inventory for future refresh-token workflows.
 
 ## Phase 8: Browser and Desktop Extensions
 

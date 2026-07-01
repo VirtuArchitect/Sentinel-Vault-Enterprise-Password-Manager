@@ -111,6 +111,7 @@ export type SessionStatus = {
   activeSessions: number;
   ttlMinutes: number;
   reviewable: number;
+  knownDevices: number;
 };
 
 export type IntegrationStatus = {

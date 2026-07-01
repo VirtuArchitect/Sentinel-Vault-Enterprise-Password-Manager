@@ -7,7 +7,7 @@ import { getIntegrationStatus, updateIntegrationConfig } from "../services/integ
 import { audit } from "../services/auditService.mjs";
 import { createVault, updateUser, updateVault } from "../services/adminService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
-import { listSessions, revokeSessionById } from "../services/sessionService.mjs";
+import { listDevices, listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
   approveAccessRequest,
   createSecret,
@@ -75,7 +75,7 @@ consoleRoutes.get("/storage/backups/restore-validate", auth, can("policy:write")
 });
 
 consoleRoutes.get("/sessions", auth, can("policy:write"), (_req, res) => {
-  res.json({ sessions: listSessions() });
+  res.json({ sessions: listSessions(), devices: listDevices() });
 });
 
 consoleRoutes.post("/vaults", auth, can("policy:write"), (req, res, next) => {
