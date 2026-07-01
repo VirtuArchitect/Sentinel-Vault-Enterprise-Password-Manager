@@ -86,8 +86,7 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
             <span>Enterprise Password Manager</span>
           </div>
         </header>
-        <h1>Unlock Sentinel Vault</h1>
-        <p>Sign in with a defence identity to access the multi-user password vault and audit-controlled workbench.</p>
+        <p className="login-intro">Sign in with a defence identity to access the multi-user password vault and audit-controlled workbench.</p>
         <form onSubmit={submit} className="unlock-form">
           <label>
             User name
