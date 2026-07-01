@@ -79,6 +79,7 @@ test("json to sqlite migration writes readiness evidence and relational mirror t
     try {
       assert.equal(db.prepare("SELECT COUNT(*) AS count FROM sentinel_state").get().count, 1);
       assert.equal(db.prepare("SELECT COUNT(*) AS count FROM secrets").get().count, 3);
+      assert.equal(db.prepare("SELECT COUNT(*) AS count FROM refresh_tokens").get().count, 0);
       assert.equal(db.prepare("SELECT COUNT(*) AS count FROM vaults WHERE tenant_id IS NOT NULL").get().count, 3);
       assert.equal(db.prepare("SELECT COUNT(*) AS count FROM policies WHERE id = 'main'").get().count, 1);
     } finally {

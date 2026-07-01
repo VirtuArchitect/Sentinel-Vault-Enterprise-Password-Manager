@@ -14,7 +14,7 @@ const sha256 = (value) => crypto.createHash("sha256").update(value).digest("base
 
 const persistedSeed = () => {
   const { sessions: _sessions, loginFailures: _loginFailures, ...state } = createSeedState();
-  return { ...state, metadata: { version: 2, savedAt: new Date().toISOString() } };
+  return { ...state, metadata: { version: 3, savedAt: new Date().toISOString() } };
 };
 
 const writeEncryptedBackup = (dir, state = persistedSeed()) => {

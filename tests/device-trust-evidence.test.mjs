@@ -111,3 +111,18 @@ test("production device trust evidence rejects leaked session tokens", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("production device trust evidence requires replay drill when refresh tokens are enabled", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-device-refresh-replay-"));
+  try {
+    const evidence = productionEvidence();
+    evidence.policy.refreshTokensEnabled = true;
+    evidence.controls.refreshTokenReplayBlocked = "not-applicable";
+    const evidencePath = path.join(dir, "device-trust.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /refresh-token replay/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

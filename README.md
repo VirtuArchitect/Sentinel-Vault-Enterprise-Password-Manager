@@ -29,6 +29,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - JIT approval metadata with ticket references, requested duration, approval counts, and high-risk approval requirements
 - Session expiry enforcement and permission-scoped console payloads
 - Persistent device inventory metadata for admin session review without storing bearer tokens
+- Optional external-identity refresh tokens with hashed storage, one-time rotation, replay family revocation, and bounded lifetime
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
 - Key-provider boundary for local root key, external KMS, and HSM readiness
@@ -227,12 +228,12 @@ Implemented in this prototype:
 
 Still intentionally out of scope for the prototype:
 
-- Production database storage with migrations
-- AD, Entra ID, LDAP, SAML, OIDC, passkey, or real MFA integration
-- Browser extension packaging, enterprise deployment policy, and store review
+- Postgres HA storage until the runtime database dependency is approved
+- LDAP, SAML, passkey, provider-owned MFA challenge UX, and approved identity SDK integrations
+- Completed production browser extension rollout evidence with real store/private extension IDs
 - Production-certified SIEM, ITSM, PAM, SOAR, Kubernetes, and CI/CD connectors
 - HA clustering, backup, replication, and disaster recovery
-- HSM/KMS-backed key management and independent cryptographic review
+- Provider SDK-backed HSM/KMS operations and independent cryptographic review
 - Session recording and privileged session brokering
 
 ## Configuration
@@ -244,6 +245,8 @@ PORT=5173
 CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 FAILED_LOGIN_LIMIT=5
 LOGIN_LOCKOUT_MINUTES=15
+REFRESH_TOKENS_ENABLED=false
+REFRESH_TOKEN_DAYS=7
 VAULT_ROOT_KEY=your-local-development-root-key
 VAULT_KEY_VERSION=demo-root-v1
 VAULT_KEY_SALT=sentinel-vault

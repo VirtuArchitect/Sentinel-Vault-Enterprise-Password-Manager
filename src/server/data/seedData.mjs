@@ -24,6 +24,7 @@ const seedSecret = (secret) => ({
 export const createSeedState = () => ({
   users: userSeeds.map(([id, name, email, role, unit]) => ({ id, name, email, role, unit, mfa: true, ...hashPassword(seededPassword) })),
   sessions: new Map(),
+  refreshTokens: [],
   deviceInventory: [],
   loginFailures: new Map(),
   tenants: [

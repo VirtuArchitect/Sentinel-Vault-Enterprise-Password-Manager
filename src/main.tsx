@@ -759,7 +759,7 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
       <dl>
         <div><dt>Identity</dt><dd>{data.identity.name} ({data.identity.mode})</dd></div>
         <div><dt>Tenants</dt><dd>{data.metrics.tenants} hierarchy nodes</dd></div>
-        <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.reviewable} reviewable / {data.session.knownDevices} devices / {data.session.ttlMinutes} min TTL</dd></div>
+        <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.reviewable} reviewable / {data.session.knownDevices} devices / {data.session.ttlMinutes} min TTL / refresh {data.session.refreshTokensEnabled ? `${data.session.activeRefreshTokens} active` : "off"}</dd></div>
         <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion} / {data.crypto.keyProvider.provider}</dd></div>
         <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
         <div><dt>Backups</dt><dd>{data.storage.backups.length} retained / {data.storage.backups.filter((backup) => backup.verified).length} verified</dd></div>

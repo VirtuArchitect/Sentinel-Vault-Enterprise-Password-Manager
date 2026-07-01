@@ -150,6 +150,7 @@ Implemented:
 - Active session count and TTL surfaced in the Management panel.
 - Admin session review and forced active-session revocation APIs.
 - Persistent device inventory metadata for future refresh-token workflows.
+- Optional external-identity refresh-session flow with hashed refresh tokens, one-time rotation, replay family revocation, bounded TTL, and admin/session revocation cleanup.
 - Service-token last-used source, last-used secret, and use-count metadata.
 - Service-token keyed HMAC hashing and legacy hash migration.
 - Dependency audit in CI.

@@ -125,6 +125,8 @@ export type SessionStatus = {
   ttlMinutes: number;
   reviewable: number;
   knownDevices: number;
+  refreshTokensEnabled: boolean;
+  activeRefreshTokens: number;
 };
 
 export type IntegrationStatus = {

@@ -77,6 +77,30 @@ test("external identity providers require role and MFA claim mapping", () => {
   }
 });
 
+test("refresh tokens require external identity mode and bounded lifetime", () => {
+  const previous = {
+    enabled: config.refreshTokens.enabled,
+    ttlDays: config.refreshTokens.ttlDays,
+    identityMode: config.identityProvider.mode
+  };
+  try {
+    config.refreshTokens.enabled = true;
+    config.refreshTokens.ttlDays = 7;
+    config.identityProvider.mode = "local";
+    assert.ok(validateConfig().some((issue) => issue.includes("REFRESH_TOKENS_ENABLED")));
+
+    config.identityProvider.mode = "oidc";
+    assert.equal(validateConfig().some((issue) => issue.includes("REFRESH_TOKENS_ENABLED")), false);
+
+    config.refreshTokens.ttlDays = 31;
+    assert.ok(validateConfig().some((issue) => issue.includes("REFRESH_TOKEN_DAYS")));
+  } finally {
+    config.refreshTokens.enabled = previous.enabled;
+    config.refreshTokens.ttlDays = previous.ttlDays;
+    config.identityProvider.mode = previous.identityMode;
+  }
+});
+
 test("siem webhook signing key rotation metadata is validated", () => {
   const originalNodeEnv = process.env.NODE_ENV;
   const originalWebhookUrl = config.integrations.siemWebhookUrl;

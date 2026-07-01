@@ -17,6 +17,10 @@ export const config = {
     endpoint: process.env.KMS_ENDPOINT || ""
   },
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
+  refreshTokens: {
+    enabled: process.env.REFRESH_TOKENS_ENABLED === "true",
+    ttlDays: Number(process.env.REFRESH_TOKEN_DAYS || 7)
+  },
   failedLoginLimit: Number(process.env.FAILED_LOGIN_LIMIT || 5),
   loginLockoutMinutes: Number(process.env.LOGIN_LOCKOUT_MINUTES || 15),
   corsOrigins: String(process.env.CORS_ORIGINS || "http://127.0.0.1:5173,http://localhost:5173")
@@ -106,6 +110,12 @@ export const validateConfig = () => {
   }
   if (!Number.isInteger(config.loginLockoutMinutes) || config.loginLockoutMinutes < 1 || config.loginLockoutMinutes > 1440) {
     issues.push("LOGIN_LOCKOUT_MINUTES must be an integer between 1 and 1440.");
+  }
+  if (!Number.isInteger(config.refreshTokens.ttlDays) || config.refreshTokens.ttlDays < 1 || config.refreshTokens.ttlDays > 30) {
+    issues.push("REFRESH_TOKEN_DAYS must be an integer between 1 and 30.");
+  }
+  if (config.refreshTokens.enabled && config.identityProvider.mode === "local") {
+    issues.push("REFRESH_TOKENS_ENABLED requires IDENTITY_PROVIDER to be oidc or entra.");
   }
   if (!["local", "oidc", "entra"].includes(config.identityProvider.mode)) {
     issues.push("IDENTITY_PROVIDER must be one of local, oidc, or entra.");

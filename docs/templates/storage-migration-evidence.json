@@ -3,7 +3,7 @@
   "inspectedAt": "YYYY-MM-DDTHH:mm:ssZ",
   "stateFile": "replace-with-state-file",
   "stateSha256": "replace-with-sha256",
-  "stateVersion": 2,
+  "stateVersion": 3,
   "providerTargets": [
     "sqlite",
     "postgres"

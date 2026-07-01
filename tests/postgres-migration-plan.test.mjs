@@ -10,7 +10,7 @@ const rootDir = path.resolve(import.meta.dirname, "..");
 
 const persistedSeed = () => {
   const { sessions: _sessions, loginFailures: _loginFailures, ...state } = createSeedState();
-  return { ...state, metadata: { version: 2, savedAt: new Date().toISOString() } };
+  return { ...state, metadata: { version: 3, savedAt: new Date().toISOString() } };
 };
 
 const runPlan = (statePath, outputPath) => execFileSync(process.execPath, [

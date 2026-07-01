@@ -1,6 +1,6 @@
 # Identity Roadmap
 
-Sentinel Vault currently uses seeded local users with hashed demo passwords. Configuration placeholders already exist for OIDC and Microsoft Entra ID, but real federation is not implemented yet.
+Sentinel Vault supports seeded local demo users and built-in OIDC/Microsoft Entra ID-token validation without adding an identity SDK dependency.
 
 ## Target Identity Modes
 
@@ -24,6 +24,7 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 - Local password login is disabled when `IDENTITY_PROVIDER` is `oidc` or `entra`; use `POST /api/login/federated` with an identity-provider ID token.
 - `GET /api/identity/status` exposes provider mode and claim mapping metadata before login so the console can switch between local and federated sign-in modes.
 - `POST /api/login/federated/start` and `POST /api/login/federated/callback` implement OIDC authorization-code login with PKCE, short-lived server-side state, nonce validation, and one-time callback replay protection.
+- `REFRESH_TOKENS_ENABLED=true` enables refresh-session rotation only for `oidc` or `entra` identity modes. Refresh tokens are stored as SHA-256 hashes, rotate on each use, have a bounded `REFRESH_TOKEN_DAYS` lifetime, and revoke the token family on replay.
 
 Deployment evidence is captured in `docs/templates/identity-provider-evidence.json` and validated with:
 
@@ -56,11 +57,11 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 - Server-side logout and session invalidation are implemented.
 - Admin session review and forced revocation APIs are implemented for active in-memory sessions.
-- Add refresh or renewal only after replay protections are defined.
+- Optional external-identity refresh-session rotation is implemented with replay family revocation.
 - Session source and user-agent metadata are recorded for admin review.
 - Enforce idle timeout and absolute timeout.
 - Avoid persistent sessions for the local demo unless explicitly configured.
 
 ## Implementation Notes
 
-No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation plus authorization-code PKCE. The console can redirect to the provider or submit an externally acquired ID token in federated mode. Future production hardening should add refresh-token replay protections and optional approved identity SDK support.
+No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation plus authorization-code PKCE. The console can redirect to the provider or submit an externally acquired ID token in federated mode. Future production hardening should add optional approved identity SDK support, SAML/passkey support where required, and completed device-trust evidence for refresh-token replay drills.

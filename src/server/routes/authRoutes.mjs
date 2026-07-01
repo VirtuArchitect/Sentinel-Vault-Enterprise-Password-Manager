@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import { verifyPassword } from "../crypto/passwords.mjs";
 import { auth } from "../middleware/auth.mjs";
 import { publicUser } from "../rbac/roles.mjs";
-import { createSession, revokeSession } from "../services/sessionService.mjs";
+import { createSessionBundle, refreshSession, revokeSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
 import {
   createPkceChallenge,
@@ -53,7 +53,7 @@ const federatedRedirectBase = (req) => req.get("origin") || `${req.protocol}://$
 
 const createFederatedSessionResponse = (req, res, result) => {
   clearLoginFailure(result.claims.email);
-  const token = createSession(result.user.id, {
+  const session = createSessionBundle(result.user.id, {
     source: req.ip,
     userAgent: req.get("user-agent") || "unknown",
     identityProvider: config.identityProvider.mode,
@@ -66,7 +66,12 @@ const createFederatedSessionResponse = (req, res, result) => {
     `${config.identityProvider.mode} token accepted for ${result.claims.subject}`,
     req.ip
   );
-  res.json({ token, user: publicUser(result.user) });
+  res.json({
+    token: session.token,
+    refreshToken: session.refreshToken,
+    refreshTokenExpiresAt: session.refreshTokenExpiresAt,
+    user: publicUser(result.user)
+  });
 };
 
 authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
@@ -88,9 +93,9 @@ authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
     return res.status(401).json({ error: "Invalid credentials" });
   }
   clearLoginFailure(email);
-  const token = createSession(user.id, { source: req.ip, userAgent: req.get("user-agent") || "unknown" });
+  const session = createSessionBundle(user.id, { source: req.ip, userAgent: req.get("user-agent") || "unknown" });
   audit(user.id, "LOGIN", "Sentinel Vault Console", "MFA assertion accepted", req.ip);
-  res.json({ token, user: publicUser(user) });
+  res.json({ token: session.token, user: publicUser(user) });
 });
 
 authRoutes.post("/login/federated", rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
@@ -153,6 +158,25 @@ authRoutes.post("/login/federated/callback", rateLimit({ windowMs: 60000, max: 1
     createFederatedSessionResponse(req, res, result);
   } catch (err) {
     res.status(401).json({ error: err instanceof Error ? err.message : "Federated login failed" });
+  }
+});
+
+authRoutes.post("/session/refresh", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
+  try {
+    const refreshed = refreshSession(String(req.body.refreshToken || ""), {
+      source: req.ip,
+      userAgent: req.get("user-agent") || "unknown"
+    });
+    audit(refreshed.user.id, "SESSION_REFRESH", "Sentinel Vault Console", "Refresh token rotated and access session renewed", req.ip);
+    res.json({
+      token: refreshed.token,
+      refreshToken: refreshed.refreshToken,
+      refreshTokenExpiresAt: refreshed.refreshTokenExpiresAt,
+      user: publicUser(refreshed.user)
+    });
+  } catch (err) {
+    audit(null, "SESSION_REFRESH_DENIED", "Sentinel Vault Console", err instanceof Error ? err.message : "Refresh token denied", req.ip, "denied");
+    res.status(err.status || 401).json({ error: err instanceof Error ? err.message : "Refresh token denied" });
   }
 });
 

@@ -16,7 +16,7 @@ const statePath = args.get("--state") || "data/sentinel-state.json";
 const sqlitePath = args.get("--sqlite") || "data/sentinel-vault.sqlite";
 const evidencePath = args.get("--evidence") || "artifacts/storage/sqlite-migration-evidence.json";
 const force = cliArgs.includes("--force");
-const stateVersion = 2;
+const stateVersion = 3;
 
 const requiredCollections = [
   "users",
@@ -45,7 +45,7 @@ const normalizeState = (candidate) => {
   return {
     ...seeded,
     ...candidate,
-    metadata: { version: stateVersion, ...(candidate?.metadata || {}) },
+    metadata: { ...(candidate?.metadata || {}), version: stateVersion },
     users: candidate?.users || seeded.users,
     deviceInventory: candidate?.deviceInventory || seeded.deviceInventory,
     tenants,
@@ -92,6 +92,7 @@ const replaceJsonRows = (db, table, rows, columns = {}) => {
 const syncMirrorTables = (db, persisted) => {
   replaceJsonRows(db, "users", persisted.users);
   replaceJsonRows(db, "device_inventory", persisted.deviceInventory);
+  replaceJsonRows(db, "refresh_tokens", persisted.refreshTokens, { user_id: "userId", family_id: "familyId", revoked_at: "revokedAt", expires_at: "expiresAt" });
   replaceJsonRows(db, "tenants", persisted.tenants);
   replaceJsonRows(db, "vaults", persisted.vaults, { tenant_id: "tenantId" });
   replaceJsonRows(db, "secrets", persisted.secrets, { vault_id: "vaultId", risk: "risk", deleted_at: "deletedAt" });
@@ -159,6 +160,7 @@ try {
     );
     CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS device_inventory (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS refresh_tokens (id TEXT PRIMARY KEY, user_id TEXT, family_id TEXT, revoked_at TEXT, expires_at TEXT, data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS tenants (id TEXT PRIMARY KEY, data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS vaults (id TEXT PRIMARY KEY, tenant_id TEXT, data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS secrets (id TEXT PRIMARY KEY, vault_id TEXT, risk TEXT, deleted_at TEXT, data TEXT NOT NULL);

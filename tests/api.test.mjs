@@ -424,6 +424,107 @@ test("federated PKCE flow exchanges authorization code and rejects replay", asyn
   }
 });
 
+test("federated refresh tokens rotate once and block replay", async () => {
+  const previous = {
+    mode: config.identityProvider.mode,
+    issuer: config.identityProvider.issuer,
+    clientId: config.identityProvider.clientId,
+    tenantId: config.identityProvider.tenantId,
+    groupClaim: config.identityProvider.groupClaim,
+    mfaClaim: config.identityProvider.mfaClaim,
+    mfaRequiredValue: config.identityProvider.mfaRequiredValue,
+    refreshTokensEnabled: config.refreshTokens.enabled,
+    refreshTokenDays: config.refreshTokens.ttlDays,
+    roleMappings: { ...config.identityProvider.roleMappings }
+  };
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const jwk = publicKey.export({ format: "jwk" });
+  jwk.kid = "sentinel-refresh-key";
+  jwk.alg = "RS256";
+  jwk.use = "sig";
+  const oidcServer = await startOidcFixture({ keys: [jwk] });
+  const issuer = `http://127.0.0.1:${oidcServer.address().port}`;
+  try {
+    Object.assign(config.identityProvider, {
+      mode: "oidc",
+      issuer,
+      clientId: "sentinel-client",
+      tenantId: "",
+      groupClaim: "groups",
+      mfaClaim: "amr",
+      mfaRequiredValue: "mfa"
+    });
+    config.identityProvider.roleMappings = {
+      SECURITY_ADMIN: "Sentinel Vault Admins",
+      VAULT_OPERATOR: "Sentinel Vault Operators",
+      AUDITOR: "Sentinel Vault Auditors"
+    };
+    config.refreshTokens.enabled = true;
+    config.refreshTokens.ttlDays = 7;
+
+    await withApi(async (baseUrl) => {
+      const now = Math.floor(Date.now() / 1000);
+      const idToken = signJwt({
+        iss: issuer,
+        aud: "sentinel-client",
+        sub: "ada-refresh-subject",
+        exp: now + 300,
+        nbf: now - 5,
+        email: "ada@defence.local",
+        groups: ["Sentinel Vault Admins"],
+        amr: ["pwd", "mfa"]
+      }, privateKey, jwk.kid);
+
+      const loginResponse = await fetch(`${baseUrl}/login/federated`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+      });
+      assert.equal(loginResponse.status, 200);
+      const loginBody = await loginResponse.json();
+      assert.ok(loginBody.refreshToken);
+      assert.ok(loginBody.refreshTokenExpiresAt);
+      assert.equal(JSON.stringify(store.state.refreshTokens).includes(loginBody.refreshToken), false);
+
+      const refreshResponse = await fetch(`${baseUrl}/session/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: loginBody.refreshToken })
+      });
+      assert.equal(refreshResponse.status, 200);
+      const refreshBody = await refreshResponse.json();
+      assert.ok(refreshBody.token);
+      assert.ok(refreshBody.refreshToken);
+      assert.notEqual(refreshBody.refreshToken, loginBody.refreshToken);
+
+      const renewedConsole = await jsonFetch(`${baseUrl}/console`, refreshBody.token);
+      assert.equal(renewedConsole.status, 200);
+
+      const replayResponse = await fetch(`${baseUrl}/session/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: loginBody.refreshToken })
+      });
+      assert.equal(replayResponse.status, 401);
+
+      const revokedFamilyResponse = await fetch(`${baseUrl}/session/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: refreshBody.refreshToken })
+      });
+      assert.equal(revokedFamilyResponse.status, 401);
+      assert.ok(store.state.refreshTokens.some((token) => token.revocationReason === "replay_detected"));
+    });
+  } finally {
+    await new Promise((resolve) => oidcServer.close(resolve));
+    Object.assign(config.identityProvider, previous);
+    config.identityProvider.roleMappings = previous.roleMappings;
+    config.refreshTokens.enabled = previous.refreshTokensEnabled;
+    config.refreshTokens.ttlDays = previous.refreshTokenDays;
+    store.state.refreshTokens = [];
+  }
+});
+
 test("security admins can manage vaults and user status", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");
@@ -1182,7 +1283,7 @@ test("storage status and backup endpoints are admin-only", async () => {
     assert.equal(status.status, 200);
     const body = await status.json();
     assert.equal(body.storage.mode, config.storage.provider === "sqlite" ? "sqlite" : "json");
-    assert.equal(body.storage.stateVersion, 2);
+    assert.equal(body.storage.stateVersion, 3);
 
     const backup = await jsonFetch(`${baseUrl}/storage/backup`, ada.token, { method: "POST" });
     assert.equal(backup.status, 200);
