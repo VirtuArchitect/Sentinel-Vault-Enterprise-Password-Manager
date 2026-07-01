@@ -16,13 +16,25 @@ const claimValues = (value) => {
   return [String(value)];
 };
 
-const discoverJwksUri = async (issuer) => {
+export const discoverIdentityProvider = async (issuer = config.identityProvider.issuer) => {
   const discoveryUrl = `${issuer.replace(/\/$/, "")}/.well-known/openid-configuration`;
   const response = await fetch(discoveryUrl);
   if (!response.ok) throw new Error(`OIDC discovery failed with HTTP ${response.status}`);
   const metadata = await response.json();
   if (metadata.issuer && metadata.issuer !== issuer) throw new Error("OIDC discovery issuer mismatch");
   if (!metadata.jwks_uri) throw new Error("OIDC discovery did not return jwks_uri");
+  return metadata;
+};
+
+export const createPkceVerifier = () => crypto.randomBytes(32).toString("base64url");
+
+export const createPkceChallenge = (verifier) => crypto
+  .createHash("sha256")
+  .update(verifier, "utf8")
+  .digest("base64url");
+
+const discoverJwksUri = async (issuer) => {
+  const metadata = await discoverIdentityProvider(issuer);
   return metadata.jwks_uri;
 };
 
@@ -41,7 +53,7 @@ const roleFromGroups = (groups) => {
 
 const emailFromClaims = (claims) => claims.email || claims.preferred_username || claims.upn || claims.unique_name;
 
-export const validateExternalIdentityToken = async (idToken) => {
+export const validateExternalIdentityToken = async (idToken, options = {}) => {
   if (config.identityProvider.mode === "local") {
     throw new Error("External identity login is disabled when IDENTITY_PROVIDER=local");
   }
@@ -56,6 +68,7 @@ export const validateExternalIdentityToken = async (idToken) => {
   if (!claimValues(claims.aud).includes(config.identityProvider.clientId)) throw new Error("Identity token audience mismatch");
   if (Number(claims.exp || 0) <= Math.floor(Date.now() / 1000)) throw new Error("Identity token has expired");
   if (claims.nbf && Number(claims.nbf) > Math.floor(Date.now() / 1000) + 60) throw new Error("Identity token is not valid yet");
+  if (options.nonce && claims.nonce !== options.nonce) throw new Error("Identity token nonce mismatch");
 
   const jwksUri = await discoverJwksUri(config.identityProvider.issuer);
   const jwksResponse = await fetch(jwksUri);
@@ -93,6 +106,39 @@ export const validateExternalIdentityToken = async (idToken) => {
       role: mappedRole
     }
   };
+};
+
+export const exchangeAuthorizationCode = async ({ code, redirectUri, codeVerifier }) => {
+  if (config.identityProvider.mode === "local") {
+    throw new Error("External identity login is disabled when IDENTITY_PROVIDER=local");
+  }
+  const metadata = await discoverIdentityProvider();
+  if (!metadata.token_endpoint) throw new Error("OIDC discovery did not return token_endpoint");
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: redirectUri,
+    client_id: config.identityProvider.clientId,
+    code_verifier: codeVerifier
+  });
+  if (config.identityProvider.clientSecret) {
+    body.set("client_secret", config.identityProvider.clientSecret);
+  }
+  const response = await fetch(metadata.token_endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      "User-Agent": "SentinelVault-OIDC/1.0"
+    },
+    body
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error_description || payload.error || `OIDC token endpoint returned HTTP ${response.status}`);
+  }
+  if (!payload.id_token) throw new Error("OIDC token response did not include id_token");
+  return payload;
 };
 
 export const getIdentityStatus = () => {

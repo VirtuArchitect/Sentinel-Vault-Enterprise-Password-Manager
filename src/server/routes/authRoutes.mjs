@@ -1,15 +1,25 @@
 import express from "express";
 import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
+import crypto from "node:crypto";
 import { verifyPassword } from "../crypto/passwords.mjs";
 import { auth } from "../middleware/auth.mjs";
 import { publicUser } from "../rbac/roles.mjs";
 import { createSession, revokeSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
-import { getIdentityStatus, validateExternalIdentityToken } from "../services/identityService.mjs";
+import {
+  createPkceChallenge,
+  createPkceVerifier,
+  discoverIdentityProvider,
+  exchangeAuthorizationCode,
+  getIdentityStatus,
+  validateExternalIdentityToken
+} from "../services/identityService.mjs";
 import { rateLimit } from "../middleware/rateLimit.mjs";
 
 export const authRoutes = express.Router();
+const pendingFederatedLogins = new Map();
+const pendingLoginTtlMs = 5 * 60 * 1000;
 
 authRoutes.get("/identity/status", (_req, res) => {
   res.json({ identity: getIdentityStatus() });
@@ -37,6 +47,26 @@ const recordLoginFailure = (email, user, source) => {
 
 const clearLoginFailure = (email) => {
   store.state.loginFailures.delete(loginFailureKey(email));
+};
+
+const federatedRedirectBase = (req) => req.get("origin") || `${req.protocol}://${req.get("host")}`;
+
+const createFederatedSessionResponse = (req, res, result) => {
+  clearLoginFailure(result.claims.email);
+  const token = createSession(result.user.id, {
+    source: req.ip,
+    userAgent: req.get("user-agent") || "unknown",
+    identityProvider: config.identityProvider.mode,
+    subject: result.claims.subject
+  });
+  audit(
+    result.user.id,
+    "FEDERATED_LOGIN",
+    "Sentinel Vault Console",
+    `${config.identityProvider.mode} token accepted for ${result.claims.subject}`,
+    req.ip
+  );
+  res.json({ token, user: publicUser(result.user) });
 };
 
 authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
@@ -67,21 +97,60 @@ authRoutes.post("/login/federated", rateLimit({ windowMs: 60000, max: 10 }), asy
   try {
     const { idToken } = req.body;
     const result = await validateExternalIdentityToken(idToken);
-    clearLoginFailure(result.claims.email);
-    const token = createSession(result.user.id, {
-      source: req.ip,
-      userAgent: req.get("user-agent") || "unknown",
-      identityProvider: config.identityProvider.mode,
-      subject: result.claims.subject
+    createFederatedSessionResponse(req, res, result);
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : "Federated login failed" });
+  }
+});
+
+authRoutes.post("/login/federated/start", rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
+  try {
+    if (config.identityProvider.mode === "local") {
+      return res.status(400).json({ error: "External identity login is disabled when IDENTITY_PROVIDER=local" });
+    }
+    const metadata = await discoverIdentityProvider();
+    if (!metadata.authorization_endpoint) throw new Error("OIDC discovery did not return authorization_endpoint");
+    const state = crypto.randomBytes(24).toString("base64url");
+    const nonce = crypto.randomBytes(24).toString("base64url");
+    const codeVerifier = createPkceVerifier();
+    const redirectUri = String(req.body.redirectUri || `${federatedRedirectBase(req)}/auth/callback`);
+    pendingFederatedLogins.set(state, {
+      nonce,
+      codeVerifier,
+      redirectUri,
+      createdAt: Date.now()
     });
-    audit(
-      result.user.id,
-      "FEDERATED_LOGIN",
-      "Sentinel Vault Console",
-      `${config.identityProvider.mode} token accepted for ${result.claims.subject}`,
-      req.ip
-    );
-    res.json({ token, user: publicUser(result.user) });
+    const authorizationUrl = new URL(metadata.authorization_endpoint);
+    authorizationUrl.searchParams.set("response_type", "code");
+    authorizationUrl.searchParams.set("client_id", config.identityProvider.clientId);
+    authorizationUrl.searchParams.set("redirect_uri", redirectUri);
+    authorizationUrl.searchParams.set("scope", "openid profile email");
+    authorizationUrl.searchParams.set("state", state);
+    authorizationUrl.searchParams.set("nonce", nonce);
+    authorizationUrl.searchParams.set("code_challenge", createPkceChallenge(codeVerifier));
+    authorizationUrl.searchParams.set("code_challenge_method", "S256");
+    res.json({ authorizationUrl: authorizationUrl.toString(), state, expiresIn: pendingLoginTtlMs / 1000 });
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "Federated login start failed" });
+  }
+});
+
+authRoutes.post("/login/federated/callback", rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
+  try {
+    const state = String(req.body.state || "");
+    const pending = pendingFederatedLogins.get(state);
+    pendingFederatedLogins.delete(state);
+    if (!pending) throw new Error("Federated login state was not found or already used");
+    if (Date.now() - pending.createdAt > pendingLoginTtlMs) throw new Error("Federated login state has expired");
+    const redirectUri = String(req.body.redirectUri || pending.redirectUri);
+    if (redirectUri !== pending.redirectUri) throw new Error("Federated login redirect URI mismatch");
+    const tokenResponse = await exchangeAuthorizationCode({
+      code: String(req.body.code || ""),
+      redirectUri,
+      codeVerifier: pending.codeVerifier
+    });
+    const result = await validateExternalIdentityToken(tokenResponse.id_token, { nonce: pending.nonce });
+    createFederatedSessionResponse(req, res, result);
   } catch (err) {
     res.status(401).json({ error: err instanceof Error ? err.message : "Federated login failed" });
   }

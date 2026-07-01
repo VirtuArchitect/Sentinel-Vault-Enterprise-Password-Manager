@@ -41,6 +41,7 @@ export const config = {
     mode: process.env.IDENTITY_PROVIDER || "local",
     issuer: process.env.OIDC_ISSUER || "",
     clientId: process.env.OIDC_CLIENT_ID || "",
+    clientSecret: process.env.OIDC_CLIENT_SECRET || "",
     tenantId: process.env.ENTRA_TENANT_ID || "",
     groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups",
     mfaClaim: process.env.IDENTITY_MFA_CLAIM || "amr",

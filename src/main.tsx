@@ -89,6 +89,22 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
     }
   };
 
+  const startProviderSignIn = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      const start = await api<{ authorizationUrl: string }>("/api/login/federated/start", {
+        method: "POST",
+        body: JSON.stringify({ redirectUri })
+      });
+      window.location.assign(start.authorizationUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to start provider sign-in");
+      setBusy(false);
+    }
+  };
+
   return (
     <main className="login-shell">
       <section className="unlock-card" aria-label="Open database">
@@ -111,6 +127,7 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
                 Identity token
                 <textarea value={idToken} onChange={(event) => setIdToken(event.target.value)} rows={5} spellCheck={false} />
               </label>
+              <button type="button" className="secondary" disabled={busy} onClick={startProviderSignIn}><Globe size={17} />Continue With Provider</button>
             </>
           ) : (
             <>
@@ -220,6 +237,32 @@ function App() {
     setSelectedSecretId(nextData.secrets[0]?.id || "");
     setAddSecret(blankSecret(nextData.vaults[0]?.id || ""));
   };
+
+  useEffect(() => {
+    if (window.location.pathname !== "/auth/callback") return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    if (!code || !state) {
+      setBootError("Identity provider callback was missing code or state");
+      window.history.replaceState({}, "", "/");
+      return;
+    }
+    setBooting(true);
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    api<{ token: string; user: UserRecord }>("/api/login/federated/callback", {
+      method: "POST",
+      body: JSON.stringify({ code, state, redirectUri })
+    })
+      .then((login) => api<ConsoleData>("/api/console", {}, login.token).then((fresh) => onLogin(login.token, fresh)))
+      .catch((err) => {
+        setBootError(err instanceof Error ? `Identity provider sign-in failed: ${err.message}` : "Identity provider sign-in failed");
+      })
+      .finally(() => {
+        window.history.replaceState({}, "", "/");
+        setBooting(false);
+      });
+  }, []);
 
   const signOut = () => {
     api("/api/logout", { method: "POST" }, token).catch(() => undefined);

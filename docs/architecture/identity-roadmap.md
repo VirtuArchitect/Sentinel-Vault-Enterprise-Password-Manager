@@ -14,7 +14,7 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 ## Authentication Requirements
 
 - External identity must verify issuer, audience, signature, expiry, nonce, and state.
-- The backend federated login endpoint validates compact RS256 ID tokens through OIDC discovery and JWKS, then requires matching issuer, audience, signature, expiry, MFA claim, group-to-role mapping, and a locally provisioned enabled user.
+- The backend federated login endpoint validates compact RS256 ID tokens through OIDC discovery and JWKS, then requires matching issuer, audience, signature, expiry, nonce where applicable, MFA claim, group-to-role mapping, and a locally provisioned enabled user.
 - Role assignment must come from configured groups or explicit admin mapping.
 - `IDENTITY_ROLE_SECURITY_ADMIN`, `IDENTITY_ROLE_VAULT_OPERATOR`, and `IDENTITY_ROLE_AUDITOR` define external group mappings.
 - `IDENTITY_GROUP_CLAIM` defines the token claim used for role mapping.
@@ -23,6 +23,7 @@ Sentinel Vault currently uses seeded local users with hashed demo passwords. Con
 - Local demo login must remain available only when `IDENTITY_PROVIDER=local`.
 - Local password login is disabled when `IDENTITY_PROVIDER` is `oidc` or `entra`; use `POST /api/login/federated` with an identity-provider ID token.
 - `GET /api/identity/status` exposes provider mode and claim mapping metadata before login so the console can switch between local and federated sign-in modes.
+- `POST /api/login/federated/start` and `POST /api/login/federated/callback` implement OIDC authorization-code login with PKCE, short-lived server-side state, nonce validation, and one-time callback replay protection.
 
 Deployment evidence is captured in `docs/templates/identity-provider-evidence.json` and validated with:
 
@@ -54,4 +55,4 @@ Current MFA is metadata and policy only. Production MFA should support:
 
 ## Implementation Notes
 
-No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation. The console can submit an externally acquired ID token in federated mode. Future production hardening should add nonce/state binding for browser redirects, provider-specific conformance tests, refresh-token replay protections, and optional approved identity SDK support.
+No OIDC, SAML, passkey, or MFA dependency has been added. The current OIDC/Entra implementation uses built-in Node.js crypto and fetch APIs for RS256 ID-token validation plus authorization-code PKCE. The console can redirect to the provider or submit an externally acquired ID token in federated mode. Future production hardening should add provider-specific conformance tests, refresh-token replay protections, and optional approved identity SDK support.

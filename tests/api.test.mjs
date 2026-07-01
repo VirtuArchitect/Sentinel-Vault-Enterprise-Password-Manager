@@ -45,12 +45,66 @@ const jsonFetch = (url, token, options = {}) => fetch(url, {
   }
 });
 
-const startOidcFixture = async (jwks) => {
+const startOidcFixture = async (jwks, options = {}) => {
+  const issuedCodes = new Map();
   const server = http.createServer((req, res) => {
+    const issuer = `http://127.0.0.1:${server.address().port}`;
     if (req.url === "/.well-known/openid-configuration") {
-      const issuer = `http://127.0.0.1:${server.address().port}`;
       res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ issuer, jwks_uri: `${issuer}/keys` }));
+      res.end(JSON.stringify({
+        issuer,
+        jwks_uri: `${issuer}/keys`,
+        authorization_endpoint: `${issuer}/authorize`,
+        token_endpoint: `${issuer}/token`
+      }));
+      return;
+    }
+    if (req.url?.startsWith("/authorize")) {
+      const url = new URL(req.url, issuer);
+      const code = crypto.randomBytes(16).toString("base64url");
+      issuedCodes.set(code, {
+        nonce: url.searchParams.get("nonce"),
+        redirectUri: url.searchParams.get("redirect_uri")
+      });
+      const redirect = new URL(url.searchParams.get("redirect_uri"));
+      redirect.searchParams.set("code", code);
+      redirect.searchParams.set("state", url.searchParams.get("state"));
+      res.statusCode = 302;
+      res.setHeader("Location", redirect.toString());
+      res.end();
+      return;
+    }
+    if (req.url === "/token" && req.method === "POST") {
+      let raw = "";
+      req.on("data", (chunk) => {
+        raw += chunk;
+      });
+      req.on("end", () => {
+        const form = new URLSearchParams(raw);
+        const code = form.get("code");
+        const issued = issuedCodes.get(code);
+        if (!issued || issued.redirectUri !== form.get("redirect_uri") || !form.get("code_verifier")) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "invalid_grant" }));
+          return;
+        }
+        issuedCodes.delete(code);
+        const now = Math.floor(Date.now() / 1000);
+        const idToken = signJwt({
+          iss: issuer,
+          aud: "sentinel-client",
+          sub: "ada-subject",
+          exp: now + 300,
+          nbf: now - 5,
+          nonce: issued.nonce,
+          email: "ada@defence.local",
+          groups: ["Sentinel Vault Admins"],
+          amr: ["pwd", "mfa"]
+        }, options.privateKey, options.kid);
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ id_token: idToken, token_type: "Bearer", expires_in: 300 }));
+      });
       return;
     }
     if (req.url === "/keys") {
@@ -250,6 +304,87 @@ test("federated login validates OIDC token claims and local provisioning", async
         body: JSON.stringify({ idToken: missingMfa })
       });
       assert.equal(rejected.status, 401);
+    });
+  } finally {
+    await new Promise((resolve) => oidcServer.close(resolve));
+    Object.assign(config.identityProvider, previous);
+    config.identityProvider.roleMappings = previous.roleMappings;
+  }
+});
+
+test("federated PKCE flow exchanges authorization code and rejects replay", async () => {
+  const previous = {
+    mode: config.identityProvider.mode,
+    issuer: config.identityProvider.issuer,
+    clientId: config.identityProvider.clientId,
+    tenantId: config.identityProvider.tenantId,
+    groupClaim: config.identityProvider.groupClaim,
+    mfaClaim: config.identityProvider.mfaClaim,
+    mfaRequiredValue: config.identityProvider.mfaRequiredValue,
+    roleMappings: { ...config.identityProvider.roleMappings }
+  };
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const jwk = publicKey.export({ format: "jwk" });
+  jwk.kid = "sentinel-pkce-key";
+  jwk.alg = "RS256";
+  jwk.use = "sig";
+  const oidcServer = await startOidcFixture({ keys: [jwk] }, { privateKey, kid: jwk.kid });
+  const issuer = `http://127.0.0.1:${oidcServer.address().port}`;
+  try {
+    Object.assign(config.identityProvider, {
+      mode: "oidc",
+      issuer,
+      clientId: "sentinel-client",
+      tenantId: "",
+      groupClaim: "groups",
+      mfaClaim: "amr",
+      mfaRequiredValue: "mfa"
+    });
+    config.identityProvider.roleMappings = {
+      SECURITY_ADMIN: "Sentinel Vault Admins",
+      VAULT_OPERATOR: "Sentinel Vault Operators",
+      AUDITOR: "Sentinel Vault Auditors"
+    };
+
+    await withApi(async (baseUrl) => {
+      const redirectUri = "http://127.0.0.1:5173/auth/callback";
+      const start = await fetch(`${baseUrl}/login/federated/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: "http://127.0.0.1:5173" },
+        body: JSON.stringify({ redirectUri })
+      });
+      assert.equal(start.status, 200);
+      const startBody = await start.json();
+      assert.match(startBody.authorizationUrl, /code_challenge=/);
+
+      const authorize = await fetch(startBody.authorizationUrl, { redirect: "manual" });
+      assert.equal(authorize.status, 302);
+      const callbackUrl = new URL(authorize.headers.get("location"));
+      assert.equal(callbackUrl.origin + callbackUrl.pathname, redirectUri);
+
+      const callback = await fetch(`${baseUrl}/login/federated/callback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: callbackUrl.searchParams.get("code"),
+          state: callbackUrl.searchParams.get("state"),
+          redirectUri
+        })
+      });
+      assert.equal(callback.status, 200);
+      const callbackBody = await callback.json();
+      assert.equal(callbackBody.user.email, "ada@defence.local");
+
+      const replay = await fetch(`${baseUrl}/login/federated/callback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: callbackUrl.searchParams.get("code"),
+          state: callbackUrl.searchParams.get("state"),
+          redirectUri
+        })
+      });
+      assert.equal(replay.status, 401);
     });
   } finally {
     await new Promise((resolve) => oidcServer.close(resolve));

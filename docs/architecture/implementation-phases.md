@@ -26,7 +26,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 
 ## Phase 3: Real Authentication
 
-Status: Backend OIDC/Entra ID-token validation implemented; browser redirect UX pending
+Status: Backend OIDC/Entra ID-token validation and PKCE browser redirect implemented
 
 - Local seeded users remain demo-only.
 - OIDC and Entra ID placeholders exist in configuration.
@@ -34,6 +34,7 @@ Status: Backend OIDC/Entra ID-token validation implemented; browser redirect UX 
 - Identity-provider evidence template and validator exist for OIDC/Entra readiness.
 - `POST /api/login/federated` validates RS256 ID tokens with OIDC discovery/JWKS, issuer, audience, expiry, MFA claim, group-to-role mapping, and local enabled-user provisioning.
 - `GET /api/identity/status` and the console login screen switch between local demo unlock and external ID-token sign-in.
+- `POST /api/login/federated/start` and `/callback` implement authorization-code PKCE with short-lived state, nonce validation, and replay rejection.
 - MFA is enforced as an identity-provider token claim; interactive challenge UX remains provider-owned.
 - See `identity-roadmap.md`.
 
