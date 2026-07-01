@@ -135,6 +135,7 @@ Implemented:
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.
 - Composite production release gate that validates deployment evidence, readiness, approved waivers, final review, closure archive provenance, and clean source state in one command.
 - Composite production release gate check for deployment workspace manifest integrity and evidence-template drift.
+- Composite production release gate check for strict external evidence request-pack completeness.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:

@@ -81,6 +81,12 @@ const checks = {
       "--fail-on-findings"
     ])
     : { ok: false, result: null, error: `Deployment evidence bundle not found: ${paths.bundle}` },
+  externalEvidence: existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-external-evidence-requests.mjs", [
+      "--requests", paths.externalRequests,
+      "--strict"
+    ])
+    : { ok: false, result: null, error: `External evidence request pack not found: ${paths.externalRequests}` },
   phaseReadiness: existsSync(paths.bundle) && existsSync(paths.externalRequests)
     ? runJson("scripts/report-phase-readiness.mjs", [
       "--bundle", paths.bundle,
