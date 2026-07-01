@@ -129,7 +129,7 @@ export type SessionStatus = {
 
 export type IntegrationStatus = {
   siem: { configured: boolean; mode: string; webhookUrl: string; signing: boolean; replayWindowSeconds: number; pending: number; failed: number };
-  itsm: { configured: boolean; mode: string; baseUrl: string; ticketPrefixes: string[] };
+  itsm: { configured: boolean; mode: string; baseUrl: string; ticketPrefixes: string[]; allowedStates: string[] };
   devopsApi: { enabled: boolean; mode: string; tokenCount: number };
   outboxDepth: number;
 };
@@ -203,6 +203,7 @@ export type AccessRequest = {
     state: string | null;
     requester: string | null;
     assignmentGroup: string | null;
+    changeWindow: { start: string | null; end: string | null } | null;
     checkedAt: string;
   } | null;
   requestedMinutes: number;

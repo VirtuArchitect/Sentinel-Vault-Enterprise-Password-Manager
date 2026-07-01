@@ -13,12 +13,17 @@ const siemUrl = args.get("--siem-url") || process.env.SIEM_WEBHOOK_URL || "";
 const siemSecret = args.get("--siem-secret") || process.env.SIEM_WEBHOOK_SECRET || "";
 const itsmUrl = args.get("--itsm-url") || process.env.ITSM_BASE_URL || "";
 const ticketRef = String(args.get("--ticket-ref") || process.env.ITSM_TEST_TICKET || "").trim().toUpperCase();
+const itsmAllowedStates = String(args.get("--itsm-allowed-states") || process.env.ITSM_ALLOWED_STATES || "open,active,approved,in_progress,scheduled")
+  .split(",")
+  .map((state) => state.trim().toLowerCase())
+  .filter(Boolean);
 const outputPath = args.get("--out") || "artifacts/integrations/connector-live-preflight.json";
 const timeoutMs = Number(args.get("--timeout-ms") || 5000);
 const replayWindowSeconds = 300;
 
 assert.ok(siemUrl || itsmUrl, "At least one connector endpoint is required: --siem-url or --itsm-url");
 if (itsmUrl) assert.ok(ticketRef, "--ticket-ref or ITSM_TEST_TICKET is required when testing ITSM");
+if (itsmUrl) assert.ok(itsmAllowedStates.length, "--itsm-allowed-states or ITSM_ALLOWED_STATES must include at least one state");
 
 const sha256 = (value) => crypto.createHash("sha256").update(value, "utf8").digest("base64url");
 const hmacHex = (value, secret) => crypto.createHmac("sha256", secret).update(value, "utf8").digest("hex");
@@ -89,14 +94,32 @@ const runItsmPreflight = async () => {
   });
   const ticket = await parseJson(response);
   const state = String(ticket?.state || ticket?.status || "").toLowerCase();
-  const active = ticket?.active === true || ["open", "active", "approved", "in_progress", "scheduled"].includes(state);
+  const active = ticket?.active !== false;
+  const stateAllowed = itsmAllowedStates.includes(state);
+  const windowStart = ticket?.changeWindow?.start || ticket?.changeWindowStart || ticket?.scheduledStart || null;
+  const windowEnd = ticket?.changeWindow?.end || ticket?.changeWindowEnd || ticket?.scheduledEnd || null;
+  const now = Date.now();
+  const windowStartMs = windowStart ? Date.parse(windowStart) : null;
+  const windowEndMs = windowEnd ? Date.parse(windowEnd) : null;
+  const windowValid = (!windowStart || !Number.isNaN(windowStartMs)) && (!windowEnd || !Number.isNaN(windowEndMs));
+  const windowStarted = windowValid && (!windowStartMs || windowStartMs <= now);
+  const windowNotExpired = windowValid && (!windowEndMs || windowEndMs >= now);
   return {
     endpointHost: new URL(baseUrl).host,
     ticketRef,
     status: response.status,
     ok: response.ok,
     active,
+    stateAllowed,
     state: ticket?.state || ticket?.status || null,
+    allowedStates: itsmAllowedStates,
+    changeWindow: windowStart || windowEnd ? {
+      start: windowStart,
+      end: windowEnd,
+      valid: windowValid,
+      started: windowStarted,
+      notExpired: windowNotExpired
+    } : null,
     requesterHash: ticket?.requester ? sha256(String(ticket.requester)) : null,
     assignmentGroupHash: ticket?.assignmentGroup ? sha256(String(ticket.assignmentGroup)) : null
   };
@@ -111,6 +134,8 @@ const checks = {
   siemReplayEvidencePresent: connectors.siem ? connectors.siem.receiver.replayStored !== false : true,
   itsmTicketLookupPassed: connectors.itsm ? connectors.itsm.ok === true : true,
   itsmTicketActive: connectors.itsm ? connectors.itsm.active === true : true,
+  itsmTicketStateAllowed: connectors.itsm ? connectors.itsm.stateAllowed === true : true,
+  itsmChangeWindowActive: connectors.itsm ? (!connectors.itsm.changeWindow || (connectors.itsm.changeWindow.valid && connectors.itsm.changeWindow.started && connectors.itsm.changeWindow.notExpired)) : true,
   redactedOutput: JSON.stringify(connectors).includes(siemSecret) === false
 };
 

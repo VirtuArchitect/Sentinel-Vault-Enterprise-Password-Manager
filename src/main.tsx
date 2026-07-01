@@ -194,7 +194,7 @@ function App() {
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
   const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
   const [newVault, setNewVault] = useState({ name: "", tenantId: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
-  const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", devopsApiEnabled: false });
+  const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", itsmAllowedStates: "open,active,approved,in_progress,scheduled", devopsApiEnabled: false });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
   const load = async (activeToken = token) => {
@@ -207,6 +207,7 @@ function App() {
       siemWebhookUrl: fresh.integrations.siem.webhookUrl,
       itsmBaseUrl: fresh.integrations.itsm.baseUrl,
       itsmTicketPrefixes: fresh.integrations.itsm.ticketPrefixes.join(","),
+      itsmAllowedStates: fresh.integrations.itsm.allowedStates.join(","),
       devopsApiEnabled: fresh.integrations.devopsApi.enabled
     }));
     const firstVault = fresh.vaults[0]?.id || "";
@@ -748,8 +749,8 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
   newVault: { name: string; tenantId: string; classification: string; ownerUnit: string; members: string };
   onVaultChange: (vault: { name: string; tenantId: string; classification: string; ownerUnit: string; members: string }) => void;
   onVaultSubmit: (event: React.FormEvent) => void;
-  integrationDraft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean };
-  onIntegrationChange: (draft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; devopsApiEnabled: boolean }) => void;
+  integrationDraft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; itsmAllowedStates: string; devopsApiEnabled: boolean };
+  onIntegrationChange: (draft: { siemWebhookUrl: string; siemWebhookSecret: string; itsmBaseUrl: string; itsmTicketPrefixes: string; itsmAllowedStates: string; devopsApiEnabled: boolean }) => void;
   onIntegrationSubmit: (event: React.FormEvent) => void;
 }) {
   return (
@@ -790,6 +791,7 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
         <label>SIEM signing secret<input type="password" value={integrationDraft.siemWebhookSecret} placeholder={data.integrations.siem.signing ? "Configured" : "Not configured"} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, siemWebhookSecret: event.target.value })} /></label>
         <label>ITSM base URL<input value={integrationDraft.itsmBaseUrl} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, itsmBaseUrl: event.target.value })} /></label>
         <label>Ticket prefixes<input value={integrationDraft.itsmTicketPrefixes} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, itsmTicketPrefixes: event.target.value })} /></label>
+        <label>Allowed ticket states<input value={integrationDraft.itsmAllowedStates} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, itsmAllowedStates: event.target.value })} /></label>
         <label className="inline-check"><input type="checkbox" checked={integrationDraft.devopsApiEnabled} disabled={!canManage} onChange={(event) => onIntegrationChange({ ...integrationDraft, devopsApiEnabled: event.target.checked })} />Enable DevOps API</label>
         <button className="secondary" disabled={!canManage}><Save size={16} />Save Integrations</button>
       </form>

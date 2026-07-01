@@ -65,6 +65,10 @@ export const config = {
       .split(",")
       .map((prefix) => prefix.trim().toUpperCase())
       .filter(Boolean),
+    itsmAllowedStates: String(process.env.ITSM_ALLOWED_STATES || "open,active,approved,in_progress,scheduled")
+      .split(",")
+      .map((state) => state.trim().toLowerCase())
+      .filter(Boolean),
     devopsApiEnabled: process.env.DEVOPS_API_ENABLED === "true",
     outboxLimit: Number(process.env.INTEGRATION_OUTBOX_LIMIT || 100)
   },
@@ -146,6 +150,9 @@ export const validateConfig = () => {
   }
   if (!Array.isArray(config.integrations.itsmTicketPrefixes) || !config.integrations.itsmTicketPrefixes.length) {
     issues.push("ITSM_TICKET_PREFIXES must include at least one prefix.");
+  }
+  if (!Array.isArray(config.integrations.itsmAllowedStates) || !config.integrations.itsmAllowedStates.length) {
+    issues.push("ITSM_ALLOWED_STATES must include at least one allowed provider state.");
   }
   return issues;
 };

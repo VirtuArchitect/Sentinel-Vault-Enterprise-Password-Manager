@@ -931,11 +931,14 @@ test("siem webhook delivery signs payloads and records retries", async () => {
 test("integration config updates and ITSM ticket validation are enforced", async () => {
   const previousItsmBaseUrl = config.integrations.itsmBaseUrl;
   const previousPrefixes = config.integrations.itsmTicketPrefixes;
+  const previousAllowedStates = config.integrations.itsmAllowedStates;
   const previousDevops = config.integrations.devopsApiEnabled;
   const previousAccessRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
   const itsmServer = await startItsmFixture({
     "INC-12345": { state: "open", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
-    "INC-99999": { state: "closed", active: false, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" }
+    "INC-99999": { state: "closed", active: false, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
+    "INC-88888": { state: "awaiting_approval", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
+    "CHG-12345": { state: "scheduled", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations", changeWindow: { start: new Date(Date.now() + 3600000).toISOString(), end: new Date(Date.now() + 7200000).toISOString() } }
   });
   const itsmBaseUrl = `http://127.0.0.1:${itsmServer.address().port}`;
   try {
@@ -948,6 +951,7 @@ test("integration config updates and ITSM ticket validation are enforced", async
         body: JSON.stringify({
           itsmBaseUrl,
           itsmTicketPrefixes: "INC,CHG",
+          itsmAllowedStates: "open,approved,scheduled",
           devopsApiEnabled: true
         })
       });
@@ -955,6 +959,7 @@ test("integration config updates and ITSM ticket validation are enforced", async
       const updated = await update.json();
       assert.equal(updated.integrations.itsm.configured, true);
       assert.deepEqual(updated.integrations.itsm.ticketPrefixes, ["INC", "CHG"]);
+      assert.deepEqual(updated.integrations.itsm.allowedStates, ["open", "approved", "scheduled"]);
       assert.equal(updated.integrations.devopsApi.enabled, true);
 
       const invalidTicket = await fetch(`${baseUrl}/access-requests`, {
@@ -969,6 +974,18 @@ test("integration config updates and ITSM ticket validation are enforced", async
         body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-99999" })
       });
       assert.equal(closedTicket.status, 400);
+
+      const unapprovedTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+        method: "POST",
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "INC-88888" })
+      });
+      assert.equal(unapprovedTicket.status, 400);
+
+      const futureWindowTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
+        method: "POST",
+        body: JSON.stringify({ secretId: "s3", reason: "Need temporary admin access", ticketRef: "CHG-12345" })
+      });
+      assert.equal(futureWindowTicket.status, 400);
 
       const validTicket = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
         method: "POST",
@@ -1021,6 +1038,7 @@ test("integration config updates and ITSM ticket validation are enforced", async
     await new Promise((resolve) => itsmServer.close(resolve));
     config.integrations.itsmBaseUrl = previousItsmBaseUrl;
     config.integrations.itsmTicketPrefixes = previousPrefixes;
+    config.integrations.itsmAllowedStates = previousAllowedStates;
     config.integrations.devopsApiEnabled = previousDevops;
     store.state.accessRequests = previousAccessRequests;
   }

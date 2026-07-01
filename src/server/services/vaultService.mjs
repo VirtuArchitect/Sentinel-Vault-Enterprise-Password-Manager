@@ -430,6 +430,7 @@ export const requestSecretAccess = async (user, secretId, reason, options = {}) 
       state: ticketValidation.state || null,
       requester: ticketValidation.requester || null,
       assignmentGroup: ticketValidation.assignmentGroup || null,
+      changeWindow: ticketValidation.changeWindow || null,
       checkedAt: new Date().toISOString()
     } : null,
     requestedMinutes,

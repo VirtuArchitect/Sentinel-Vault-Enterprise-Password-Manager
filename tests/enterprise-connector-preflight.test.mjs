@@ -12,7 +12,7 @@ const rootDir = path.resolve(import.meta.dirname, "..");
 const execFileAsync = promisify(execFile);
 const siemSecret = "preflight-secret";
 
-const startFixture = async ({ closedTicket = false } = {}) => {
+const startFixture = async ({ closedTicket = false, state = "open", changeWindow = null } = {}) => {
   const server = http.createServer((req, res) => {
     const base = `http://127.0.0.1:${server.address().port}`;
     const url = new URL(req.url, base);
@@ -43,10 +43,11 @@ const startFixture = async ({ closedTicket = false } = {}) => {
     }
     if (url.pathname.startsWith("/tickets/")) {
       res.end(JSON.stringify({
-        state: closedTicket ? "closed" : "open",
+        state: closedTicket ? "closed" : state,
         active: !closedTicket,
         requester: "ada@defence.local",
-        assignmentGroup: "Security Operations"
+        assignmentGroup: "Security Operations",
+        changeWindow
       }));
       return;
     }
@@ -83,8 +84,46 @@ test("enterprise connector preflight validates SIEM and ITSM receivers", async (
     assert.equal(evidence.format, "sentinel-enterprise-connector-live-preflight-v1");
     assert.equal(evidence.checks.siemDeliveryAccepted, true);
     assert.equal(evidence.checks.itsmTicketActive, true);
+    assert.equal(evidence.checks.itsmTicketStateAllowed, true);
+    assert.equal(evidence.checks.itsmChangeWindowActive, true);
     assert.equal(evidence.connectors.siem.signed, true);
     assert.equal(JSON.stringify(evidence).includes(siemSecret), false);
+  } finally {
+    await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("enterprise connector preflight rejects unapproved ITSM states", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-connector-preflight-state-"));
+  const server = await startFixture({ state: "awaiting_approval" });
+  try {
+    const endpoint = `http://127.0.0.1:${server.address().port}`;
+    const evidencePath = path.join(dir, "preflight.json");
+    await assert.rejects(() => runPreflight(endpoint, evidencePath), /itsmTicketStateAllowed/);
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    assert.equal(evidence.checks.itsmTicketStateAllowed, false);
+  } finally {
+    await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("enterprise connector preflight rejects future ITSM change windows", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-connector-preflight-window-"));
+  const server = await startFixture({
+    state: "scheduled",
+    changeWindow: {
+      start: new Date(Date.now() + 3600000).toISOString(),
+      end: new Date(Date.now() + 7200000).toISOString()
+    }
+  });
+  try {
+    const endpoint = `http://127.0.0.1:${server.address().port}`;
+    const evidencePath = path.join(dir, "preflight.json");
+    await assert.rejects(() => runPreflight(endpoint, evidencePath), /itsmChangeWindowActive/);
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    assert.equal(evidence.checks.itsmChangeWindowActive, false);
   } finally {
     await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
     rmSync(dir, { recursive: true, force: true });

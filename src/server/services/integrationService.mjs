@@ -25,7 +25,8 @@ export const getIntegrationStatus = () => ({
     configured: Boolean(config.integrations.itsmBaseUrl),
     mode: config.integrations.itsmBaseUrl ? "live-ticket-validation-work-notes" : "manual",
     baseUrl: config.integrations.itsmBaseUrl,
-    ticketPrefixes: config.integrations.itsmTicketPrefixes
+    ticketPrefixes: config.integrations.itsmTicketPrefixes,
+    allowedStates: config.integrations.itsmAllowedStates
   },
   devopsApi: {
     enabled: config.integrations.devopsApiEnabled,
@@ -49,16 +50,32 @@ const validateTicketWithItsm = async (ticketRef, fetchImpl = globalThis.fetch) =
     if (!response.ok) return { valid: false, checked: true, message: `ITSM ticket validation returned HTTP ${response.status}` };
     const ticket = await response.json();
     const state = String(ticket.state || ticket.status || "").toLowerCase();
-    const active = ticket.active === true || ["open", "active", "approved", "in_progress", "scheduled"].includes(state);
-    if (!active) {
-      return { valid: false, checked: true, message: `Ticket ${ticketRef} is not active` };
+    const active = ticket.active !== false;
+    const stateAllowed = config.integrations.itsmAllowedStates.includes(state);
+    if (!active || !stateAllowed) {
+      return { valid: false, checked: true, message: `Ticket ${ticketRef} is not in an allowed approval state` };
+    }
+    const windowStart = ticket.changeWindow?.start || ticket.changeWindowStart || ticket.scheduledStart || null;
+    const windowEnd = ticket.changeWindow?.end || ticket.changeWindowEnd || ticket.scheduledEnd || null;
+    const now = Date.now();
+    const windowStartMs = windowStart ? Date.parse(windowStart) : null;
+    const windowEndMs = windowEnd ? Date.parse(windowEnd) : null;
+    if ((windowStart && Number.isNaN(windowStartMs)) || (windowEnd && Number.isNaN(windowEndMs))) {
+      return { valid: false, checked: true, message: `Ticket ${ticketRef} change window is not a valid timestamp` };
+    }
+    if (windowStartMs && windowStartMs > now) {
+      return { valid: false, checked: true, message: `Ticket ${ticketRef} change window has not started` };
+    }
+    if (windowEndMs && windowEndMs < now) {
+      return { valid: false, checked: true, message: `Ticket ${ticketRef} change window has expired` };
     }
     return {
       valid: true,
       checked: true,
       state: ticket.state || ticket.status || "active",
       assignmentGroup: ticket.assignmentGroup || null,
-      requester: ticket.requester || null
+      requester: ticket.requester || null,
+      changeWindow: windowStart || windowEnd ? { start: windowStart, end: windowEnd } : null
     };
   } catch (err) {
     return {
@@ -166,6 +183,12 @@ export const updateIntegrationConfig = (patch = {}) => {
     config.integrations.itsmTicketPrefixes = String(patch.itsmTicketPrefixes || "")
       .split(",")
       .map((prefix) => prefix.trim().toUpperCase())
+      .filter(Boolean);
+  }
+  if (patch.itsmAllowedStates !== undefined) {
+    config.integrations.itsmAllowedStates = String(patch.itsmAllowedStates || "")
+      .split(",")
+      .map((state) => state.trim().toLowerCase())
       .filter(Boolean);
   }
   if (patch.devopsApiEnabled !== undefined) config.integrations.devopsApiEnabled = Boolean(patch.devopsApiEnabled);

@@ -90,6 +90,7 @@ Implemented:
 - SIEM webhook delivery IDs, timestamps, nonces, signed-envelope verification, and replay-window guidance.
 - SIEM webhook signing key IDs and previous-key rotation metadata for receiver rotation windows.
 - ITSM ticket format validation and live ticket lookup for active/open change or incident records.
+- Configurable ITSM allowed-state and change-window enforcement for privileged access requests and connector preflight evidence.
 - Redacted ITSM work-note updates for access request, approval, denial, and revocation events.
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
@@ -99,7 +100,7 @@ Implemented:
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:
-- Completed production live receiver evidence files for each deployment environment.
+- Completed production live receiver and ITSM work-note evidence files for each deployment environment.
 
 ## Phase 6: Windows Installer Hardening
 

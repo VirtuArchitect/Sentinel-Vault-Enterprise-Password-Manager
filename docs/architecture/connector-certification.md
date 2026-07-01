@@ -31,7 +31,7 @@ pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.js
 Generate live non-production receiver evidence with:
 
 ```powershell
-pnpm preflight:connectors -- --siem-url "https://siem.example/webhook" --siem-secret "replace-with-secret" --itsm-url "https://itsm.example" --ticket-ref "INC-12345"
+pnpm preflight:connectors -- --siem-url "https://siem.example/webhook" --siem-secret "replace-with-secret" --itsm-url "https://itsm.example" --ticket-ref "INC-12345" --itsm-allowed-states "open,approved,scheduled"
 ```
 
 The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance/replay evidence, validates an ITSM ticket lookup, and writes redacted evidence to `artifacts/integrations/connector-live-preflight.json`.
@@ -57,7 +57,7 @@ The preflight verifies that the revoked token is rejected, the replacement token
 ## ITSM Connectors
 
 - Verify ticket references against the live ITSM API before privileged approval. Sentinel Vault calls `ITSM_BASE_URL/tickets/{ticketRef}` and requires an active/open/approved/in-progress/scheduled ticket response.
-- Confirm ticket state, requester, assignment group, and change-window policy.
+- Confirm ticket state, requester, assignment group, and change-window policy. Configure accepted provider states with `ITSM_ALLOWED_STATES`; Sentinel Vault rejects tickets outside those states and rejects tickets with future or expired change windows when the provider returns `changeWindow`, `changeWindowStart`/`changeWindowEnd`, or `scheduledStart`/`scheduledEnd` fields.
 - Record Sentinel Vault request IDs in the ticket work notes. Sentinel Vault posts redacted work notes to `ITSM_BASE_URL/tickets/{ticketRef}/work-notes` for access-request, approval, denial, and revocation events.
 - Reject closed, cancelled, or out-of-window tickets.
 
