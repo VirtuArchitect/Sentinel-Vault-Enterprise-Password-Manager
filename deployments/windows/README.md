@@ -61,6 +61,31 @@ powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1 -In
 
 Sign the generated `.exe` with your organization code-signing certificate before distribution.
 
+## Build MSI Package
+
+The repository includes WiX Toolset v3 authoring for MSI release hosts. Validate the MSI authoring files from any development machine:
+
+```powershell
+pnpm package:windows:msi -ValidateOnly
+```
+
+On a WiX build host, create the `.msi` package:
+
+```powershell
+pnpm package:windows:msi `
+  -ProductVersion "1.0.0" `
+  -Manufacturer "VirtuArchitect" `
+  -UpgradeCode "11111111-2222-3333-4444-555555555555"
+```
+
+The package is created at:
+
+```text
+artifacts/windows/SentinelVault-Windows.msi
+```
+
+Replace the sample `UpgradeCode` with the stable product GUID approved for your release channel and sign the generated `.msi` before distribution.
+
 ## Build MSIX Package
 
 The repository also includes an MSIX authoring scaffold for certificate-backed Windows release hosts. Validate the manifest and tool discovery from any development machine:

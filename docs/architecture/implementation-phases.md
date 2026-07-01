@@ -95,11 +95,12 @@ Implemented:
 - TLS/IIS setup checklist with certificate guidance.
 - Signed-EXE-ready Inno Setup authoring and build script.
 - Windows release signature verification helper and release evidence template.
+- MSI WiX authoring scaffold and WiX build/validation script.
 - MSIX manifest authoring scaffold and Windows SDK build/validation script.
 
 Remaining:
 
-- MSI authoring or signing execution on an approved certificate-backed release host.
+- MSI/MSIX signing execution on an approved certificate-backed release host.
 
 ## Phase 7: Security Hardening
 
