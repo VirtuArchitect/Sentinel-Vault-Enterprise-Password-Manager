@@ -6,7 +6,7 @@ import { getComplianceEvidencePack, getComplianceReport } from "../services/comp
 import { getIntegrationStatus, updateIntegrationConfig } from "../services/integrationService.mjs";
 import { audit, exportSignedAuditLedger, verifySignedAuditLedger } from "../services/auditService.mjs";
 import { createTenant, createVault, exportAdminMetadata, importAdminMetadata, updateTenant, updateUser, updateVault } from "../services/adminService.mjs";
-import { createOfflineCache, verifyOfflineCache } from "../services/offlineCacheService.mjs";
+import { createOfflineCache, rehydrateOfflineCacheSecret, verifyOfflineCache } from "../services/offlineCacheService.mjs";
 import { approveSecretImport, createSecretImport, denySecretImport, listSecretImports } from "../services/secretImportService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listDevices, listSessions, revokeSessionById } from "../services/sessionService.mjs";
@@ -217,6 +217,14 @@ consoleRoutes.post("/offline-cache/export", auth, can("vault:read"), (req, res) 
 consoleRoutes.post("/offline-cache/verify", auth, can("vault:read"), (req, res, next) => {
   try {
     res.json({ verification: verifyOfflineCache(req.user, req.body.cache) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.post("/offline-cache/rehydrate", auth, can("vault:read"), (req, res, next) => {
+  try {
+    res.json(rehydrateOfflineCacheSecret(req.user, req.body.cache, req.body.secretId));
   } catch (err) {
     next(err);
   }

@@ -755,6 +755,20 @@ test("offline cache export is encrypted, read-only, and scoped to the user", asy
     assert.equal(verified.verification.readOnly, true);
     assert.equal(verified.verification.secrets, exported.cache.manifest.secrets);
 
+    const rehydrateResponse = await jsonFetch(`${baseUrl}/offline-cache/rehydrate`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: exported.cache, secretId: "s1" })
+    });
+    assert.equal(rehydrateResponse.status, 200);
+    const rehydrated = await rehydrateResponse.json();
+    assert.equal(rehydrated.password, "E7#hP9!qZ2@Lw8$mV4");
+
+    const missingResponse = await jsonFetch(`${baseUrl}/offline-cache/rehydrate`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: exported.cache, secretId: "not-in-cache" })
+    });
+    assert.equal(missingResponse.status, 404);
+
     const wrongUserResponse = await jsonFetch(`${baseUrl}/offline-cache/verify`, morgan.token, {
       method: "POST",
       body: JSON.stringify({ cache: exported.cache })
@@ -773,6 +787,12 @@ test("offline cache export is encrypted, read-only, and scoped to the user", asy
     const tamper = await tamperResponse.json();
     assert.equal(tamper.verification.verified, false);
     assert.equal(tamper.verification.reason, "signature_mismatch");
+
+    const tamperedRehydrate = await jsonFetch(`${baseUrl}/offline-cache/rehydrate`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: tampered, secretId: "s1" })
+    });
+    assert.equal(tamperedRehydrate.status, 400);
   });
 });
 

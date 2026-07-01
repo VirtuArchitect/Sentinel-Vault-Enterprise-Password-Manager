@@ -27,6 +27,7 @@
 - The Windows companion can DPAPI-protect exported cache artifacts for the current Windows user and inspect the manifest without exposing secret payloads.
 - The companion includes a read-only native metadata browser for the DPAPI-protected offline cache index.
 - The companion can install an hourly current-user scheduled task to remove expired offline cache artifacts.
+- The API supports online rehydration for signed cache entries through live server authorization and audited reveal.
 
 ## Native Autotype
 

@@ -146,6 +146,7 @@ Implemented:
 - DPAPI-protected Windows offline cache storage and manifest inspection helper.
 - Current-user scheduled cleanup for expired DPAPI-protected offline caches.
 - Read-only native offline cache metadata browser.
+- Online rehydration for encrypted offline cache entries through live server authorization.
 - Guarded native autotype proof of concept in the Windows companion.
 - Credential-provider proof-of-concept boundary and formal autotype security review.
 - Browser extension packaging script, enterprise policy templates, and store review checklist.
@@ -155,5 +156,4 @@ Implemented:
 Remaining:
 
 - Deployment-specific browser extension IDs and enterprise rollout evidence.
-- Online rehydration for encrypted offline cache secret bodies.
 - Signed native credential-provider implementation after approval.

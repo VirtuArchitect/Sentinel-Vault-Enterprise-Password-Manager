@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
-import { canAccessVault } from "./vaultService.mjs";
+import { canAccessVault, revealSecret } from "./vaultService.mjs";
 import { audit } from "./auditService.mjs";
 
 const cacheVersion = 1;
@@ -146,4 +146,30 @@ export const verifyOfflineCache = (user, cache) => {
       detail: err instanceof Error ? err.message : "Unknown offline cache validation error"
     };
   }
+};
+
+export const rehydrateOfflineCacheSecret = (user, cache, secretId) => {
+  const verification = verifyOfflineCache(user, cache);
+  if (!verification.verified) {
+    const error = new Error("Offline cache verification failed");
+    error.status = 400;
+    error.details = verification;
+    throw error;
+  }
+  if (verification.expired) {
+    const error = new Error("Offline cache has expired");
+    error.status = 400;
+    throw error;
+  }
+
+  const indexed = cache.manifest.index?.secrets?.some((secret) => secret.id === secretId);
+  if (!indexed) {
+    const error = new Error("Secret is not present in the offline cache index");
+    error.status = 404;
+    throw error;
+  }
+
+  const revealed = revealSecret(user, secretId);
+  audit(user.id, "OFFLINE_CACHE_REHYDRATE", secretId, "Rehydrated encrypted offline cache entry through live server authorization");
+  return revealed;
 };
