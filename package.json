@@ -20,6 +20,7 @@
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",
     "package:windows:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1",
+    "package:windows:msix": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-msix.ps1",
     "verify:windows:signatures": "powershell -ExecutionPolicy Bypass -File scripts/verify-windows-signatures.ps1"
   },
   "keywords": [],

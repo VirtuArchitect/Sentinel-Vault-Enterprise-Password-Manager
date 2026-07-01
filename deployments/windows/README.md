@@ -61,6 +61,32 @@ powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1 -In
 
 Sign the generated `.exe` with your organization code-signing certificate before distribution.
 
+## Build MSIX Package
+
+The repository also includes an MSIX authoring scaffold for certificate-backed Windows release hosts. Validate the manifest and tool discovery from any development machine:
+
+```powershell
+pnpm package:windows:msix -ValidateOnly
+```
+
+On a Windows SDK build host, create the `.msix` package:
+
+```powershell
+pnpm package:windows:msix `
+  -MsixIdentityName "VirtuArchitect.SentinelVault" `
+  -Publisher "CN=VirtuArchitect" `
+  -PublisherDisplayName "VirtuArchitect" `
+  -Version "1.0.0.0"
+```
+
+The package is created at:
+
+```text
+artifacts/windows/SentinelVault-Windows.msix
+```
+
+Sign the generated `.msix` with the same approved release certificate used for the executable installer before distribution.
+
 ## Install Without IIS
 
 Extract the zip on the target server, then run:
