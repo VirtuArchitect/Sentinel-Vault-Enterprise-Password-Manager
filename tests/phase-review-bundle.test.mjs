@@ -92,6 +92,17 @@ const createReviewWorkspace = (dir) => {
     "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
     "--external-requests", path.join(dir, "external-evidence-requests.json")
   ]);
+  runScript("scripts/prepare-phase-decision-record.mjs", [
+    "--dir", dir,
+    "--out", path.join(dir, "phase-decision-record.json"),
+    "--markdown-out", path.join(dir, "phase-decision-record.md")
+  ]);
+  runScript("scripts/validate-phase-decision-record.mjs", [
+    "--record", path.join(dir, "phase-decision-record.json"),
+    "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+    "--phase-actions", path.join(dir, "phase-action-register.json"),
+    "--phase-gaps", path.join(dir, "phase-gap-matrix.json")
+  ]);
 };
 
 test("phase review bundle hashes final review artifacts", () => {
@@ -105,24 +116,26 @@ test("phase review bundle hashes final review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-review-bundle-result-v1");
-    assert.equal(result.artifactCount, 7);
+    assert.equal(result.artifactCount, 9);
     assert.equal(result.validated, true);
     assert.equal(result.ready, false);
     assert.ok(existsSync(manifestPath));
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     assert.equal(manifest.format, "sentinel-phase-review-bundle-manifest-v1");
-    assert.equal(Object.keys(manifest.artifacts).length, 7);
+    assert.equal(Object.keys(manifest.artifacts).length, 9);
     assert.match(manifest.artifacts.phaseGateValidation.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseActionRegister.sha256, /^[a-f0-9]{64}$/);
     assert.match(manifest.artifacts.phaseGapMatrix.sha256, /^[a-f0-9]{64}$/);
+    assert.match(manifest.artifacts.phaseDecisionRecord.sha256, /^[a-f0-9]{64}$/);
+    assert.equal(manifest.decision, "hold-phase-closure");
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath
     ]));
     assert.equal(validation.format, "sentinel-phase-review-bundle-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 7);
+    assert.equal(validation.artifactCount, 9);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

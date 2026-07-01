@@ -1,0 +1,106 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
+const args = new Map();
+for (let index = 0; index < cliArgs.length; index += 1) {
+  const arg = cliArgs[index];
+  if (arg.startsWith("--")) {
+    const next = cliArgs[index + 1];
+    if (!next || next.startsWith("--")) {
+      args.set(arg, true);
+    } else {
+      args.set(arg, next);
+      index += 1;
+    }
+  }
+}
+
+const recordPath = path.resolve(args.get("--record") || "artifacts/deployment/pilot/phase-decision-record.json");
+const phaseGatePath = args.get("--phase-gate") ? path.resolve(args.get("--phase-gate")) : null;
+const actionRegisterPath = args.get("--phase-actions") ? path.resolve(args.get("--phase-actions")) : null;
+const gapMatrixPath = args.get("--phase-gaps") ? path.resolve(args.get("--phase-gaps")) : null;
+
+const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
+
+assert.ok(existsSync(recordPath), `Phase decision record not found: ${recordPath}`);
+const record = readJson(recordPath);
+
+assert.equal(record.format, "sentinel-phase-decision-record-v1");
+assert.ok(!Number.isNaN(Date.parse(record.generatedAt)), "generatedAt must be an ISO-compatible timestamp");
+assert.ok(record.environment, "environment is required");
+assert.ok(record.owner, "owner is required");
+assert.ok(record.status, "status is required");
+assert.ok(record.target, "target is required");
+assert.ok(["approve-phase-closure", "hold-phase-closure"].includes(record.decision), "unsupported decision");
+assert.ok(Array.isArray(record.requiredApprovals), "requiredApprovals must be an array");
+assert.ok(Array.isArray(record.pendingActions), "pendingActions must be an array");
+assert.ok(Array.isArray(record.missingArtifacts), "missingArtifacts must be an array");
+
+const gatePath = phaseGatePath || record.phaseGatePath;
+const actionsPath = actionRegisterPath || record.actionRegisterPath;
+const gapsPath = gapMatrixPath || record.gapMatrixPath;
+
+const phaseGate = readJson(gatePath);
+const actionRegister = readJson(actionsPath);
+const gapMatrix = readJson(gapsPath);
+
+assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
+assert.equal(actionRegister.format, "sentinel-phase-action-register-v1");
+assert.equal(gapMatrix.format, "sentinel-phase-gap-matrix-v1");
+assert.equal(record.phaseGatePath, gatePath, "record phase gate path mismatch");
+assert.equal(record.actionRegisterPath, actionsPath, "record action register path mismatch");
+assert.equal(record.gapMatrixPath, gapsPath, "record gap matrix path mismatch");
+assert.equal(actionRegister.phaseGatePath, gatePath, "phase action register does not reference selected phase gate report");
+assert.equal(gapMatrix.summary.phaseCount, actionRegister.actions.length, "phase gap matrix action count does not match phase action register");
+
+const pendingActions = actionRegister.actions.filter((action) => action.status !== "complete");
+const missingArtifacts = gapMatrix.phases.flatMap((phase) => (
+  phase.templateMappings
+    .filter((mapping) => !mapping.exists)
+    .map((mapping) => ({
+      phase: phase.phase,
+      title: phase.title,
+      templatePath: mapping.templatePath
+    }))
+));
+const ownerRoles = [...new Set(actionRegister.actions.map((action) => action.ownerRole))];
+const expectedDecision = phaseGate.ready && pendingActions.length === 0 && missingArtifacts.length === 0
+  ? "approve-phase-closure"
+  : "hold-phase-closure";
+
+assert.equal(record.environment, gapMatrix.environment, "environment mismatch");
+assert.equal(record.owner, gapMatrix.owner, "owner mismatch");
+assert.equal(record.status, gapMatrix.status, "status mismatch");
+assert.equal(record.target, phaseGate.target || gapMatrix.status, "target mismatch");
+assert.equal(record.decision, expectedDecision, "decision does not match gate and action state");
+assert.equal(record.ready, phaseGate.ready, "ready flag mismatch");
+assert.equal(record.validated, phaseGate.validated, "validated flag mismatch");
+assert.equal(record.blockerCount, phaseGate.blockerCount, "blocker count mismatch");
+assert.equal(record.warningCount, phaseGate.warningCount, "warning count mismatch");
+assert.equal(record.remainingPhaseCount, phaseGate.remainingPhaseCount, "remaining phase count mismatch");
+assert.equal(record.remainingItemCount, phaseGate.remainingItemCount, "remaining item count mismatch");
+assert.equal(record.pendingActionCount, pendingActions.length, "pending action count mismatch");
+assert.equal(record.missingArtifactCount, missingArtifacts.length, "missing artifact count mismatch");
+assert.deepEqual(record.ownerRoles, ownerRoles, "owner roles mismatch");
+assert.equal(record.requiredApprovals.length, ownerRoles.length, "required approval count mismatch");
+
+record.pendingActions.forEach((pendingAction, index) => {
+  const action = pendingActions[index];
+  assert.ok(action, `pending action ${index + 1} is stale`);
+  assert.equal(pendingAction.id, action.id, `pending action ${index + 1} id mismatch`);
+  assert.equal(pendingAction.title, action.title, `pending action ${index + 1} title mismatch`);
+  assert.equal(pendingAction.status, action.status, `pending action ${index + 1} status mismatch`);
+});
+assert.deepEqual(record.missingArtifacts, missingArtifacts, "missing artifacts mismatch");
+
+console.log(JSON.stringify({
+  format: "sentinel-phase-decision-record-validation-v1",
+  recordPath,
+  decision: record.decision,
+  ready: record.ready,
+  pendingActionCount: record.pendingActionCount,
+  blockerCount: record.blockerCount,
+  validated: true
+}, null, 2));
