@@ -7,6 +7,7 @@
   "evidence": {
     "connector": "docs/templates/connector-certification-evidence.json",
     "browserRollout": "docs/templates/browser-extension-rollout-evidence.json",
+    "nativeCompanion": "docs/templates/native-companion-evidence.json",
     "identityProvider": "docs/templates/identity-provider-evidence.json",
     "kmsHsm": "docs/templates/kms-hsm-provider-evidence.json",
     "windowsRelease": "docs/templates/windows-release-evidence.json",

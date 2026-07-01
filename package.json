@@ -18,6 +18,7 @@
     "package:extension": "node scripts/package-browser-extension.mjs",
     "render:browser-policy": "node scripts/render-browser-policy.mjs",
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
+    "validate:native-companion": "node scripts/validate-native-companion-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",
     "preflight:kms-hsm": "node scripts/preflight-kms-hsm-gateway.mjs",
     "validate:identity-evidence": "node scripts/validate-identity-provider-evidence.mjs",

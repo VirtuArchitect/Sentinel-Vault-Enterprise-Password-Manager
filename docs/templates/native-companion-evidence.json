@@ -1,0 +1,76 @@
+{
+  "format": "sentinel-native-companion-evidence-v1",
+  "component": "windows-companion",
+  "releaseStatus": "planned",
+  "releaseVersion": "replace-with-version",
+  "releaseDate": "YYYY-MM-DD",
+  "buildHost": "replace-with-release-host",
+  "sourceCommit": "replace-with-git-sha",
+  "architectures": [
+    "x64"
+  ],
+  "artifacts": [
+    {
+      "name": "SentinelVault.Companion.exe",
+      "type": "companion-exe",
+      "sha256": "replace-with-sha256",
+      "authenticodeStatus": "not-signed",
+      "signerThumbprint": "replace-with-thumbprint"
+    },
+    {
+      "name": "SentinelVault.CredentialProvider.dll",
+      "type": "credential-provider-dll",
+      "sha256": "replace-with-sha256",
+      "authenticodeStatus": "not-signed",
+      "signerThumbprint": "replace-with-thumbprint"
+    }
+  ],
+  "nativeMessaging": {
+    "enabled": true,
+    "manifestPath": "replace-with-native-messaging-manifest-path",
+    "allowedExtensionIds": [
+      "replace-with-extension-id"
+    ],
+    "hostPath": "replace-with-installed-host-path"
+  },
+  "credentialProvider": {
+    "enabled": false,
+    "clsid": "replace-with-clsid",
+    "registrationPath": "replace-with-registry-path",
+    "allowListedVaultEntriesOnly": true,
+    "offlineLogonDocumented": false
+  },
+  "securityControls": {
+    "explicitUserConfirmation": "planned",
+    "targetWindowDisplayed": "planned",
+    "elevatedWindowBlocked": "planned",
+    "secureDesktopBlocked": "planned",
+    "wildcardTargetsRejected": "planned",
+    "plaintextMemoryMinimized": "planned",
+    "transientBuffersCleared": "planned",
+    "auditMetadataWithoutSecrets": "planned",
+    "highRiskPromptEnforced": "planned",
+    "offlineCacheReadOnly": "planned",
+    "dpapiScopeCurrentUser": "planned",
+    "noPlaintextSecretStorage": "planned"
+  },
+  "testResults": {
+    "cleanInstall": "not-run",
+    "cleanUninstall": "not-run",
+    "abuseCaseSuite": "not-run",
+    "autotypeReview": "not-run",
+    "credentialProviderReview": "not-applicable",
+    "offlineCacheExpiry": "not-run",
+    "rollbackDisable": "not-run"
+  },
+  "approvals": {
+    "securityReviewer": "replace-with-reviewer",
+    "desktopEngineering": "replace-with-owner",
+    "releaseOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  },
+  "rollback": {
+    "disableProcedure": "replace-with-disable-procedure",
+    "tested": false
+  }
+}

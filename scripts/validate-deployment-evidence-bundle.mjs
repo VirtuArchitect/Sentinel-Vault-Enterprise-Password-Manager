@@ -13,6 +13,7 @@ const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const validators = {
   connector: ["scripts/validate-connector-evidence.mjs"],
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],
+  nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"]
 };
@@ -23,7 +24,11 @@ const artifactFormats = {
   releaseProvenance: "sentinel-release-provenance-v1"
 };
 
-const resolveEvidencePath = (candidate) => path.resolve(path.dirname(path.resolve(bundlePath)), candidate);
+const resolveEvidencePath = (candidate) => {
+  const bundleRelative = path.resolve(path.dirname(path.resolve(bundlePath)), candidate);
+  if (existsSync(bundleRelative)) return bundleRelative;
+  return path.resolve(rootDir, candidate);
+};
 
 assert.ok(existsSync(bundlePath), `Deployment evidence bundle not found: ${bundlePath}`);
 const bundle = JSON.parse(readFileSync(bundlePath, "utf8"));

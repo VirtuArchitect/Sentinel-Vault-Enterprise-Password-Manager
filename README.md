@@ -188,6 +188,12 @@ Windows deployment hardening guides:
 - `docs/deployment/browser-extension-enterprise-policy.md`
 - `docs/operations/kms-hsm-key-ceremony.md`
 
+Validate native companion and credential-provider release evidence:
+
+```powershell
+pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
+```
+
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
 ```powershell

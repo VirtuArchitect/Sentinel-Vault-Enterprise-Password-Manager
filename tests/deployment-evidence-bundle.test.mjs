@@ -23,6 +23,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
   const copies = {
     connector: "connector-certification-evidence.json",
     browserRollout: "browser-extension-rollout-evidence.json",
+    nativeCompanion: "native-companion-evidence.json",
     identityProvider: "identity-provider-evidence.json",
     kmsHsm: "kms-hsm-provider-evidence.json",
     windowsRelease: "windows-release-evidence.json",
@@ -62,6 +63,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.status, "planned");
     assert.equal(validation.results.connector.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
+    assert.equal(validation.results.nativeCompanion.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -75,6 +77,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
       evidence: {
         connector: "evidence/missing.json",
         browserRollout: "evidence/browser-extension-rollout-evidence.json",
+        nativeCompanion: "evidence/native-companion-evidence.json",
         identityProvider: "evidence/identity-provider-evidence.json",
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
         windowsRelease: "evidence/windows-release-evidence.json",

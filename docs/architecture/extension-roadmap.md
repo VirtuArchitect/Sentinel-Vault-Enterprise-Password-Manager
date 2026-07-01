@@ -38,3 +38,4 @@
 - Log target application metadata without logging typed secrets.
 - Require separate security review before implementing credential provider or UI automation hooks.
 - The PowerShell companion now includes a guarded autotype proof of concept that requires a target window title and `-IUnderstandAutotypeRisk` before sending username, tab, and password keystrokes.
+- Native companion and credential-provider releases must provide signed-artifact evidence, security-control results, clean install/uninstall results, abuse-case test evidence, rollback testing, and approvals through `pnpm validate:native-companion`.

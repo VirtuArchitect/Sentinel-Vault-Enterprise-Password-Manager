@@ -54,3 +54,11 @@ Native autotype or credential-provider code must not be released until:
 3. A clean Windows host install/uninstall test passes.
 4. An abuse-case test pass is attached to the release.
 5. A rollback and disable procedure is documented.
+
+Record the release gate with `docs/templates/native-companion-evidence.json` and validate it with:
+
+```powershell
+pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
+```
+
+Pilot and production evidence cannot contain placeholders. It must include valid Authenticode signatures for native `.exe` and `.dll` artifacts, passing security controls, clean install/uninstall results, abuse-case test results, rollback testing, and security, desktop engineering, release, and change approvals.
