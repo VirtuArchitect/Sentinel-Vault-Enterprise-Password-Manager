@@ -72,9 +72,10 @@ Implemented:
 - ITSM ticket validation.
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
+- Connector certification evidence template and validator.
 
 Remaining:
-- Live receiver certification evidence for each deployment environment.
+- Completed live receiver evidence files for each deployment environment.
 
 ## Phase 6: Windows Installer Hardening
 

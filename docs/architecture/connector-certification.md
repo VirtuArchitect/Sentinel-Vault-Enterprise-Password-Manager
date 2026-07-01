@@ -16,6 +16,12 @@ Enterprise connectors must pass this checklist before they are treated as produc
 - Test results from a non-production environment.
 - Rollback and disable procedure.
 
+Use `docs/templates/connector-certification-evidence.json` and validate it with:
+
+```powershell
+pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
+```
+
 ## SIEM Connectors
 
 - Verify `X-Sentinel-Signature` with the timestamp, nonce, and raw body envelope.

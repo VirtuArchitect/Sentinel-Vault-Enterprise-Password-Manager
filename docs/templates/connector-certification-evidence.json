@@ -1,0 +1,50 @@
+{
+  "format": "sentinel-connector-certification-evidence-v1",
+  "connector": "siem-or-itsm-or-devops",
+  "environment": "replace-with-environment",
+  "status": "pilot",
+  "owner": "replace-with-owner",
+  "supportContact": "replace-with-support-contact",
+  "targetSystem": "replace-with-target-system",
+  "classification": "replace-with-classification",
+  "networkPath": "replace-with-network-path",
+  "tlsPolicy": "replace-with-tls-policy",
+  "authMethod": "replace-with-auth-method",
+  "credentialStorage": "replace-with-storage-location",
+  "leastPrivilegeScopes": [
+    "replace-with-scope"
+  ],
+  "replayProtection": {
+    "implemented": true,
+    "windowSeconds": 300,
+    "dedupeStore": "replace-with-dedupe-store"
+  },
+  "failureModes": {
+    "receiverOutage": "replace-with-behavior",
+    "rateLimit": "replace-with-behavior",
+    "malformedPayload": "replace-with-behavior"
+  },
+  "redactionEvidence": {
+    "logsReviewed": true,
+    "dashboardsReviewed": true,
+    "ticketsReviewed": true,
+    "secretValuesFound": false
+  },
+  "testResults": {
+    "nonProductionTestDate": "YYYY-MM-DD",
+    "deliveryTest": "passed",
+    "authFailureTest": "passed",
+    "retryTest": "passed",
+    "replayTest": "passed",
+    "redactionTest": "passed"
+  },
+  "rollback": {
+    "disableProcedure": "replace-with-procedure",
+    "tested": false
+  },
+  "approvals": {
+    "connectorOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsReviewer": "replace-with-reviewer"
+  }
+}
