@@ -166,6 +166,7 @@ Windows deployment hardening guides:
 - `docs/deployment/tls-iis-checklist.md`
 - `docs/architecture/connector-certification.md`
 - `docs/operations/bulk-secret-import-runbook.md`
+- `docs/security/autotype-credential-provider-review.md`
 
 Build a signed-EXE-ready setup package with Inno Setup installed:
 
