@@ -32,6 +32,7 @@ const paths = {
   deploymentRedaction: path.resolve(args.get("--deployment-redaction") || path.join(evidenceDir, "deployment-redaction-report.json")),
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
   phaseReadiness: path.resolve(args.get("--phase-readiness") || path.join(evidenceDir, "phase-readiness.json")),
+  phaseHandoff: path.resolve(args.get("--phase-handoff") || path.join(evidenceDir, "phase-handoff-checklist.md")),
   phaseCompletion: path.resolve(args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
@@ -124,6 +125,13 @@ const checks = {
       "--fail-on-remaining"
     ])
     : { ok: false, result: null, error: "Phase completion audit or external evidence request pack is missing" },
+  phaseHandoff: existsSync(paths.phaseHandoff) && existsSync(paths.phaseReadiness) && existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-phase-handoff-checklist.mjs", [
+      "--checklist", paths.phaseHandoff,
+      "--readiness", paths.phaseReadiness,
+      "--external-requests", paths.externalRequests
+    ])
+    : { ok: false, result: null, error: "Phase handoff checklist, readiness report, or external evidence request pack is missing" },
   phaseEvidence: existsSync(paths.phaseEvidence)
     ? runJson("scripts/validate-phase-evidence-pack.mjs", [
       "--manifest", paths.phaseEvidence
