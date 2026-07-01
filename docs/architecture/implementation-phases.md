@@ -151,10 +151,11 @@ Implemented:
 - Guarded native autotype proof of concept in the Windows companion.
 - Credential-provider proof-of-concept boundary and formal autotype security review.
 - Browser extension packaging script, enterprise policy templates, and store review checklist.
+- Browser extension enterprise rollout evidence template and validator.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
 
 Remaining:
 
-- Deployment-specific browser extension IDs and enterprise rollout evidence.
+- Completed deployment-specific browser extension rollout evidence files with production extension IDs.
 - Signed native credential-provider implementation after approval.

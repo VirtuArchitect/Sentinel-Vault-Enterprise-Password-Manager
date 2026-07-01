@@ -28,6 +28,14 @@ Replace `replace-with-extension-id` with the enterprise extension ID assigned by
 - Validate the extension package hash before release.
 - Confirm the local console is distributed with TLS or localhost-only access.
 
+Record rollout evidence with:
+
+```powershell
+pnpm validate:browser-rollout docs/templates/browser-extension-rollout-evidence.json
+```
+
+For pilot or production rollout evidence, replace the placeholder extension IDs with the private Chrome Web Store or Edge Add-ons IDs, record the package SHA-256, and mark privacy, screenshot redaction, and rollback testing as complete.
+
 ## Store Review Checklist
 
 - Manifest V3 only.

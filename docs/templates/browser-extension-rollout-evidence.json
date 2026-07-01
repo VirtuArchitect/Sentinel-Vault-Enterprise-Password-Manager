@@ -1,0 +1,65 @@
+{
+  "format": "sentinel-browser-extension-rollout-evidence-v1",
+  "deploymentStatus": "planned",
+  "environment": "replace-with-environment",
+  "owner": "replace-with-owner",
+  "extensionName": "Sentinel Vault Autofill",
+  "package": {
+    "artifactPath": "artifacts/browser/sentinel-vault-autofill.zip",
+    "sha256": "replace-with-package-sha256",
+    "manifestVersion": 3
+  },
+  "chrome": {
+    "enabled": true,
+    "extensionId": "replace-with-chrome-extension-id",
+    "updateUrl": "https://clients2.google.com/service/update2/crx",
+    "policyPath": "deployments/browser/chrome-policy-template.json"
+  },
+  "edge": {
+    "enabled": true,
+    "extensionId": "replace-with-edge-extension-id",
+    "updateUrl": "https://edge.microsoft.com/extensionwebstorebase/v1/crx",
+    "policyPath": "deployments/browser/edge-policy-template.json"
+  },
+  "runtimeAllowedHosts": [
+    "http://127.0.0.1:5173/*",
+    "http://localhost:5173/*"
+  ],
+  "blockedPermissions": [
+    "history",
+    "bookmarks",
+    "downloads"
+  ],
+  "rolloutRings": [
+    {
+      "name": "pilot",
+      "scope": "replace-with-pilot-group",
+      "status": "planned",
+      "startDate": "YYYY-MM-DD",
+      "validation": "replace-with-validation-result"
+    },
+    {
+      "name": "production",
+      "scope": "replace-with-production-group",
+      "status": "planned",
+      "startDate": "YYYY-MM-DD",
+      "validation": "replace-with-validation-result"
+    }
+  ],
+  "storeReview": {
+    "manifestV3": true,
+    "leastPrivilegePermissions": true,
+    "noWildcardWebHosts": true,
+    "privacyStatementApproved": false,
+    "screenshotsRedacted": false
+  },
+  "rollback": {
+    "disableProcedure": "Remove the force-install extension policy and refresh browser management policy.",
+    "tested": false
+  },
+  "approvals": {
+    "securityReviewer": "replace-with-reviewer",
+    "desktopEngineering": "replace-with-approver",
+    "businessOwner": "replace-with-owner"
+  }
+}

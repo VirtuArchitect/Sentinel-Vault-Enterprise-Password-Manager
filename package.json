@@ -14,6 +14,7 @@
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",
     "package:extension": "node scripts/package-browser-extension.mjs",
+    "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
     "inspect:storage": "node scripts/inspect-storage-state.mjs",
     "validate:connector-evidence": "node scripts/validate-connector-evidence.mjs",
