@@ -141,6 +141,8 @@ pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connect
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 pnpm release:identity-evidence -- --preflight ".\artifacts\identity\identity-provider-preflight.json"
 pnpm validate:identity-evidence -- docs/templates/identity-provider-evidence.json
+pnpm release:kms-hsm -- --preflight ".\artifacts\security\kms-hsm-gateway-preflight.json"
+pnpm validate:kms-hsm-evidence -- docs/templates/kms-hsm-provider-evidence.json
 pnpm release:siem-rotation -- --report ".\artifacts\integrations\siem-receiver-rotation.json"
 pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.json
 pnpm release:tls-iis -- --report ".\artifacts\windows\tls-iis-review.json"
