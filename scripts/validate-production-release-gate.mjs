@@ -35,6 +35,9 @@ const paths = {
   phaseGaps: path.resolve(args.get("--phase-gaps") || path.join(evidenceDir, "phase-gap-matrix.json")),
   phaseDecision: path.resolve(args.get("--phase-decision") || path.join(evidenceDir, "phase-decision-record.json")),
   phaseSignoffs: path.resolve(args.get("--phase-signoffs") || path.join(evidenceDir, "phase-signoff-matrix.json")),
+  phaseIntake: path.resolve(args.get("--phase-intake") || path.join(evidenceDir, "phase-evidence-intake.json")),
+  phaseAttachments: path.resolve(args.get("--phase-attachments") || path.join(evidenceDir, "phase-attachment-inventory.json")),
+  phaseWaivers: path.resolve(args.get("--phase-waivers") || path.join(evidenceDir, "phase-waiver-register.json")),
   phaseReview: path.resolve(args.get("--phase-review") || path.join(evidenceDir, "phase-review-bundle-manifest.json")),
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
 };
@@ -139,6 +142,29 @@ const checks = {
       "--phase-actions", paths.phaseActions
     ])
     : { ok: false, result: null, error: "Phase signoff matrix, decision record, or action register is missing" },
+  phaseIntake: existsSync(paths.phaseIntake) && existsSync(paths.externalRequests) && existsSync(paths.phaseGaps) && existsSync(paths.phaseSignoffs)
+    ? runJson("scripts/validate-phase-evidence-intake.mjs", [
+      "--intake", paths.phaseIntake,
+      "--external-requests", paths.externalRequests,
+      "--phase-gaps", paths.phaseGaps,
+      "--phase-signoffs", paths.phaseSignoffs
+    ])
+    : { ok: false, result: null, error: "Phase evidence intake, external requests, gap matrix, or signoff matrix is missing" },
+  phaseAttachments: existsSync(paths.phaseAttachments) && existsSync(paths.phaseIntake)
+    ? runJson("scripts/validate-phase-attachment-inventory.mjs", [
+      "--inventory", paths.phaseAttachments,
+      "--intake", paths.phaseIntake,
+      "--require-redacted"
+    ])
+    : { ok: false, result: null, error: "Phase attachment inventory or evidence intake is missing" },
+  phaseWaivers: existsSync(paths.phaseWaivers) && existsSync(paths.phaseAttachments) && existsSync(paths.phaseDecision)
+    ? runJson("scripts/validate-phase-waiver-register.mjs", [
+      "--register", paths.phaseWaivers,
+      "--attachments", paths.phaseAttachments,
+      "--phase-decision", paths.phaseDecision,
+      "--require-approved"
+    ])
+    : { ok: false, result: null, error: "Phase waiver register, attachment inventory, or decision record is missing" },
   phaseReview: existsSync(paths.phaseReview)
     ? runJson("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", paths.phaseReview,
