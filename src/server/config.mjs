@@ -11,6 +11,11 @@ export const config = {
   vaultRootKey: process.env.VAULT_ROOT_KEY || "sentinel-demo-root-key",
   vaultKeyVersion: process.env.VAULT_KEY_VERSION || "demo-root-v1",
   vaultKeySalt: process.env.VAULT_KEY_SALT || "sentinel-vault",
+  kms: {
+    provider: process.env.KMS_PROVIDER || "local-root-key",
+    keyId: process.env.KMS_KEY_ID || "",
+    endpoint: process.env.KMS_ENDPOINT || ""
+  },
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
   failedLoginLimit: Number(process.env.FAILED_LOGIN_LIMIT || 5),
   loginLockoutMinutes: Number(process.env.LOGIN_LOCKOUT_MINUTES || 15),
@@ -48,6 +53,12 @@ export const validateConfig = () => {
   const issues = [];
   if (config.isProduction && config.vaultRootKey === "sentinel-demo-root-key") {
     issues.push("VAULT_ROOT_KEY must be set in production.");
+  }
+  if (!["local-root-key", "external-kms", "hsm"].includes(config.kms.provider)) {
+    issues.push("KMS_PROVIDER must be one of local-root-key, external-kms, or hsm.");
+  }
+  if (config.kms.provider !== "local-root-key" && !config.kms.keyId) {
+    issues.push("KMS_KEY_ID is required when KMS_PROVIDER is external-kms or hsm.");
   }
   if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535) {
     issues.push("PORT must be an integer between 1 and 65535.");

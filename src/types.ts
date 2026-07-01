@@ -127,6 +127,14 @@ export type CryptoStatus = {
   keyVersion: string;
   saltConfigured: boolean;
   kmsMode: string;
+  keyProvider: {
+    provider: string;
+    configured: boolean;
+    keyId: string | null;
+    endpoint: string | null;
+    mode: string;
+    supported: boolean;
+  };
 };
 
 export type IdentityStatus = {

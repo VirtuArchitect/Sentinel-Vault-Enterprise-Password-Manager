@@ -100,6 +100,7 @@ test("console payload respects users and audit permissions", async () => {
     assert.equal(consoleData.identity.configured, true);
     assert.equal(consoleData.crypto.algorithm, "AES-256-GCM");
     assert.equal(consoleData.crypto.keyVersion, "demo-root-v1");
+    assert.equal(consoleData.crypto.keyProvider.provider, "local-root-key");
     assert.equal(consoleData.integrations.siem.mode, "outbox");
     assert.equal(typeof consoleData.session.activeSessions, "number");
     assert.equal(consoleData.session.ttlMinutes, 15);

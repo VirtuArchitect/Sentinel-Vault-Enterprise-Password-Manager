@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 import { config } from "../config.mjs";
+import { deriveVaultKey, getKeyProviderStatus, signWithKeyProvider } from "./keyProvider.mjs";
 
-const vaultKey = crypto.scryptSync(config.vaultRootKey, config.vaultKeySalt, 32);
+const vaultKey = deriveVaultKey();
 
 export const encryptSecret = (value) => {
   const iv = crypto.randomBytes(12);
@@ -17,8 +18,8 @@ export const encryptSecret = (value) => {
 };
 
 export const fingerprintSecret = (value) => crypto
-  .createHmac("sha256", config.vaultRootKey)
-  .update(String(value || ""), "utf8")
+  .createHmac("sha256", vaultKey)
+  .update(`fingerprint:${String(value || "")}`, "utf8")
   .digest("base64url");
 
 export const decryptSecret = (payload) => {
@@ -40,5 +41,8 @@ export const getCryptoStatus = () => ({
   keyDerivation: "scrypt",
   keyVersion: config.vaultKeyVersion,
   saltConfigured: Boolean(config.vaultKeySalt),
-  kmsMode: process.env.KMS_PROVIDER || "local-root-key"
+  kmsMode: config.kms.provider,
+  keyProvider: getKeyProviderStatus()
 });
+
+export const signVaultValue = (purpose, value) => signWithKeyProvider(purpose, value);

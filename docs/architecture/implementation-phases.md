@@ -107,12 +107,13 @@ Implemented:
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
 - Backup SHA-256 manifests and admin verification API.
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
+- Key-provider boundary for local root key, external KMS, and HSM readiness.
 - Threat model.
 - Security review checklist.
 
 Remaining:
 
-- KMS/HSM design and implementation.
+- Provider SDK-backed KMS/HSM integration after dependency and environment approval.
 
 ## Phase 8: Browser and Desktop Extensions
 
