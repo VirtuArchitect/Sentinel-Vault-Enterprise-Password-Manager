@@ -165,6 +165,12 @@ Windows deployment hardening guides:
 - `docs/deployment/windows-code-signing.md`
 - `docs/deployment/tls-iis-checklist.md`
 
+Build a signed-EXE-ready setup package with Inno Setup installed:
+
+```powershell
+pnpm package:windows:installer
+```
+
 ## Enterprise Roadmap Status
 
 Implemented in this prototype:

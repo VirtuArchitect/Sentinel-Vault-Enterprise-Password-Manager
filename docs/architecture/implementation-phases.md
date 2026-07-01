@@ -85,10 +85,11 @@ Implemented:
 - Upgrade backup and rollback script.
 - Code-signing documentation.
 - TLS/IIS setup checklist with certificate guidance.
+- Signed-EXE-ready Inno Setup authoring and build script.
 
 Remaining:
 
-- MSI/MSIX or signed EXE installer.
+- MSI/MSIX authoring or production signing with an approved certificate and release host.
 
 ## Phase 7: Security Hardening
 

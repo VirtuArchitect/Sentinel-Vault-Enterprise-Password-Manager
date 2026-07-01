@@ -12,7 +12,8 @@ Use this checklist before publishing a Sentinel Vault Windows package outside a 
 ## Artifacts To Sign
 
 - `SentinelVault-Windows.zip` after packaging.
-- Future MSI/MSIX or signed EXE installer artifacts.
+- `SentinelVault-Windows-Setup.exe` when built with `pnpm package:windows:installer`.
+- Future MSI/MSIX installer artifacts.
 - PowerShell scripts in the package when policy requires `AllSigned` execution.
 - Any native helper binaries added for tray, autotype, credential provider, or service supervision.
 
@@ -22,13 +23,15 @@ Use this checklist before publishing a Sentinel Vault Windows package outside a 
 2. Run `pnpm scan:secrets`.
 3. Run `pnpm audit:deps`.
 4. Build the package with `pnpm package:windows`.
-5. Sign the release artifact.
-6. Verify the signature on a clean Windows host before publishing.
+5. Optionally build the setup executable with `pnpm package:windows:installer`.
+6. Sign the release artifact.
+7. Verify the signature on a clean Windows host before publishing.
 
 Example verification:
 
 ```powershell
 Get-AuthenticodeSignature .\SentinelVault-Windows.zip
+Get-AuthenticodeSignature .\SentinelVault-Windows-Setup.exe
 ```
 
 The status must be `Valid` and the signer must match the expected publishing certificate.

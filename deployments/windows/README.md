@@ -39,6 +39,28 @@ The zip includes the Windows companion helper at:
 companions/windows/sentinel-tray-helper.ps1
 ```
 
+## Build Signed-EXE-Ready Installer
+
+The repository includes Inno Setup authoring for a Windows setup executable. Install Inno Setup 6 on the build host, then run:
+
+```powershell
+pnpm package:windows:installer
+```
+
+The installer is created at:
+
+```text
+artifacts/windows/SentinelVault-Windows-Setup.exe
+```
+
+If `ISCC.exe` is not on `PATH`, pass its location directly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build-windows-installer.ps1 -InnoSetupCompiler "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+```
+
+Sign the generated `.exe` with your organization code-signing certificate before distribution.
+
 ## Install Without IIS
 
 Extract the zip on the target server, then run:
