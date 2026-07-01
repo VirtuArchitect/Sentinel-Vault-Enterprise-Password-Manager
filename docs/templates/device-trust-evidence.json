@@ -1,0 +1,47 @@
+{
+  "format": "sentinel-device-trust-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "policy": {
+    "trustedDeviceRequired": "planned",
+    "maxDeviceAgeDays": 90,
+    "sessionTtlMinutes": 15,
+    "refreshTokensEnabled": false,
+    "mfaRequiredForNewDevice": "planned",
+    "deviceInventoryReviewCadence": "monthly"
+  },
+  "inventory": {
+    "exportedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "deviceCount": 0,
+    "staleDeviceCount": 0,
+    "unknownDeviceCount": 0,
+    "disabledUserDeviceCount": 0
+  },
+  "controls": {
+    "deviceFingerprintingDocumented": "planned",
+    "newDeviceMfaChallenged": "planned",
+    "adminReviewAvailable": "planned",
+    "forcedSessionRevocationTested": "planned",
+    "disabledUserSessionsRevoked": "planned",
+    "logoutInvalidatesSession": "planned",
+    "refreshTokenReplayBlocked": "not-applicable",
+    "staleDevicesRemoved": "planned"
+  },
+  "drills": {
+    "lostDeviceRevocation": "not-run",
+    "stolenSessionReplay": "not-run",
+    "disabledUserAccess": "not-run",
+    "expiredSessionAccess": "not-run"
+  },
+  "redaction": {
+    "sessionTokensFound": false,
+    "deviceFingerprintsHashed": "planned",
+    "ipAddressesRedactedOrScoped": "planned"
+  },
+  "approvals": {
+    "identityOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

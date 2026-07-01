@@ -19,7 +19,8 @@ const validators = {
   windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"],
   pentestScope: ["scripts/validate-pentest-scope-evidence.mjs"],
   auditWorm: ["scripts/validate-audit-worm-evidence.mjs"],
-  backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"]
+  backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"],
+  deviceTrust: ["scripts/validate-device-trust-evidence.mjs"]
 };
 
 const artifactFormats = {

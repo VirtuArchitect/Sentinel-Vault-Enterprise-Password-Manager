@@ -15,6 +15,7 @@
     "pentestScope": "docs/templates/pentest-scope-evidence.json",
     "auditWorm": "docs/templates/audit-worm-evidence.json",
     "backupRecovery": "docs/templates/backup-recovery-evidence.json",
+    "deviceTrust": "docs/templates/device-trust-evidence.json",
     "storageMigration": "docs/templates/storage-migration-evidence.json",
     "releaseProvenance": "docs/templates/release-provenance-template.json"
   },
