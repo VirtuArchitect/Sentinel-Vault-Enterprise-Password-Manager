@@ -133,7 +133,7 @@ const requests = [
       "Store/private-channel review result and packaged artifact hash"
     ],
     evidenceTemplates: [
-      "docs/templates/browser-rollout-evidence.json"
+      "docs/templates/browser-extension-rollout-evidence.json"
     ],
     commands: [
       "pnpm package:extension",

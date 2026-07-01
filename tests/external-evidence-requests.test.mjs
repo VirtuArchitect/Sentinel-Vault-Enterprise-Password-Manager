@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -9,6 +9,16 @@ const rootDir = path.resolve(import.meta.dirname, "..");
 
 const runRequests = (args) => execFileSync(process.execPath, [
   "scripts/generate-external-evidence-requests.mjs",
+  ...args
+], {
+  cwd: rootDir,
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "pipe"],
+  windowsHide: true
+});
+
+const runValidator = (args) => execFileSync(process.execPath, [
+  "scripts/validate-external-evidence-requests.mjs",
   ...args
 ], {
   cwd: rootDir,
@@ -48,6 +58,51 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.match(markdown, /Production browser extension rollout evidence/);
     assert.match(markdown, /Provider SDK-backed KMS\/HSM approval/);
     assert.match(markdown, /pnpm validate:deployment-evidence/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("external evidence request validator accepts strict generated request packs", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-validate-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+
+    const result = JSON.parse(runValidator(["--requests", jsonPath, "--strict"]));
+    assert.equal(result.format, "sentinel-external-evidence-requests-validation-v1");
+    assert.equal(result.validated, true);
+    assert.equal(result.strict, true);
+    assert.equal(result.requestCount, 6);
+    assert.ok(result.templateCount >= 10);
+    assert.equal(result.validatorCommandCount, 8);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("external evidence request validator rejects incomplete request packs", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-invalid-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+    const report = JSON.parse(readFileSync(jsonPath, "utf8"));
+    report.requests = report.requests.filter((request) => request.blockerType !== "native-security-approval");
+    writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /requests must include at least 6 item/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

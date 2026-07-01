@@ -107,6 +107,7 @@ Implemented:
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
 - External evidence request generator for owner-ready Phase 4-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
+- External evidence request validator for strict operator handoff checks across remaining Phase 4-8 gates.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:
