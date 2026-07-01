@@ -14,6 +14,31 @@ const markdownPath = path.resolve(args.get("--markdown-out") || path.join("artif
 
 const requests = [
   {
+    phase: "Phase 2",
+    title: "Postgres HA dependency and environment approval",
+    ownerRole: "Platform data owner",
+    blockerType: "postgres-ha-approval",
+    requiredInputs: [
+      "Approved Postgres client dependency, version, license, and supply-chain review",
+      "Target HA Postgres environment details, backup policy, network path, and credential ownership",
+      "Cutover plan from SQLite or JSON state with restore, rollback, and migration-readiness evidence"
+    ],
+    evidenceTemplates: [
+      "docs/templates/storage-migration-evidence.json",
+      "docs/architecture/postgres-schema.sql"
+    ],
+    commands: [
+      "pnpm plan:postgres -- --state <deployment-state.json> --out <postgres-migration-plan.json>",
+      "pnpm inspect:storage -- --state <deployment-state.json> --out <storage-readiness.json>",
+      "pnpm validate:storage-migration -- <storage-migration-evidence.json>"
+    ],
+    acceptanceCriteria: [
+      "Runtime dependency approval covers provenance, maintenance, license, and threat-model impact",
+      "Target database controls cover HA, backup, restore, network isolation, and least-privilege access",
+      "Cutover evidence proves migration readiness and rollback before enabling HA production storage"
+    ]
+  },
+  {
     phase: "Phase 4",
     title: "Deployment-specific migration and tenant-isolation evidence",
     ownerRole: "Migration owner",

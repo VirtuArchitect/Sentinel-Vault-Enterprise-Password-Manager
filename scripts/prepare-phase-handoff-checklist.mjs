@@ -67,7 +67,7 @@ Bundle owner: ${readiness.bundle.owner}
 Readiness: ${readiness.ready ? "ready" : "blocked"}
 Generated from: \`${readinessPath}\`
 
-Use this checklist to collect the deployment-specific evidence needed to clear the Phase 4-8 release gate. After completing the checklist, rerun:
+Use this checklist to collect the deployment-specific evidence needed to clear the remaining Phase 2-8 gates. After completing the checklist, rerun:
 
 \`\`\`powershell
 pnpm report:phase-readiness -- --bundle "${readiness.bundle.path}" --external-requests "${readiness.externalRequests.path}" --target "${readiness.target}" --fail-on-blockers

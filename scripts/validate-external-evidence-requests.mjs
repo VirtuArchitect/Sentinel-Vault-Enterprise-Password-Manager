@@ -23,6 +23,7 @@ const strict = args.has("--strict");
 const placeholder = /replace-with|YYYY-MM-DD|TODO|TBD/i;
 
 const requiredRequests = new Map([
+  ["Phase 2", "postgres-ha-approval"],
   ["Phase 4", "deployment-evidence"],
   ["Phase 5", "production-connector-evidence"],
   ["Phase 6", "certificate-backed-release"],
@@ -32,6 +33,7 @@ const requiredRequests = new Map([
 ]);
 
 const requiredValidatorCommands = [
+  "pnpm plan:postgres",
   "pnpm validate:storage-migration",
   "pnpm validate:tenant-isolation",
   "pnpm validate:connector-evidence",

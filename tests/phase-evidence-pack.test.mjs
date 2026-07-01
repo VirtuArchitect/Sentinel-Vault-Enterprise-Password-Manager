@@ -30,6 +30,11 @@ const prepareEvidencePackInputs = (dir) => {
     "--bundle", workspace.bundlePath,
     "--out", path.join(dir, "deployment-evidence-status.json")
   ]);
+  runScript("scripts/report-phase-completion-audit.mjs", [
+    "--external-requests", path.join(dir, "external-evidence-requests.json"),
+    "--out", path.join(dir, "phase-completion-audit.json"),
+    "--markdown-out", path.join(dir, "phase-completion-audit.md")
+  ]);
   runScript("scripts/report-phase-readiness.mjs", [
     "--bundle", workspace.bundlePath,
     "--external-requests", path.join(dir, "external-evidence-requests.json"),
@@ -54,7 +59,7 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-evidence-pack-result-v1");
-    assert.equal(result.artifactCount, 7);
+    assert.equal(result.artifactCount, 9);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(manifestPath));
@@ -62,8 +67,9 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     assert.equal(manifest.format, "sentinel-phase-evidence-pack-manifest-v1");
     assert.equal(manifest.environment, "pilot");
-    assert.equal(manifest.requestCount, 6);
-    assert.equal(Object.keys(manifest.artifacts).length, 7);
+    assert.equal(manifest.requestCount, 7);
+    assert.equal(manifest.remainingExternallyCovered, true);
+    assert.equal(Object.keys(manifest.artifacts).length, 9);
     assert.match(manifest.artifacts.phaseReadiness.sha256, /^[a-f0-9]{64}$/);
     assert.ok(manifest.artifacts.phaseHandoffChecklist.bytes > 0);
     assert.equal(manifest.deploymentEvidenceSummary.total, 21);
@@ -88,7 +94,7 @@ test("phase evidence pack validator accepts unchanged manifests", () => {
 
     assert.equal(validation.format, "sentinel-phase-evidence-pack-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 7);
+    assert.equal(validation.artifactCount, 9);
     assert.equal(validation.ready, false);
   } finally {
     rmSync(dir, { recursive: true, force: true });

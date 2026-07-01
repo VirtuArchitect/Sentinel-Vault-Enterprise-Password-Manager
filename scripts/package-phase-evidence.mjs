@@ -26,6 +26,8 @@ const artifactMap = {
   deploymentStatus: args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json"),
   externalRequests: args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json"),
   externalRequestsMarkdown: args.get("--external-requests-markdown") || path.join(evidenceDir, "external-evidence-requests.md"),
+  phaseCompletionAudit: args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json"),
+  phaseCompletionAuditMarkdown: args.get("--phase-completion-markdown") || path.join(evidenceDir, "phase-completion-audit.md"),
   phaseReadiness: args.get("--readiness") || path.join(evidenceDir, "phase-readiness.json"),
   phaseReadinessMarkdown: args.get("--readiness-markdown") || path.join(evidenceDir, "phase-readiness.md"),
   phaseHandoffChecklist: args.get("--handoff") || path.join(evidenceDir, "phase-handoff-checklist.md")
@@ -47,10 +49,12 @@ for (const [name, filePath] of Object.entries(artifactMap)) {
 const readiness = JSON.parse(readFileSync(artifactMap.phaseReadiness, "utf8"));
 const externalRequests = JSON.parse(readFileSync(artifactMap.externalRequests, "utf8"));
 const deploymentStatus = JSON.parse(readFileSync(artifactMap.deploymentStatus, "utf8"));
+const phaseCompletion = JSON.parse(readFileSync(artifactMap.phaseCompletionAudit, "utf8"));
 
 assert.equal(readiness.format, "sentinel-phase-readiness-report-v1");
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(deploymentStatus.format, "sentinel-deployment-evidence-status-v1");
+assert.equal(phaseCompletion.format, "sentinel-phase-completion-audit-v1");
 
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 
@@ -65,6 +69,9 @@ const manifest = {
   blockerCount: readiness.blockers?.length || 0,
   warningCount: readiness.warnings?.length || 0,
   requestCount: externalRequests.requests?.length || 0,
+  remainingPhaseCount: phaseCompletion.remainingPhaseCount,
+  remainingItemCount: phaseCompletion.remainingItemCount,
+  remainingExternallyCovered: phaseCompletion.externallyCovered,
   deploymentEvidenceSummary: deploymentStatus.summary,
   artifacts
 };

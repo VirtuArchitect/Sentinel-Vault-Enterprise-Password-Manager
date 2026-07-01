@@ -24,6 +24,8 @@ const requiredArtifactNames = [
   "deploymentStatus",
   "externalRequests",
   "externalRequestsMarkdown",
+  "phaseCompletionAudit",
+  "phaseCompletionAuditMarkdown",
   "phaseReadiness",
   "phaseReadinessMarkdown",
   "phaseHandoffChecklist"
@@ -60,10 +62,12 @@ for (const artifactName of requiredArtifactNames) {
 const readiness = JSON.parse(readFileSync(manifest.artifacts.phaseReadiness.path, "utf8"));
 const externalRequests = JSON.parse(readFileSync(manifest.artifacts.externalRequests.path, "utf8"));
 const deploymentStatus = JSON.parse(readFileSync(manifest.artifacts.deploymentStatus.path, "utf8"));
+const phaseCompletion = JSON.parse(readFileSync(manifest.artifacts.phaseCompletionAudit.path, "utf8"));
 
 assert.equal(readiness.format, "sentinel-phase-readiness-report-v1");
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(deploymentStatus.format, "sentinel-deployment-evidence-status-v1");
+assert.equal(phaseCompletion.format, "sentinel-phase-completion-audit-v1");
 assert.equal(manifest.environment, readiness.bundle.environment, "manifest environment does not match readiness report");
 assert.equal(manifest.target, readiness.target, "manifest target does not match readiness report");
 assert.equal(manifest.bundleStatus, readiness.bundle.status, "manifest bundle status does not match readiness report");
@@ -71,6 +75,9 @@ assert.equal(manifest.ready, readiness.ready, "manifest ready flag does not matc
 assert.equal(manifest.blockerCount, readiness.blockers?.length || 0, "manifest blocker count does not match readiness report");
 assert.equal(manifest.warningCount, readiness.warnings?.length || 0, "manifest warning count does not match readiness report");
 assert.equal(manifest.requestCount, externalRequests.requests?.length || 0, "manifest request count does not match external requests");
+assert.equal(manifest.remainingPhaseCount, phaseCompletion.remainingPhaseCount, "manifest remaining phase count does not match completion audit");
+assert.equal(manifest.remainingItemCount, phaseCompletion.remainingItemCount, "manifest remaining item count does not match completion audit");
+assert.equal(manifest.remainingExternallyCovered, phaseCompletion.externallyCovered, "manifest external coverage flag does not match completion audit");
 assert.deepEqual(manifest.deploymentEvidenceSummary, deploymentStatus.summary, "manifest deployment evidence summary does not match status report");
 
 console.log(JSON.stringify({

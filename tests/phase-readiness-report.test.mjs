@@ -49,7 +49,7 @@ test("phase readiness report combines deployment and external evidence blockers"
     assert.equal(report.target, "pilot");
     assert.equal(report.failOnBlockers, false);
     assert.equal(report.externalRequests.validated, true);
-    assert.equal(report.externalRequests.requestCount, 6);
+    assert.equal(report.externalRequests.requestCount, 7);
     assert.equal(report.deploymentEvidence.validated, true);
     assert.equal(report.ready, false);
     assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-evidence-status"));

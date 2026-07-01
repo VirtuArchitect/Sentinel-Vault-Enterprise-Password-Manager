@@ -51,7 +51,7 @@ test("phase handoff checklist turns readiness and external requests into owner a
     const { checklistPath, result } = createChecklistWorkspace(dir);
 
     assert.equal(result.format, "sentinel-phase-handoff-checklist-result-v1");
-    assert.equal(result.requestCount, 6);
+    assert.equal(result.requestCount, 7);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(checklistPath));
@@ -60,6 +60,7 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.match(checklist, /Sentinel Vault Phase Handoff Checklist/);
     assert.match(checklist, /Current Blocker Summary/);
     assert.match(checklist, /evidence-items:/);
+    assert.match(checklist, /Phase 2: Postgres HA dependency and environment approval/);
     assert.match(checklist, /Phase 6: MSI\/MSIX signing evidence from approved release host/);
     assert.match(checklist, /- \[ \] Approved code-signing certificate or PFX access on the release host/);
     assert.match(checklist, /pnpm report:phase-readiness/);
@@ -80,7 +81,7 @@ test("phase handoff checklist validator accepts generated checklists", () => {
 
     assert.equal(validation.format, "sentinel-phase-handoff-checklist-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.requestCount, 6);
+    assert.equal(validation.requestCount, 7);
     assert.ok(validation.blockerSummaryCount > 0);
   } finally {
     rmSync(dir, { recursive: true, force: true });

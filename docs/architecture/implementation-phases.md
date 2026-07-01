@@ -106,10 +106,10 @@ Implemented:
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
-- External evidence request generator for owner-ready Phase 4-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
-- External evidence request validator for strict operator handoff checks across remaining Phase 4-8 gates.
-- Combined Phase 4-8 readiness reporter that composes deployment evidence status with strict external evidence request validation.
-- Fail-on-blockers readiness mode for CI or release gates that must stop when Phase 4-8 evidence is incomplete.
+- External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
+- External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.
+- Combined Phase 2-8 completion audit and readiness reporter that composes roadmap, deployment evidence status, and strict external evidence request validation.
+- Fail-on-blockers readiness mode for CI or release gates that must stop when Phase 2-8 evidence is incomplete.
 - CI coverage for deployment readiness and handoff tooling, including expected failure of placeholder deployment evidence under the strict release gate.
 - Phase handoff checklist generator that converts readiness blockers and external evidence requests into owner-action checklists.
 - Phase handoff checklist validator that detects stale or edited owner-action checklists before release gate review.
