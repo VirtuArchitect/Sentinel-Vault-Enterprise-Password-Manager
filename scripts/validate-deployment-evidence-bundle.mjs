@@ -17,7 +17,8 @@ const validators = {
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
   windowsInstallHardening: ["scripts/validate-windows-install-hardening-evidence.mjs"],
-  pentestScope: ["scripts/validate-pentest-scope-evidence.mjs"]
+  pentestScope: ["scripts/validate-pentest-scope-evidence.mjs"],
+  auditWorm: ["scripts/validate-audit-worm-evidence.mjs"]
 };
 
 const artifactFormats = {

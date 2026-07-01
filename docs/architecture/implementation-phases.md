@@ -147,6 +147,7 @@ Implemented:
 - Penetration-test scope evidence template and validator for authorized scope, required abuse cases, redaction requirements, remediation, retest, and approvals.
 - Tamper-evident audit hash chaining.
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments.
+- Audit WORM evidence template and validator for external signing, immutable retention, object lock, legal hold, readback verification, redaction, and approvals.
 - Backup SHA-256 manifests and admin verification API.
 - AES-GCM encrypted backup artifacts and restore-validation dry run API.
 - Key-provider boundary for local root key, external KMS, and HSM readiness.

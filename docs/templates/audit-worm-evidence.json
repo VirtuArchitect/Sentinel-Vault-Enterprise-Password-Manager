@@ -1,0 +1,43 @@
+{
+  "format": "sentinel-audit-worm-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "ledgerExport": {
+    "exportedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "eventCount": 0,
+    "payloadHash": "replace-with-sha256",
+    "signatureAlgorithm": "HMAC-SHA256",
+    "manifestSignaturePresent": "planned",
+    "localVerification": "planned"
+  },
+  "externalSigning": {
+    "provider": "replace-with-provider",
+    "keyId": "replace-with-key-id",
+    "algorithm": "replace-with-algorithm",
+    "signatureHash": "replace-with-sha256",
+    "timestampAuthority": "replace-with-timestamp-authority",
+    "verification": "planned"
+  },
+  "wormStorage": {
+    "provider": "replace-with-provider",
+    "location": "replace-with-bucket-container-or-vault",
+    "retentionMode": "governance-or-compliance",
+    "retentionDays": 365,
+    "objectLockEnabled": "planned",
+    "versioningEnabled": "planned",
+    "deleteProtectionEnabled": "planned",
+    "legalHoldTested": "planned",
+    "readbackVerified": "planned"
+  },
+  "redaction": {
+    "secretValuesFound": false,
+    "tokenValuesFound": false,
+    "screenshotsRedacted": "planned"
+  },
+  "approvals": {
+    "securityOwner": "replace-with-owner",
+    "recordsOwner": "replace-with-owner",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}
