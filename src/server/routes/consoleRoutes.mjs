@@ -6,6 +6,7 @@ import { getComplianceEvidencePack, getComplianceReport } from "../services/comp
 import { getIntegrationStatus, updateIntegrationConfig } from "../services/integrationService.mjs";
 import { audit, exportSignedAuditLedger, verifySignedAuditLedger } from "../services/auditService.mjs";
 import { createTenant, createVault, exportAdminMetadata, importAdminMetadata, updateTenant, updateUser, updateVault } from "../services/adminService.mjs";
+import { createOfflineCache, verifyOfflineCache } from "../services/offlineCacheService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listDevices, listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
@@ -177,6 +178,19 @@ consoleRoutes.get("/reports/audit-ledger/export", auth, can("audit:read"), (_req
 
 consoleRoutes.get("/reports/audit-ledger/verify", auth, can("audit:read"), (_req, res) => {
   res.json({ verification: verifySignedAuditLedger(exportSignedAuditLedger()) });
+});
+
+consoleRoutes.post("/offline-cache/export", auth, can("vault:read"), (req, res) => {
+  res.setHeader("Content-Disposition", "attachment; filename=sentinel-offline-cache.json");
+  res.json({ cache: createOfflineCache(req.user) });
+});
+
+consoleRoutes.post("/offline-cache/verify", auth, can("vault:read"), (req, res, next) => {
+  try {
+    res.json({ verification: verifyOfflineCache(req.user, req.body.cache) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 consoleRoutes.post("/secrets", auth, can("vault:write"), (req, res, next) => {

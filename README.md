@@ -191,6 +191,7 @@ Implemented in this prototype:
 - Tamper-evident audit event hash chaining for security-sensitive actions
 - Signed audit ledger export and append-only JSONL ledger for file-backed deployments
 - SIEM webhook delivery with HMAC signed-envelope replay metadata
+- Encrypted read-only offline cache export with verification
 - Secret fingerprinting for reuse detection without storing plaintext
 - Compliance report endpoint for audit-ready control summaries
 

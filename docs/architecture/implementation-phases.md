@@ -132,6 +132,7 @@ Implemented:
 - Explicit browser autofill flow with local-console login, URL matching, audited reveal, and active-tab field injection.
 - Windows clipboard/tray helper PowerShell prototype.
 - Clipboard auto-clear companion implementation with Sentinel-owned marker hashes.
+- Encrypted read-only offline cache export and verification APIs.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
 
@@ -139,5 +140,5 @@ Remaining:
 
 - Browser extension packaging, enterprise policy deployment, and store review.
 - Windows tray UI.
-- Offline read-only cache implementation.
+- Windows DPAPI/native offline cache unlock helper.
 - Native autotype or credential-provider proof of concept.

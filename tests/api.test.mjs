@@ -658,6 +658,54 @@ test("storage status and backup endpoints are admin-only", async () => {
   });
 });
 
+test("offline cache export is encrypted, read-only, and scoped to the user", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const morgan = await login(baseUrl, "morgan@defence.local");
+
+    const exportResponse = await jsonFetch(`${baseUrl}/offline-cache/export`, ada.token, { method: "POST" });
+    assert.equal(exportResponse.status, 200);
+    assert.match(exportResponse.headers.get("content-disposition"), /sentinel-offline-cache/);
+    const exported = await exportResponse.json();
+
+    assert.equal(exported.cache.manifest.format, "sentinel-offline-cache-v1");
+    assert.equal(exported.cache.manifest.readOnly, true);
+    assert.equal(exported.cache.manifest.plaintextIncluded, false);
+    assert.ok(exported.cache.manifest.secrets >= 3);
+    assert.ok(exported.cache.encrypted.ciphertext);
+    assert.equal(JSON.stringify(exported.cache).includes("E7#hP9!qZ2@Lw8$mV4"), false);
+
+    const verifyResponse = await jsonFetch(`${baseUrl}/offline-cache/verify`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: exported.cache })
+    });
+    assert.equal(verifyResponse.status, 200);
+    const verified = await verifyResponse.json();
+    assert.equal(verified.verification.verified, true);
+    assert.equal(verified.verification.readOnly, true);
+    assert.equal(verified.verification.secrets, exported.cache.manifest.secrets);
+
+    const wrongUserResponse = await jsonFetch(`${baseUrl}/offline-cache/verify`, morgan.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: exported.cache })
+    });
+    assert.equal(wrongUserResponse.status, 200);
+    const wrongUser = await wrongUserResponse.json();
+    assert.equal(wrongUser.verification.verified, false);
+
+    const tampered = structuredClone(exported.cache);
+    tampered.manifest.secrets += 1;
+    const tamperResponse = await jsonFetch(`${baseUrl}/offline-cache/verify`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({ cache: tampered })
+    });
+    assert.equal(tamperResponse.status, 200);
+    const tamper = await tamperResponse.json();
+    assert.equal(tamper.verification.verified, false);
+    assert.equal(tamper.verification.reason, "signature_mismatch");
+  });
+});
+
 test("new audit events are hash chained and verified", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");
