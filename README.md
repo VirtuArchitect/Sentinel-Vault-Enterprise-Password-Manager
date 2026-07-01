@@ -141,6 +141,8 @@ pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.jso
 pnpm validate:brute-force -- docs/templates/brute-force-evidence.json
 pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation-tests.json"
 pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
+pnpm release:source-migration -- --status planned --out ".\artifacts\import\source-migration-evidence.json"
+pnpm validate:source-migration -- docs/templates/source-migration-evidence.json
 pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 pnpm release:devops-token-response -- --preflight ".\artifacts\integrations\devops-token-response-evidence.json"

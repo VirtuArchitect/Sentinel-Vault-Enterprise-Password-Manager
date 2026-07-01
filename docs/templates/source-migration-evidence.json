@@ -1,0 +1,38 @@
+{
+  "format": "sentinel-source-migration-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "sourceSystem": "replace-with-source-system",
+  "reviewedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "artifacts": {
+    "columnMapPath": "replace-with-column-map.json",
+    "sourceAdapterEvidencePath": "replace-with-source-adapter-evidence.json",
+    "normalizedImportPath": "replace-with-normalized-import.csv",
+    "storageMigrationEvidencePath": "replace-with-storage-migration-evidence.json",
+    "tenantIsolationEvidencePath": "replace-with-tenant-isolation-evidence.json"
+  },
+  "checks": {
+    "allColumnsMappedOrIgnored": "planned",
+    "sourceEvidenceRedacted": "planned",
+    "normalizedImportReviewed": "planned",
+    "storageMigrationValidated": "planned",
+    "tenantIsolationValidated": "planned",
+    "rollbackPlanReviewed": "planned"
+  },
+  "summary": {
+    "sourceRowCount": 0,
+    "convertedRowCount": 0,
+    "ignoredColumnCount": 0
+  },
+  "approvals": {
+    "migrationOwner": "replace-with-owner",
+    "securityReviewer": "replace-with-reviewer",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  },
+  "redaction": {
+    "containsPlaintextSecrets": "planned",
+    "containsOtpValues": "planned",
+    "containsCustomerOnlyFields": "planned"
+  }
+}

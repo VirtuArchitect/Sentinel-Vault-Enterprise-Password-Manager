@@ -32,6 +32,8 @@
     "validate:restore-drill": "node scripts/validate-encrypted-backup-restore.mjs",
     "convert:source-export": "node scripts/convert-source-export.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
+    "release:source-migration": "node scripts/generate-source-migration-evidence.mjs",
+    "validate:source-migration": "node scripts/validate-source-migration-evidence.mjs",
     "inspect:storage": "node scripts/inspect-storage-state.mjs",
     "validate:storage-migration": "node scripts/validate-storage-migration-evidence.mjs",
     "migrate:sqlite": "node scripts/migrate-json-to-sqlite.mjs",

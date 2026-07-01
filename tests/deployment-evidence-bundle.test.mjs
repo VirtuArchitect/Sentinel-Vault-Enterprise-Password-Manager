@@ -30,6 +30,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     kmsHsm: "kms-hsm-provider-evidence.json",
     windowsRelease: "windows-release-evidence.json",
     windowsInstallHardening: "windows-install-hardening-evidence.json",
+    sourceMigration: "source-migration-evidence.json",
     tlsIis: "tls-iis-evidence.json",
     pentestScope: "pentest-scope-evidence.json",
     auditWorm: "audit-worm-evidence.json",
@@ -93,6 +94,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.logRedaction.validated, true);
     assert.equal(validation.results.releaseAttestation.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
+    assert.equal(validation.results.sourceMigration.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -112,6 +114,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
         windowsRelease: "evidence/windows-release-evidence.json",
         windowsInstallHardening: "evidence/windows-install-hardening-evidence.json",
+        sourceMigration: "evidence/source-migration-evidence.json",
         tlsIis: "evidence/tls-iis-evidence.json",
         pentestScope: "evidence/pentest-scope-evidence.json",
         auditWorm: "evidence/audit-worm-evidence.json",

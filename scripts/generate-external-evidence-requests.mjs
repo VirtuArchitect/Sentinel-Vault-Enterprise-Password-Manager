@@ -52,12 +52,15 @@ const requests = [
       "Completed tenant-isolation evidence for the target tenant hierarchy"
     ],
     evidenceTemplates: [
+      "docs/templates/source-migration-evidence.json",
       "docs/templates/source-export-column-map.json",
       "docs/templates/storage-migration-evidence.json",
       "docs/templates/tenant-isolation-evidence.json"
     ],
     commands: [
-      "pnpm convert:source-export -- --csv <source-export.csv> --mapping <column-map.json> --out <normalized-import.json> --evidence <migration-evidence.json>",
+      "pnpm convert:source-export -- --source <source-export.csv> --format mapped-csv --mapping <column-map.json> --vault-id <target-vault-id> --out <normalized-import.json> --evidence <migration-evidence.json>",
+      "pnpm release:source-migration -- --status pilot --source-system <source-system> --column-map <column-map.json> --source-adapter-evidence <migration-evidence.json> --normalized-import <normalized-import.json> --storage-migration-evidence <storage-migration-evidence.json> --tenant-isolation-evidence <tenant-isolation-evidence.json> --out <source-migration-evidence.json>",
+      "pnpm validate:source-migration -- <source-migration-evidence.json>",
       "pnpm inspect:storage -- --state <deployment-state.json> --out <storage-readiness.json>",
       "pnpm release:tenant-isolation -- --report <tenant-isolation-tests.json> --out <tenant-isolation-evidence.json>",
       "pnpm validate:storage-migration -- <storage-migration-evidence.json>",

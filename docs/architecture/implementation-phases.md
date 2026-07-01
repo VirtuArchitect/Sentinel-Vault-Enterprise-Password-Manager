@@ -73,9 +73,10 @@ Implemented:
 - CSV source-export adapter with redacted migration evidence output.
 - Bitwarden, Dashlane, LastPass, and 1Password CSV source-export adapters that normalize into the escrow import pipeline with redacted evidence.
 - Configurable mapped-CSV source export adapter and column-map template for proprietary migration exports without code changes.
+- Source migration evidence template, generator, validator, and deployment-bundle gate that bind proprietary column maps, redacted adapter evidence, normalized import output, storage migration evidence, and tenant-isolation proof.
 
 Remaining:
-- Deployment-specific proprietary source column maps, migration evidence files, and completed tenant-isolation evidence for each deployment.
+- Completed deployment-specific proprietary source migration evidence and completed tenant-isolation evidence for each deployment.
 
 ## Phase 5: Enterprise Integrations
 
