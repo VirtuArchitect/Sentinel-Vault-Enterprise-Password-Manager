@@ -70,6 +70,32 @@ test("onepassword csv export converts to Sentinel import csv", () => {
   }
 });
 
+test("lastpass csv export converts to Sentinel import csv with redacted evidence", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-lastpass-export-"));
+  try {
+    const sourcePath = path.join(dir, "lastpass.csv");
+    const outPath = path.join(dir, "normalized.csv");
+    const evidencePath = path.join(dir, "evidence.json");
+    writeFileSync(sourcePath, [
+      "url,username,password,extra,name,grouping,fav",
+      "https://vpn.example.test,ada,VPN-Secret-Value,\"VPN admin note\",VPN Admin,Infrastructure\\Network,1"
+    ].join("\n"));
+
+    runAdapter(sourcePath, "lastpass-csv", outPath, evidencePath);
+    const csv = readFileSync(outPath, "utf8");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+
+    assert.match(csv, /v-import,password,VPN Admin,ada,VPN-Secret-Value,https:\/\/vpn.example.test,Infrastructure\\Network;favorite,medium,VPN admin note/);
+    assert.equal(evidence.sourceFormat, "lastpass-csv");
+    assert.equal(evidence.convertedCount, 1);
+    assert.equal(evidence.passwordValuesIncluded, false);
+    assert.equal(JSON.stringify(evidence).includes("VPN-Secret-Value"), false);
+    assert.equal(evidence.entries[0].tags.includes("favorite"), true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("source export adapter rejects rows missing required fields", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-source-export-fail-"));
   try {
