@@ -45,6 +45,8 @@ jobs:
           pnpm validate:kms-hsm-evidence docs/templates/kms-hsm-provider-evidence.json
           pnpm validate:identity-evidence docs/templates/identity-provider-evidence.json
           pnpm release:provenance -- --out "${RUNNER_TEMP}/release-provenance.json"
+          node -e "import('./src/server/data/seedData.mjs').then(({ createSeedState }) => { const { sessions, loginFailures, ...state } = createSeedState(); require('node:fs').writeFileSync(process.argv[1], JSON.stringify({ ...state, metadata: { version: 2 } }, null, 2)); })" "${RUNNER_TEMP}/sentinel-state.json"
+          pnpm plan:postgres -- --state "${RUNNER_TEMP}/sentinel-state.json" --out "${RUNNER_TEMP}/postgres-migration-plan.json"
 
       - name: Secret scan
         run: pnpm scan:secrets

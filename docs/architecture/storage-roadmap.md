@@ -62,6 +62,11 @@ No SQLite npm dependency has been added. SQLite mode requires a Node.js runtime 
 
 Postgres should follow once the store adapter and migration model are proven.
 
+Implemented planning artifacts:
+
+- `docs/architecture/postgres-schema.sql` defines the target JSONB mirror schema, generated columns, indexes, and schema migration table.
+- `pnpm plan:postgres` validates a source state file against migration-readiness checks and writes a cutover plan with source and schema hashes.
+
 Planned work:
 
 - Use the implemented `STORAGE_PROVIDER=postgres` and `DATABASE_URL` configuration.
