@@ -32,7 +32,9 @@ const artifactMap = {
   phaseDecisionRecord: args.get("--phase-decision") || path.join(evidenceDir, "phase-decision-record.json"),
   phaseDecisionRecordMarkdown: args.get("--phase-decision-markdown") || path.join(evidenceDir, "phase-decision-record.md"),
   phaseSignoffMatrix: args.get("--phase-signoffs") || path.join(evidenceDir, "phase-signoff-matrix.json"),
-  phaseSignoffMatrixMarkdown: args.get("--phase-signoffs-markdown") || path.join(evidenceDir, "phase-signoff-matrix.md")
+  phaseSignoffMatrixMarkdown: args.get("--phase-signoffs-markdown") || path.join(evidenceDir, "phase-signoff-matrix.md"),
+  phaseEvidenceIntake: args.get("--phase-intake") || path.join(evidenceDir, "phase-evidence-intake.json"),
+  phaseEvidenceIntakeMarkdown: args.get("--phase-intake-markdown") || path.join(evidenceDir, "phase-evidence-intake.md")
 };
 
 const hashFile = (filePath) => {
@@ -54,6 +56,7 @@ const phaseActions = JSON.parse(readFileSync(artifactMap.phaseActionRegister, "u
 const phaseGaps = JSON.parse(readFileSync(artifactMap.phaseGapMatrix, "utf8"));
 const phaseDecision = JSON.parse(readFileSync(artifactMap.phaseDecisionRecord, "utf8"));
 const phaseSignoffs = JSON.parse(readFileSync(artifactMap.phaseSignoffMatrix, "utf8"));
+const phaseIntake = JSON.parse(readFileSync(artifactMap.phaseEvidenceIntake, "utf8"));
 
 assert.equal(phaseEvidence.format, "sentinel-phase-evidence-pack-manifest-v1");
 assert.equal(phaseGate.format, "sentinel-phase-gate-validation-v1");
@@ -61,6 +64,7 @@ assert.equal(phaseActions.format, "sentinel-phase-action-register-v1");
 assert.equal(phaseGaps.format, "sentinel-phase-gap-matrix-v1");
 assert.equal(phaseDecision.format, "sentinel-phase-decision-record-v1");
 assert.equal(phaseSignoffs.format, "sentinel-phase-signoff-matrix-v1");
+assert.equal(phaseIntake.format, "sentinel-phase-evidence-intake-v1");
 assert.equal(phaseGate.paths.phaseEvidenceManifest, path.resolve(artifactMap.phaseEvidenceManifest), "phase gate does not reference selected phase evidence manifest");
 assert.equal(phaseActions.phaseGatePath, path.resolve(artifactMap.phaseGateValidation), "phase action register does not reference selected phase gate report");
 assert.equal(phaseGaps.summary.phaseCount, phaseActions.actions.length, "phase gap matrix action count does not match phase action register");
@@ -69,6 +73,8 @@ assert.equal(phaseDecision.actionRegisterPath, path.resolve(artifactMap.phaseAct
 assert.equal(phaseDecision.gapMatrixPath, path.resolve(artifactMap.phaseGapMatrix), "phase decision record does not reference selected phase gap matrix");
 assert.equal(phaseSignoffs.decisionPath, path.resolve(artifactMap.phaseDecisionRecord), "phase signoff matrix does not reference selected phase decision record");
 assert.equal(phaseSignoffs.actionRegisterPath, path.resolve(artifactMap.phaseActionRegister), "phase signoff matrix does not reference selected phase action register");
+assert.equal(phaseIntake.signoffMatrixPath, path.resolve(artifactMap.phaseSignoffMatrix), "phase evidence intake does not reference selected phase signoff matrix");
+assert.equal(phaseIntake.gapMatrixPath, path.resolve(artifactMap.phaseGapMatrix), "phase evidence intake does not reference selected phase gap matrix");
 
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 const manifest = {

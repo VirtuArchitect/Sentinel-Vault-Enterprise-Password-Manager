@@ -63,6 +63,8 @@
     "validate:phase-decision": "node scripts/validate-phase-decision-record.mjs",
     "prepare:phase-signoffs": "node scripts/prepare-phase-signoff-matrix.mjs",
     "validate:phase-signoffs": "node scripts/validate-phase-signoff-matrix.mjs",
+    "prepare:phase-intake": "node scripts/prepare-phase-evidence-intake.mjs",
+    "validate:phase-intake": "node scripts/validate-phase-evidence-intake.mjs",
     "package:phase-review": "node scripts/package-phase-review-bundle.mjs",
     "validate:phase-review": "node scripts/validate-phase-review-bundle.mjs",
     "package:phase-closure": "node scripts/package-phase-closure-archive.mjs",
