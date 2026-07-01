@@ -139,6 +139,8 @@ pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation
 pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
 pnpm release:siem-rotation -- --report ".\artifacts\integrations\siem-receiver-rotation.json"
 pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.json
+pnpm release:tls-iis -- --report ".\artifacts\windows\tls-iis-review.json"
+pnpm validate:tls-iis -- docs/templates/tls-iis-evidence.json
 ```
 
 ## Project Structure

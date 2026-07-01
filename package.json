@@ -59,6 +59,7 @@
     "validate:sast": "node scripts/validate-sast-evidence.mjs",
     "release:log-redaction": "node scripts/generate-log-redaction-evidence.mjs",
     "validate:log-redaction": "node scripts/validate-log-redaction-evidence.mjs",
+    "release:tls-iis": "node scripts/generate-tls-iis-evidence.mjs",
     "validate:tls-iis": "node scripts/validate-tls-iis-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
     "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
