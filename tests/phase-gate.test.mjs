@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -73,8 +73,12 @@ test("phase gate validator accepts generated blocked-but-covered evidence packs"
   const dir = path.join(tmpdir(), `sentinel-phase-gate-${process.pid}-${Date.now()}`);
   try {
     createPhaseGateWorkspace(dir);
+    const outputPath = path.join(dir, "phase-gate-validation.json");
+    const markdownPath = path.join(dir, "phase-gate-validation.md");
     const report = JSON.parse(runScript("scripts/validate-phase-gate.mjs", [
-      "--dir", dir
+      "--dir", dir,
+      "--out", outputPath,
+      "--markdown-out", markdownPath
     ]));
 
     assert.equal(report.format, "sentinel-phase-gate-validation-v1");
@@ -83,6 +87,11 @@ test("phase gate validator accepts generated blocked-but-covered evidence packs"
     assert.equal(report.failedChecks.length, 0);
     assert.ok(report.blockerCount > 0);
     assert.ok(report.remainingItemCount > 0);
+    assert.ok(existsSync(outputPath));
+    assert.ok(existsSync(markdownPath));
+    assert.equal(JSON.parse(readFileSync(outputPath, "utf8")).format, "sentinel-phase-gate-validation-v1");
+    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Gate Validation/);
+    assert.match(readFileSync(markdownPath, "utf8"), /workspace: passed/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

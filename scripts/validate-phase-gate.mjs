@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
@@ -21,6 +21,8 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 const rootDir = path.resolve(import.meta.dirname, "..");
 const evidenceDir = path.resolve(args.get("--dir") || "artifacts/deployment/pilot");
 const failOnBlockers = args.has("--fail-on-blockers");
+const outputPath = args.get("--out") ? path.resolve(args.get("--out")) : null;
+const markdownPath = args.get("--markdown-out") ? path.resolve(args.get("--markdown-out")) : null;
 const paths = {
   workspaceManifest: path.resolve(args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json")),
   bundle: path.resolve(args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json")),
@@ -119,7 +121,40 @@ const report = {
   validated: failedChecks.length === 0
 };
 
-console.log(JSON.stringify(report, null, 2));
+const renderMarkdown = () => `# Sentinel Vault Phase Gate Validation
+
+Evidence directory: \`${evidenceDir}\`
+Validated: ${report.validated ? "yes" : "no"}
+Ready: ${report.ready ? "yes" : "no"}
+Blockers: ${blockerCount}
+Warnings: ${warningCount}
+Remaining phases: ${completionAudit.remainingPhaseCount}
+Remaining items: ${completionAudit.remainingItemCount}
+
+## Checks
+
+${Object.entries(report.checks).map(([name, check]) => `- ${name}: ${check.ok ? "passed" : `failed - ${check.error}`}`).join("\n")}
+
+## Artifacts
+
+${Object.entries(paths).map(([name, filePath]) => `- ${name}: \`${filePath}\``).join("\n")}
+
+## Release Gate
+
+${report.ready ? "The phase gate is ready for the selected target." : "The phase gate remains blocked until all remaining deployment evidence, approvals, and release artifacts are complete."}
+`;
+
+const text = JSON.stringify(report, null, 2);
+if (outputPath) {
+  mkdirSync(path.dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, text);
+}
+if (markdownPath) {
+  mkdirSync(path.dirname(markdownPath), { recursive: true });
+  writeFileSync(markdownPath, renderMarkdown());
+}
+
+console.log(text);
 
 if (failedChecks.length > 0) {
   process.exitCode = 1;
