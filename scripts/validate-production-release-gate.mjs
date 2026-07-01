@@ -31,6 +31,10 @@ const paths = {
   externalRequests: path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json")),
   phaseEvidence: path.resolve(args.get("--phase-evidence") || path.join(evidenceDir, "phase-evidence-pack-manifest.json")),
   phaseGate: path.resolve(args.get("--phase-gate") || path.join(evidenceDir, "phase-gate-validation.json")),
+  phaseActions: path.resolve(args.get("--phase-actions") || path.join(evidenceDir, "phase-action-register.json")),
+  phaseGaps: path.resolve(args.get("--phase-gaps") || path.join(evidenceDir, "phase-gap-matrix.json")),
+  phaseDecision: path.resolve(args.get("--phase-decision") || path.join(evidenceDir, "phase-decision-record.json")),
+  phaseSignoffs: path.resolve(args.get("--phase-signoffs") || path.join(evidenceDir, "phase-signoff-matrix.json")),
   phaseReview: path.resolve(args.get("--phase-review") || path.join(evidenceDir, "phase-review-bundle-manifest.json")),
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
 };
@@ -106,6 +110,35 @@ const checks = {
       "--dir", evidenceDir
     ])
     : { ok: false, result: null, error: `Phase gate validation report not found: ${paths.phaseGate}` },
+  phaseActions: existsSync(paths.phaseActions) && existsSync(paths.phaseGate) && existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-phase-action-register.mjs", [
+      "--register", paths.phaseActions,
+      "--phase-gate", paths.phaseGate,
+      "--external-requests", paths.externalRequests
+    ])
+    : { ok: false, result: null, error: "Phase action register, phase gate, or external evidence request pack is missing" },
+  phaseGaps: existsSync(paths.phaseGaps) && existsSync(paths.bundle) && existsSync(paths.externalRequests)
+    ? runJson("scripts/validate-phase-gap-matrix.mjs", [
+      "--matrix", paths.phaseGaps,
+      "--bundle", paths.bundle,
+      "--external-requests", paths.externalRequests
+    ])
+    : { ok: false, result: null, error: "Phase gap matrix, deployment bundle, or external evidence request pack is missing" },
+  phaseDecision: existsSync(paths.phaseDecision) && existsSync(paths.phaseGate) && existsSync(paths.phaseActions) && existsSync(paths.phaseGaps)
+    ? runJson("scripts/validate-phase-decision-record.mjs", [
+      "--record", paths.phaseDecision,
+      "--phase-gate", paths.phaseGate,
+      "--phase-actions", paths.phaseActions,
+      "--phase-gaps", paths.phaseGaps
+    ])
+    : { ok: false, result: null, error: "Phase decision record, phase gate, action register, or gap matrix is missing" },
+  phaseSignoffs: existsSync(paths.phaseSignoffs) && existsSync(paths.phaseDecision) && existsSync(paths.phaseActions)
+    ? runJson("scripts/validate-phase-signoff-matrix.mjs", [
+      "--matrix", paths.phaseSignoffs,
+      "--phase-decision", paths.phaseDecision,
+      "--phase-actions", paths.phaseActions
+    ])
+    : { ok: false, result: null, error: "Phase signoff matrix, decision record, or action register is missing" },
   phaseReview: existsSync(paths.phaseReview)
     ? runJson("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", paths.phaseReview,
