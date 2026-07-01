@@ -7,6 +7,7 @@ const { config, validateConfig } = await import("../src/server/config.mjs");
 test("external key providers require a configured key id", () => {
   const previousProvider = config.kms.provider;
   const previousKeyId = config.kms.keyId;
+  const previousTimeoutMs = config.kms.timeoutMs;
   try {
     config.kms.provider = "external-kms";
     config.kms.keyId = "";
@@ -14,9 +15,13 @@ test("external key providers require a configured key id", () => {
 
     config.kms.keyId = "sentinel-test-key";
     assert.equal(validateConfig().some((issue) => issue.includes("KMS_KEY_ID")), false);
+
+    config.kms.timeoutMs = 100;
+    assert.ok(validateConfig().some((issue) => issue.includes("KMS_GATEWAY_TIMEOUT_MS")));
   } finally {
     config.kms.provider = previousProvider;
     config.kms.keyId = previousKeyId;
+    config.kms.timeoutMs = previousTimeoutMs;
   }
 });
 

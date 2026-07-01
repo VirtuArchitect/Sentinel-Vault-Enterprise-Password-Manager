@@ -39,7 +39,7 @@ Out of scope until implemented:
 | Brute-force login | Login rate limit, temporary account lockout, OIDC/Entra MFA claim enforcement, identity-provider conformance preflight evidence, device trust evidence gate, and brute-force/IP source evidence gate | Completed deployment-specific IP/device trust evidence |
 | Direct-object access | Role, vault, and tenant metadata checks in service layer, broader cross-tenant negative tests, documented tenant isolation model, and tenant-isolation evidence gate | Completed deployment-specific tenant isolation evidence |
 | Secret disclosure in logs | API avoids intentional value logging, uses a structured logger with recursive sensitive-field, bearer-token, and error redaction, and requires centralized log-shipping redaction evidence | Completed deployment-specific SIEM/log-sink redaction evidence |
-| Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, and key ceremony evidence templates exist | Provider SDK integration and completed provider evidence |
+| Compromised root key | Production requires non-demo key, key-provider boundary supports external KMS/HSM modes, dependency-free KMS/HSM gateway signing, and key ceremony evidence templates exist | Provider SDK unwrap/envelope integration and completed provider evidence |
 | Audit tampering | Tamper-evident audit hash chaining, signed ledger export, append-only JSONL ledger for file-backed deployments, and WORM/external-signing evidence gate | Completed deployment-specific WORM storage evidence |
 | Backup exposure | Admin-only backup endpoints, SHA-256 manifests, AES-GCM encrypted backup artifacts, restore-validation dry runs, and backup recovery ceremony evidence | Completed deployment-specific recovery drill evidence |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, forced revocation, persistent device inventory metadata, optional external-identity refresh tokens with hashed storage, one-time rotation and replay family revocation, one-time OIDC PKCE state, and device trust evidence gate | Completed deployment-specific device trust and refresh-token replay evidence |
@@ -51,7 +51,7 @@ Out of scope until implemented:
 
 ## Security Backlog
 
-1. Add provider SDK-backed KMS/HSM integration after dependency and environment approval.
+1. Add provider SDK-backed KMS/HSM unwrap/envelope integration after dependency and environment approval.
 2. Add signed native Windows credential-provider implementation after approval.
 
 ## Abuse Cases To Test

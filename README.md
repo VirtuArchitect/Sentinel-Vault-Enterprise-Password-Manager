@@ -32,7 +32,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Optional external-identity refresh tokens with hashed storage, one-time rotation, replay family revocation, and bounded lifetime
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
-- Key-provider boundary for local root key, external KMS, and HSM readiness
+- Key-provider boundary for local root key, external KMS, HSM readiness, and dependency-free HTTP gateway signing
 - Integration status, signed SIEM webhook delivery with retries, ITSM ticket validation, configuration controls, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
 - Browser extension autofill and Windows companion scaffolds for clipboard auto-clear, offline cache, and autotype research
@@ -253,6 +253,7 @@ VAULT_KEY_SALT=sentinel-vault
 KMS_PROVIDER=local-root-key
 KMS_KEY_ID=
 KMS_ENDPOINT=
+KMS_GATEWAY_TIMEOUT_MS=5000
 STORAGE_PROVIDER=json
 DATA_DIR=./data
 STATE_FILE=sentinel-state.json

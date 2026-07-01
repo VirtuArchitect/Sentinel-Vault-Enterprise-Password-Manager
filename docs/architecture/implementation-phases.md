@@ -170,6 +170,7 @@ Implemented:
 - KMS/HSM key ceremony runbook and provider evidence template.
 - KMS/HSM provider evidence validator.
 - KMS/HSM HTTP gateway preflight for live status and sign-operation evidence without adding cloud SDK dependencies.
+- Dependency-free KMS/HSM HTTP gateway runtime signing for non-local key-provider modes with key-ID and signature-shape validation.
 - Threat model.
 - Security review checklist.
 

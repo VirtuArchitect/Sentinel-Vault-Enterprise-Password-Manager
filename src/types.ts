@@ -148,6 +148,7 @@ export type CryptoStatus = {
     keyId: string | null;
     endpoint: string | null;
     mode: string;
+    signingMode: string;
     supported: boolean;
   };
 };

@@ -14,7 +14,8 @@ export const config = {
   kms: {
     provider: process.env.KMS_PROVIDER || "local-root-key",
     keyId: process.env.KMS_KEY_ID || "",
-    endpoint: process.env.KMS_ENDPOINT || ""
+    endpoint: process.env.KMS_ENDPOINT || "",
+    timeoutMs: Number(process.env.KMS_GATEWAY_TIMEOUT_MS || 5000)
   },
   sessionMinutes: Number(process.env.SESSION_MINUTES || 15),
   refreshTokens: {
@@ -89,6 +90,9 @@ export const validateConfig = () => {
   }
   if (config.kms.provider !== "local-root-key" && !config.kms.keyId) {
     issues.push("KMS_KEY_ID is required when KMS_PROVIDER is external-kms or hsm.");
+  }
+  if (!Number.isInteger(config.kms.timeoutMs) || config.kms.timeoutMs < 500 || config.kms.timeoutMs > 30000) {
+    issues.push("KMS_GATEWAY_TIMEOUT_MS must be an integer between 500 and 30000.");
   }
   if (!["json", "sqlite", "postgres"].includes(config.storage.provider)) {
     issues.push("STORAGE_PROVIDER must be one of json, sqlite, or postgres.");
