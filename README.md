@@ -30,7 +30,7 @@ The local demo opens directly into the Sentinel Vault console experience with se
 - Session expiry enforcement and permission-scoped console payloads
 - Identity provider metadata for local, OIDC, and Microsoft Entra ID configuration
 - Key lifecycle metadata for encryption algorithm, key version, derivation salt, and future KMS mode
-- Integration status and audit outbox for SIEM, ITSM, and DevOps API readiness
+- Integration status, signed SIEM webhook delivery with retries, ITSM metadata, and DevOps API readiness
 - Compliance evidence report for ISO/IEC 27001, NIS2, SOC 2, and PCI DSS control categories
 - Startup configuration validation, login rate limiting, and temporary account lockout
 - CI dependency audit gate for high-severity advisories
@@ -208,6 +208,9 @@ OIDC_CLIENT_ID=
 ENTRA_TENANT_ID=
 IDENTITY_GROUP_CLAIM=groups
 SIEM_WEBHOOK_URL=
+SIEM_WEBHOOK_SECRET=
+SIEM_MAX_ATTEMPTS=5
+SIEM_RETRY_SECONDS=60
 ITSM_BASE_URL=
 DEVOPS_API_ENABLED=false
 INTEGRATION_OUTBOX_LIMIT=100

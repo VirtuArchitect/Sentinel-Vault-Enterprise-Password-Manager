@@ -30,6 +30,9 @@ export const config = {
   },
   integrations: {
     siemWebhookUrl: process.env.SIEM_WEBHOOK_URL || "",
+    siemWebhookSecret: process.env.SIEM_WEBHOOK_SECRET || "",
+    siemMaxAttempts: Number(process.env.SIEM_MAX_ATTEMPTS || 5),
+    siemRetrySeconds: Number(process.env.SIEM_RETRY_SECONDS || 60),
     itsmBaseUrl: process.env.ITSM_BASE_URL || "",
     devopsApiEnabled: process.env.DEVOPS_API_ENABLED === "true",
     outboxLimit: Number(process.env.INTEGRATION_OUTBOX_LIMIT || 100)
@@ -53,6 +56,15 @@ export const validateConfig = () => {
   }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");
+  }
+  if (config.integrations.siemWebhookUrl && config.isProduction && !config.integrations.siemWebhookSecret) {
+    issues.push("SIEM_WEBHOOK_SECRET is required when SIEM_WEBHOOK_URL is set in production.");
+  }
+  if (!Number.isInteger(config.integrations.siemMaxAttempts) || config.integrations.siemMaxAttempts < 1 || config.integrations.siemMaxAttempts > 25) {
+    issues.push("SIEM_MAX_ATTEMPTS must be an integer between 1 and 25.");
+  }
+  if (!Number.isInteger(config.integrations.siemRetrySeconds) || config.integrations.siemRetrySeconds < 5 || config.integrations.siemRetrySeconds > 3600) {
+    issues.push("SIEM_RETRY_SECONDS must be an integer between 5 and 3600.");
   }
   return issues;
 };

@@ -42,6 +42,7 @@ Out of scope until implemented:
 | Backup exposure | Admin-only backup endpoint with SHA-256 manifests | Backup encryption and restore workflow validation |
 | Session replay | Expiring in-memory sessions, logout invalidation, admin session review, and forced revocation | Persistent device inventory and refresh-token design |
 | Service-token abuse | Scoped token retrieval, audit, last-used metadata, and use counts | Rotation and token hashing review |
+| Webhook spoofing | SIEM payload HMAC signing and bounded delivery retries | Key rotation and receiver-side replay-window guidance |
 | Supply-chain compromise | Lockfile, CI verify, secret scanning, and high-severity dependency audit | Broader SAST and release provenance |
 | Misconfigured IIS/TLS | IIS guidance, production HSTS, and environment-aware CSP exist | TLS automation and deployment checklist |
 

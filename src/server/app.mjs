@@ -8,6 +8,7 @@ import { consoleRoutes } from "./routes/consoleRoutes.mjs";
 import { devopsRoutes } from "./routes/devopsRoutes.mjs";
 import { errorHandler } from "./middleware/errors.mjs";
 import { securityHeaders } from "./middleware/securityHeaders.mjs";
+import { startIntegrationDeliveryWorker } from "./services/integrationService.mjs";
 
 export const createApp = async () => {
   const configIssues = validateConfig();
@@ -41,5 +42,6 @@ export const createApp = async () => {
     app.use(vite.middlewares);
   }
 
+  startIntegrationDeliveryWorker();
   return app;
 };

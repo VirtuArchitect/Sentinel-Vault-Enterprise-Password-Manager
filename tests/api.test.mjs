@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 
 process.env.NODE_ENV = "test";
 const { createApp } = await import("../src/server/app.mjs");
@@ -8,6 +9,7 @@ const { store } = await import("../src/server/data/store.mjs");
 const { hashPassword } = await import("../src/server/crypto/passwords.mjs");
 const { verifyAuditChain } = await import("../src/server/services/auditService.mjs");
 const { buildContentSecurityPolicy, buildSecurityHeaders } = await import("../src/server/middleware/securityHeaders.mjs");
+const { deliverQueuedIntegrationEvents, enqueueIntegrationEvent } = await import("../src/server/services/integrationService.mjs");
 
 let nextPort = 18100;
 
@@ -300,6 +302,64 @@ test("integration status is available to audit-capable users", async () => {
     assert.equal(body.integrations.siem.configured, false);
     assert.equal(body.integrations.devopsApi.enabled, false);
   });
+});
+
+test("siem webhook delivery signs payloads and records retries", async () => {
+  const previousWebhookUrl = config.integrations.siemWebhookUrl;
+  const previousWebhookSecret = config.integrations.siemWebhookSecret;
+  const previousMaxAttempts = config.integrations.siemMaxAttempts;
+  const previousRetrySeconds = config.integrations.siemRetrySeconds;
+  const previousOutbox = store.state.integrationOutbox;
+
+  config.integrations.siemWebhookUrl = "https://siem.example.test/events";
+  config.integrations.siemWebhookSecret = "test-webhook-signing-key";
+  config.integrations.siemMaxAttempts = 2;
+  config.integrations.siemRetrySeconds = 5;
+  store.state.integrationOutbox = [];
+
+  try {
+    enqueueIntegrationEvent({ id: "audit-1", action: "LOGIN", target: "Sentinel Vault" });
+    const deliveredCalls = [];
+    const delivered = await deliverQueuedIntegrationEvents({
+      fetchImpl: async (url, options) => {
+        deliveredCalls.push({ url, options });
+        return { ok: true, status: 202 };
+      },
+      now: new Date()
+    });
+
+    assert.deepEqual(delivered, { attempted: 1, delivered: 1, failed: 0 });
+    assert.equal(store.state.integrationOutbox[0].status, "delivered");
+    assert.equal(deliveredCalls[0].url, "https://siem.example.test/events");
+    const expectedSignature = crypto.createHmac("sha256", config.integrations.siemWebhookSecret).update(deliveredCalls[0].options.body, "utf8").digest("hex");
+    assert.equal(deliveredCalls[0].options.headers["X-Sentinel-Signature"], `sha256=${expectedSignature}`);
+
+    store.state.integrationOutbox = [];
+    enqueueIntegrationEvent({ id: "audit-2", action: "REVEAL_SECRET", target: "Test Secret" });
+    const firstFailure = await deliverQueuedIntegrationEvents({
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      now: new Date()
+    });
+    assert.deepEqual(firstFailure, { attempted: 1, delivered: 0, failed: 0 });
+    assert.equal(store.state.integrationOutbox[0].status, "retrying");
+    assert.equal(store.state.integrationOutbox[0].attempts, 1);
+    assert.ok(store.state.integrationOutbox[0].nextAttemptAt);
+
+    store.state.integrationOutbox[0].nextAttemptAt = new Date(Date.now() - 1000).toISOString();
+    const finalFailure = await deliverQueuedIntegrationEvents({
+      fetchImpl: async () => ({ ok: false, status: 503 }),
+      now: new Date()
+    });
+    assert.deepEqual(finalFailure, { attempted: 1, delivered: 0, failed: 1 });
+    assert.equal(store.state.integrationOutbox[0].status, "failed");
+    assert.match(store.state.integrationOutbox[0].lastError, /HTTP 503/);
+  } finally {
+    config.integrations.siemWebhookUrl = previousWebhookUrl;
+    config.integrations.siemWebhookSecret = previousWebhookSecret;
+    config.integrations.siemMaxAttempts = previousMaxAttempts;
+    config.integrations.siemRetrySeconds = previousRetrySeconds;
+    store.state.integrationOutbox = previousOutbox;
+  }
 });
 
 test("compliance report summarizes implemented controls", async () => {

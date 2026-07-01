@@ -113,7 +113,7 @@ export type SessionStatus = {
 };
 
 export type IntegrationStatus = {
-  siem: { configured: boolean; mode: string };
+  siem: { configured: boolean; mode: string; signing: boolean; pending: number; failed: number };
   itsm: { configured: boolean; mode: string };
   devopsApi: { enabled: boolean; mode: string; tokenCount: number };
   outboxDepth: number;

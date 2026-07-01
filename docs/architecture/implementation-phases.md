@@ -57,12 +57,12 @@ Implemented:
 - Integration outbox metadata.
 - Scoped DevOps service-token retrieval API.
 - Last-used, use-count, and rotation metadata for service tokens.
+- SIEM webhook delivery worker with bounded retries.
+- HMAC signing for SIEM webhook payloads.
 
 Remaining:
 
-- SIEM webhook delivery worker with retries.
 - ITSM ticket validation.
-- Webhook signing.
 - Integration configuration UI.
 
 ## Phase 6: Windows Installer Hardening
