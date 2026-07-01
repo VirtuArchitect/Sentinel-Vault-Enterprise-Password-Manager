@@ -28,6 +28,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     browserIdentity: "browser-extension-identity-evidence.json",
     browserRollout: "browser-extension-rollout-evidence.json",
     nativeCompanion: "native-companion-evidence.json",
+    credentialProviderApproval: "credential-provider-approval-evidence.json",
     identityProvider: "identity-provider-evidence.json",
     kmsHsm: "kms-hsm-provider-evidence.json",
     kmsHsmSdkApproval: "kms-hsm-sdk-approval-evidence.json",
@@ -87,6 +88,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.browserIdentity.validated, true);
     assert.equal(validation.results.browserRollout.validated, true);
     assert.equal(validation.results.nativeCompanion.validated, true);
+    assert.equal(validation.results.credentialProviderApproval.validated, true);
     assert.equal(validation.results.kmsHsmSdkApproval.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
     assert.equal(validation.results.windowsSigning.validated, true);
@@ -120,6 +122,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         browserIdentity: "evidence/browser-extension-identity-evidence.json",
         browserRollout: "evidence/browser-extension-rollout-evidence.json",
         nativeCompanion: "evidence/native-companion-evidence.json",
+        credentialProviderApproval: "evidence/credential-provider-approval-evidence.json",
         identityProvider: "evidence/identity-provider-evidence.json",
         kmsHsm: "evidence/kms-hsm-provider-evidence.json",
         kmsHsmSdkApproval: "evidence/kms-hsm-sdk-approval-evidence.json",

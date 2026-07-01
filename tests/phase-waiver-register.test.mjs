@@ -100,12 +100,12 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     ]));
 
     assert.equal(result.format, "sentinel-phase-waiver-register-result-v1");
-    assert.equal(result.waiverCount, 21);
-    assert.equal(result.proposedCount, 21);
+    assert.equal(result.waiverCount, 22);
+    assert.equal(result.proposedCount, 22);
 
     const register = JSON.parse(readFileSync(registerPath, "utf8"));
     assert.equal(register.format, "sentinel-phase-waiver-register-v1");
-    assert.equal(register.summary.missingEvidenceCount, 21);
+    assert.equal(register.summary.missingEvidenceCount, 22);
     assert.ok(register.waivers.every((waiver) => waiver.status === "proposed"));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Waiver Register/);
 
@@ -172,7 +172,7 @@ test("phase waiver register validator accepts completed approvals", () => {
       "--require-approved"
     ]));
     assert.equal(validation.validated, true);
-    assert.equal(validation.approvedCount, 21);
+    assert.equal(validation.approvedCount, 22);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -55,9 +55,11 @@ Native autotype or credential-provider code must not be released until:
 4. An abuse-case test pass is attached to the release.
 5. A rollback and disable procedure is documented.
 
-Record the release gate with `docs/templates/native-companion-evidence.json` and validate it with:
+Record the implementation approval with `docs/templates/credential-provider-approval-evidence.json`, then record the release gate with `docs/templates/native-companion-evidence.json` and validate both with:
 
 ```powershell
+pnpm release:credential-provider-approval -- --status approved --report ".\artifacts\native\credential-provider-approval-report.json" --native-companion-evidence ".\artifacts\native\native-companion-evidence.json" --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --out ".\artifacts\native\credential-provider-approval-evidence.json"
+pnpm validate:credential-provider-approval -- ".\artifacts\native\credential-provider-approval-evidence.json"
 pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe" --out ".\artifacts\native\native-companion-evidence.json"
 pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
 ```

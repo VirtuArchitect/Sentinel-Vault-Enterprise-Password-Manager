@@ -12,6 +12,7 @@
     "browserIdentity": "docs/templates/browser-extension-identity-evidence.json",
     "browserRollout": "docs/templates/browser-extension-rollout-evidence.json",
     "nativeCompanion": "docs/templates/native-companion-evidence.json",
+    "credentialProviderApproval": "docs/templates/credential-provider-approval-evidence.json",
     "identityProvider": "docs/templates/identity-provider-evidence.json",
     "kmsHsm": "docs/templates/kms-hsm-provider-evidence.json",
     "kmsHsmSdkApproval": "docs/templates/kms-hsm-sdk-approval-evidence.json",

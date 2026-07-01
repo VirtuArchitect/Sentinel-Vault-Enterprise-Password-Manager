@@ -251,10 +251,11 @@ Implemented:
 - Browser enterprise policy renderer for completed rollout evidence.
 - Native companion and credential-provider release evidence template and validator for signed-artifact, abuse-test, rollback, and approval gates.
 - Native companion release evidence generator for artifact hashes, architecture metadata, native messaging metadata, and planned credential-provider release gates.
+- Credential-provider approval evidence template, generator, validator, and deployment-bundle gate for implementation approval, LSASS/secure desktop risk review, signed DLL evidence, install/uninstall, rollback, and redaction checks.
 - Offline cache and native autotype architecture roadmap.
 - Extension artifact validation gate.
 
 Remaining:
 
 - Completed deployment-specific browser extension identity and rollout evidence files with production extension IDs.
-- Signed native credential-provider implementation after approval.
+- Signed native credential-provider implementation after completed approval evidence.

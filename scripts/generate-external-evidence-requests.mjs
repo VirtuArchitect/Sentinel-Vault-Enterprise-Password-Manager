@@ -201,10 +201,13 @@ const requests = [
       "Offline logon, abuse-case, rollback, uninstall, and recovery evidence"
     ],
     evidenceTemplates: [
+      "docs/templates/credential-provider-approval-evidence.json",
       "docs/templates/native-companion-evidence.json",
       "docs/security/autotype-credential-provider-review.md"
     ],
     commands: [
+      "pnpm release:credential-provider-approval -- --status approved --report <credential-provider-approval-report.json> --native-companion-evidence <native-companion-evidence.json> --artifact <signed-credential-provider-artifact> --out <credential-provider-approval-evidence.json>",
+      "pnpm validate:credential-provider-approval -- <credential-provider-approval-evidence.json>",
       "pnpm release:native-companion -- --artifact <signed-credential-provider-artifact> --credential-provider-enabled true --out <native-companion-evidence.json>",
       "pnpm validate:native-companion -- <native-companion-evidence.json>"
     ],

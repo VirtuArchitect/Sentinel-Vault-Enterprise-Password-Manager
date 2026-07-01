@@ -18,6 +18,7 @@ const validators = {
   browserIdentity: ["scripts/validate-browser-extension-identity-evidence.mjs"],
   browserRollout: ["scripts/validate-browser-rollout-evidence.mjs"],
   nativeCompanion: ["scripts/validate-native-companion-evidence.mjs"],
+  credentialProviderApproval: ["scripts/validate-credential-provider-approval-evidence.mjs"],
   identityProvider: ["scripts/validate-identity-provider-evidence.mjs"],
   kmsHsm: ["scripts/validate-kms-hsm-evidence.mjs"],
   kmsHsmSdkApproval: ["scripts/validate-kms-hsm-sdk-approval-evidence.mjs"],
