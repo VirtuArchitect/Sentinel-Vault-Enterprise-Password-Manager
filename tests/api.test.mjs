@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
+import http from "node:http";
 
 process.env.NODE_ENV = "test";
 const { createApp } = await import("../src/server/app.mjs");
@@ -43,6 +44,35 @@ const jsonFetch = (url, token, options = {}) => fetch(url, {
     ...(options.headers || {})
   }
 });
+
+const startOidcFixture = async (jwks) => {
+  const server = http.createServer((req, res) => {
+    if (req.url === "/.well-known/openid-configuration") {
+      const issuer = `http://127.0.0.1:${server.address().port}`;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ issuer, jwks_uri: `${issuer}/keys` }));
+      return;
+    }
+    if (req.url === "/keys") {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(jwks));
+      return;
+    }
+    res.statusCode = 404;
+    res.end();
+  });
+  server.listen(0, "127.0.0.1");
+  await new Promise((resolve) => server.once("listening", resolve));
+  return server;
+};
+
+const signJwt = (claims, privateKey, kid) => {
+  const encodedHeader = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT", kid }), "utf8").toString("base64url");
+  const encodedPayload = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url");
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+  const signature = crypto.sign("RSA-SHA256", Buffer.from(signingInput), privateKey).toString("base64url");
+  return `${signingInput}.${signature}`;
+};
 
 test("health endpoint is available without authentication", async () => {
   await withApi(async (baseUrl) => {
@@ -106,6 +136,93 @@ test("console payload respects users and audit permissions", async () => {
     assert.equal(consoleData.session.ttlMinutes, 15);
     assert.equal(typeof consoleData.session.reviewable, "number");
   });
+});
+
+test("federated login validates OIDC token claims and local provisioning", async () => {
+  const previous = {
+    mode: config.identityProvider.mode,
+    issuer: config.identityProvider.issuer,
+    clientId: config.identityProvider.clientId,
+    tenantId: config.identityProvider.tenantId,
+    groupClaim: config.identityProvider.groupClaim,
+    mfaClaim: config.identityProvider.mfaClaim,
+    mfaRequiredValue: config.identityProvider.mfaRequiredValue,
+    roleMappings: { ...config.identityProvider.roleMappings }
+  };
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const jwk = publicKey.export({ format: "jwk" });
+  jwk.kid = "sentinel-test-key";
+  jwk.alg = "RS256";
+  jwk.use = "sig";
+  const oidcServer = await startOidcFixture({ keys: [jwk] });
+  const issuer = `http://127.0.0.1:${oidcServer.address().port}`;
+  try {
+    Object.assign(config.identityProvider, {
+      mode: "entra",
+      issuer,
+      clientId: "sentinel-client",
+      tenantId: "tenant-id",
+      groupClaim: "groups",
+      mfaClaim: "amr",
+      mfaRequiredValue: "mfa"
+    });
+    config.identityProvider.roleMappings = {
+      SECURITY_ADMIN: "Sentinel Vault Admins",
+      VAULT_OPERATOR: "Sentinel Vault Operators",
+      AUDITOR: "Sentinel Vault Auditors"
+    };
+
+    await withApi(async (baseUrl) => {
+      const now = Math.floor(Date.now() / 1000);
+      const token = signJwt({
+        iss: issuer,
+        aud: "sentinel-client",
+        sub: "ada-subject",
+        exp: now + 300,
+        nbf: now - 5,
+        email: "ada@defence.local",
+        groups: ["Sentinel Vault Admins"],
+        amr: ["pwd", "mfa"]
+      }, privateKey, jwk.kid);
+
+      const localLogin = await fetch(`${baseUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "ada@defence.local", password: "Passw0rd!" })
+      });
+      assert.equal(localLogin.status, 403);
+
+      const federatedLogin = await fetch(`${baseUrl}/login/federated`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: token })
+      });
+      assert.equal(federatedLogin.status, 200);
+      const body = await federatedLogin.json();
+      assert.equal(body.user.email, "ada@defence.local");
+      assert.equal(body.user.role, "SECURITY_ADMIN");
+
+      const missingMfa = signJwt({
+        iss: issuer,
+        aud: "sentinel-client",
+        sub: "ada-subject",
+        exp: now + 300,
+        email: "ada@defence.local",
+        groups: ["Sentinel Vault Admins"],
+        amr: ["pwd"]
+      }, privateKey, jwk.kid);
+      const rejected = await fetch(`${baseUrl}/login/federated`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: missingMfa })
+      });
+      assert.equal(rejected.status, 401);
+    });
+  } finally {
+    await new Promise((resolve) => oidcServer.close(resolve));
+    Object.assign(config.identityProvider, previous);
+    config.identityProvider.roleMappings = previous.roleMappings;
+  }
 });
 
 test("security admins can manage vaults and user status", async () => {

@@ -6,6 +6,7 @@ import { auth } from "../middleware/auth.mjs";
 import { publicUser } from "../rbac/roles.mjs";
 import { createSession, revokeSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
+import { validateExternalIdentityToken } from "../services/identityService.mjs";
 import { rateLimit } from "../middleware/rateLimit.mjs";
 
 export const authRoutes = express.Router();
@@ -35,6 +36,9 @@ const clearLoginFailure = (email) => {
 };
 
 authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
+  if (config.identityProvider.mode !== "local") {
+    return res.status(403).json({ error: "Local password login is disabled for external identity mode" });
+  }
   const { email, password } = req.body;
   const user = store.findUserByEmail(email);
   const failure = getLoginFailure(email);
@@ -53,6 +57,30 @@ authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
   const token = createSession(user.id, { source: req.ip, userAgent: req.get("user-agent") || "unknown" });
   audit(user.id, "LOGIN", "Sentinel Vault Console", "MFA assertion accepted", req.ip);
   res.json({ token, user: publicUser(user) });
+});
+
+authRoutes.post("/login/federated", rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    const result = await validateExternalIdentityToken(idToken);
+    clearLoginFailure(result.claims.email);
+    const token = createSession(result.user.id, {
+      source: req.ip,
+      userAgent: req.get("user-agent") || "unknown",
+      identityProvider: config.identityProvider.mode,
+      subject: result.claims.subject
+    });
+    audit(
+      result.user.id,
+      "FEDERATED_LOGIN",
+      "Sentinel Vault Console",
+      `${config.identityProvider.mode} token accepted for ${result.claims.subject}`,
+      req.ip
+    );
+    res.json({ token, user: publicUser(result.user) });
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : "Federated login failed" });
+  }
 });
 
 authRoutes.post("/logout", auth, (req, res) => {
