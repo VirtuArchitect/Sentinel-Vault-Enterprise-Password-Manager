@@ -137,6 +137,8 @@ pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.jso
 pnpm validate:brute-force -- docs/templates/brute-force-evidence.json
 pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation-tests.json"
 pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
+pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
+pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 pnpm release:siem-rotation -- --report ".\artifacts\integrations\siem-receiver-rotation.json"
 pnpm validate:siem-rotation -- docs/templates/siem-receiver-rotation-evidence.json
 pnpm release:tls-iis -- --report ".\artifacts\windows\tls-iis-review.json"
