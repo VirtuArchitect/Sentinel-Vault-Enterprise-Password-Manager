@@ -99,6 +99,7 @@ Implemented:
 - SIEM receiver signing-key rotation evidence template and validator.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
+- Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:

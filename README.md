@@ -206,6 +206,7 @@ Prepare an environment-specific deployment evidence workspace:
 
 ```powershell
 pnpm prepare:deployment-evidence -- --environment "pilot" --owner "Platform Security" --out-dir ".\artifacts\deployment\pilot"
+pnpm report:deployment-evidence -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-evidence-status.json"
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```
 
