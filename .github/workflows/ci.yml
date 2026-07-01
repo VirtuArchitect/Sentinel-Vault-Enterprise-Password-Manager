@@ -36,10 +36,7 @@ jobs:
 
       - name: Verify SQLite storage mode
         if: matrix.node-version == 24
-        run: |
-          export STORAGE_PROVIDER=sqlite
-          export SQLITE_PATH="${RUNNER_TEMP}/sentinel-vault-ci.sqlite"
-          pnpm test
+        run: SQLITE_PATH="${RUNNER_TEMP}/sentinel-vault-ci.sqlite" pnpm test:sqlite
 
       - name: Validate release evidence templates
         run: |

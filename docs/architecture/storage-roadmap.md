@@ -48,12 +48,12 @@ pnpm migrate:sqlite -- --state ".\data\sentinel-state.json" --sqlite ".\data\sen
 ```
 
 - Test persistence across separate Node.js processes.
+- Run the same API and service test suite in JSON mode and SQLite mode through `pnpm test` and `pnpm test:sqlite`; CI runs SQLite parity on Node.js 24.
 
 Remaining:
 
 - Move secret lifecycle operations to narrower repository-level transactions instead of whole-state commits.
 - Extend the implemented backup integrity manifests into encrypted backup and restore validation workflows.
-- Add tests that run the same API suite against JSON and SQLite modes.
 
 No SQLite npm dependency has been added. SQLite mode requires a Node.js runtime that exposes `node:sqlite`.
 
