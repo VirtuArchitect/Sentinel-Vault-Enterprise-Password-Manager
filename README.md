@@ -121,6 +121,8 @@ Run the security gates used by CI:
 ```bash
 pnpm scan:secrets
 pnpm audit:deps
+pnpm release:sast -- --report ".\artifacts\security\sast-report.json"
+pnpm validate:sast -- docs/templates/sast-evidence.json
 ```
 
 ## Project Structure

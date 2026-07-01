@@ -160,6 +160,7 @@ Implemented:
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
 - SAST evidence template and validator for scanner coverage, critical/high finding gates, remediation, retest, and redaction.
+- SAST evidence generator for scan-report severity counts, source commit metadata, coverage surfaces, redaction checks, and deployment approvals.
 - Centralized log-shipping redaction evidence template and validator for SIEM/log sink samples, parser health, retention, and leaked-secret findings.
 - Release provenance generator for source commit, lockfile, dependency inventory, and artifact hashes.
 - Penetration-test scope evidence template and validator for authorized scope, required abuse cases, redaction requirements, remediation, retest, and approvals.

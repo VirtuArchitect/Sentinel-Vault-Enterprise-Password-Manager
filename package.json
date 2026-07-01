@@ -48,6 +48,7 @@
     "validate:tenant-isolation": "node scripts/validate-tenant-isolation-evidence.mjs",
     "validate:siem-rotation": "node scripts/validate-siem-receiver-rotation-evidence.mjs",
     "validate:release-attestation": "node scripts/validate-release-attestation-evidence.mjs",
+    "release:sast": "node scripts/generate-sast-evidence.mjs",
     "validate:sast": "node scripts/validate-sast-evidence.mjs",
     "validate:log-redaction": "node scripts/validate-log-redaction-evidence.mjs",
     "validate:tls-iis": "node scripts/validate-tls-iis-evidence.mjs",
