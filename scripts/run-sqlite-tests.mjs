@@ -20,7 +20,7 @@ const testFiles = readdirSync(path.join(rootDir, "tests"))
   .sort()
   .map((file) => path.join("tests", file));
 
-const result = spawnSync(process.execPath, ["--test", ...testFiles], {
+const result = spawnSync(process.execPath, ["--test", "--test-concurrency=1", ...testFiles], {
   cwd: rootDir,
   env: {
     ...process.env,

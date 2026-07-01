@@ -22,7 +22,8 @@ const validators = {
   backupRecovery: ["scripts/validate-backup-recovery-evidence.mjs"],
   deviceTrust: ["scripts/validate-device-trust-evidence.mjs"],
   siemReceiverRotation: ["scripts/validate-siem-receiver-rotation-evidence.mjs"],
-  releaseAttestation: ["scripts/validate-release-attestation-evidence.mjs"]
+  releaseAttestation: ["scripts/validate-release-attestation-evidence.mjs"],
+  sast: ["scripts/validate-sast-evidence.mjs"]
 };
 
 const artifactFormats = {

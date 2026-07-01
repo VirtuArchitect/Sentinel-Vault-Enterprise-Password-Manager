@@ -147,6 +147,7 @@ Implemented:
 - Service-token keyed HMAC hashing and legacy hash migration.
 - Dependency audit in CI.
 - Secret scanning in CI for private keys, common token formats, and suspicious committed assignments.
+- SAST evidence template and validator for scanner coverage, critical/high finding gates, remediation, retest, and redaction.
 - Release provenance generator for source commit, lockfile, dependency inventory, and artifact hashes.
 - Penetration-test scope evidence template and validator for authorized scope, required abuse cases, redaction requirements, remediation, retest, and approvals.
 - Tamper-evident audit hash chaining.

@@ -1,0 +1,61 @@
+{
+  "format": "sentinel-sast-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "scan": {
+    "tool": "replace-with-tool",
+    "toolVersion": "replace-with-version",
+    "profile": "replace-with-profile",
+    "startedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "completedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "reportPath": "replace-with-report-path"
+  },
+  "source": {
+    "commit": "replace-with-git-sha",
+    "branch": "main",
+    "dirty": false
+  },
+  "coverage": {
+    "includedSurfaces": [
+      "web-console",
+      "express-api",
+      "windows-packaging",
+      "browser-extension",
+      "windows-companion",
+      "scripts"
+    ],
+    "excludedPaths": [],
+    "rulesets": [
+      "javascript-security",
+      "typescript-security",
+      "powershell-security",
+      "dependency-manifest"
+    ]
+  },
+  "results": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "informational": 0,
+    "suppressed": 0
+  },
+  "remediation": {
+    "trackingProject": "replace-with-project",
+    "owner": "replace-with-owner",
+    "criticalDueDays": 7,
+    "highDueDays": 14,
+    "mediumDueDays": 30,
+    "retestStatus": "planned"
+  },
+  "redaction": {
+    "secretValuesFound": false,
+    "tokensFound": false,
+    "privateKeysFound": false
+  },
+  "approvals": {
+    "securityReviewer": "replace-with-reviewer",
+    "engineeringOwner": "replace-with-owner",
+    "releaseOwner": "replace-with-owner"
+  }
+}
