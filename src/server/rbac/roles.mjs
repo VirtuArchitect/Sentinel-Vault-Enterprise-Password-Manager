@@ -13,5 +13,6 @@ export const publicUser = (user) => ({
   role: user.role,
   unit: user.unit,
   mfa: user.mfa,
+  enabled: user.enabled !== false,
   permissions: roles[user.role] || []
 });

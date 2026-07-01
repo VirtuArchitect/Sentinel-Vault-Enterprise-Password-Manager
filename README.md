@@ -172,6 +172,7 @@ Implemented in this prototype:
 - Ticket-linked approval workflow metadata and high-risk multi-approval support
 - Temporary reveal access after approval
 - Console workflows for editing entries, reviewing deleted items, and restoring previous versions
+- Admin workflows for vault group creation, membership updates, and user role/status management
 - Policy validation and session timeout enforcement
 - Tamper-evident audit event hash chaining for security-sensitive actions
 - Secret fingerprinting for reuse detection without storing plaintext

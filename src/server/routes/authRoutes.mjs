@@ -41,6 +41,10 @@ authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
   if (isLocked(failure)) {
     return res.status(423).json({ error: "Account temporarily locked", lockedUntil: failure.lockedUntil });
   }
+  if (user?.enabled === false) {
+    audit(user.id, "LOGIN_DISABLED", "Sentinel Vault Console", "Disabled account attempted login", req.ip);
+    return res.status(403).json({ error: "Account disabled" });
+  }
   if (!user || !verifyPassword(password, user)) {
     recordLoginFailure(email, user, req.ip);
     return res.status(401).json({ error: "Invalid credentials" });

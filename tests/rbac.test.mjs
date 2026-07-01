@@ -21,5 +21,6 @@ test("public users do not expose password hashes", () => {
     hash: "secret",
     salt: "salt"
   });
-  assert.deepEqual(Object.keys(user).sort(), ["email", "id", "mfa", "name", "permissions", "role", "unit"]);
+  assert.deepEqual(Object.keys(user).sort(), ["email", "enabled", "id", "mfa", "name", "permissions", "role", "unit"]);
+  assert.equal(user.enabled, true);
 });

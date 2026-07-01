@@ -5,6 +5,7 @@ import { store } from "../data/store.mjs";
 import { getComplianceEvidencePack, getComplianceReport } from "../services/complianceService.mjs";
 import { getIntegrationStatus } from "../services/integrationService.mjs";
 import { audit } from "../services/auditService.mjs";
+import { createVault, updateUser, updateVault } from "../services/adminService.mjs";
 import { createServiceToken, listServiceTokens, revokeServiceToken, rotateServiceToken } from "../services/serviceTokenService.mjs";
 import { listSessions, revokeSessionById } from "../services/sessionService.mjs";
 import {
@@ -57,6 +58,30 @@ consoleRoutes.get("/storage/backups/verify", auth, can("policy:write"), (_req, r
 
 consoleRoutes.get("/sessions", auth, can("policy:write"), (_req, res) => {
   res.json({ sessions: listSessions() });
+});
+
+consoleRoutes.post("/vaults", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.status(201).json({ vault: createVault(req.user, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.patch("/vaults/:id", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ vault: updateVault(req.user, req.params.id, req.body) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+consoleRoutes.patch("/users/:id", auth, can("policy:write"), (req, res, next) => {
+  try {
+    res.json({ user: updateUser(req.user, req.params.id, req.body) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 consoleRoutes.post("/sessions/:id/revoke", auth, can("policy:write"), (req, res) => {

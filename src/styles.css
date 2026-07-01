@@ -369,6 +369,9 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
 .audit-line span, .audit-line strong, .audit-line small, .user-line span, .user-line strong, .access-line span, .access-line strong, .access-line small { padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .audit-line strong { color: #134f86; }
 .access-line strong { color: #164c35; }
+.user-line select { width: 100%; min-height: 26px; }
+.inline-check { display: flex; align-items: center; gap: 6px; font-weight: 400; }
+.inline-check input { min-height: auto; }
 .row-actions { display: inline-flex; gap: 6px; margin-left: 10px; }
 .row-actions button { min-height: 24px; border: 1px solid #a4adb7; background: #f7f9fb; border-radius: 4px; }
 
@@ -381,6 +384,22 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
 .management-panel dl { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 12px; margin: 0; }
 .management-panel dt { color: #66727f; font-size: 12px; }
 .management-panel dd { margin: 4px 0 0; font-weight: 700; }
+.vault-admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #c5ccd5;
+}
+.vault-admin-form h3 {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 15px;
+}
+.vault-admin-form button { justify-self: start; }
 .options-panel label {
   grid-template-columns: 22px 1fr auto 80px auto;
   display: grid;

@@ -148,6 +148,7 @@ function App() {
   const [locked, setLocked] = useState(false);
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
   const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
+  const [newVault, setNewVault] = useState({ name: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
   const load = async (activeToken = token) => {
@@ -295,6 +296,20 @@ function App() {
     }, "Policy updated");
   };
 
+  const updateUserAdmin = (userId: string, patch: Partial<UserRecord>) => {
+    action(async () => {
+      await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify(patch) }, token);
+    }, "User updated");
+  };
+
+  const submitVault = (event: React.FormEvent) => {
+    event.preventDefault();
+    action(async () => {
+      await api("/api/vaults", { method: "POST", body: JSON.stringify({ ...newVault, members: newVault.members.split(",").map((member) => member.trim()) }) }, token);
+      setNewVault({ name: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+    }, "Vault group created");
+  };
+
   const decideAccessRequest = (request: AccessRequest, decision: "approve" | "deny") => {
     action(async () => {
       await api(`/api/access-requests/${request.id}/${decision}`, { method: "POST", body: JSON.stringify({ minutes: 30 }) }, token);
@@ -433,9 +448,9 @@ function App() {
 
           {tab === "access" && <AccessTable requests={data.accessRequests} canApprove={can("vault:share")} onDecision={decideAccessRequest} />}
           {tab === "audit" && <AuditTable events={data.audit} />}
-          {tab === "users" && <UserTable users={data.users} />}
+          {tab === "users" && <UserTable users={data.users} canManage={can("policy:write")} onChange={updateUserAdmin} />}
           {tab === "policy" && <PolicyPanel policies={data.policies} canWrite={can("policy:write")} onChange={updatePolicy} />}
-          {tab === "manage" && <ManagementPanel data={data} />}
+          {tab === "manage" && <ManagementPanel data={data} canManage={can("policy:write")} newVault={newVault} onVaultChange={setNewVault} onVaultSubmit={submitVault} />}
         </section>
       </section>
 
@@ -614,16 +629,32 @@ function VersionHistory({ secret, canRestore, onRestore }: { secret: Secret; can
   );
 }
 
-function UserTable({ users }: { users: UserRecord[] }) {
+function UserTable({ users, canManage, onChange }: { users: UserRecord[]; canManage: boolean; onChange: (userId: string, patch: Partial<UserRecord>) => void }) {
   return (
     <div className="utility-table">
-      <div className="table-header users"><span>Name</span><span>Email</span><span>Role</span><span>MFA</span><span>Unit</span></div>
-      {users.map((user) => <div className="user-line" key={user.id}><strong>{user.name}</strong><span>{user.email}</span><span>{user.role.replace("_", " ")}</span><span>{user.mfa ? "Enabled" : "Disabled"}</span><span>{user.unit}</span></div>)}
+      <div className="table-header users"><span>Name</span><span>Email</span><span>Role</span><span>Status</span><span>Unit</span></div>
+      {users.map((user) => (
+        <div className="user-line" key={user.id}>
+          <strong>{user.name}</strong>
+          <span>{user.email}</span>
+          <span>
+            <select disabled={!canManage} value={user.role} onChange={(event) => onChange(user.id, { role: event.target.value as UserRecord["role"] })}>
+              <option value="SECURITY_ADMIN">Security Admin</option>
+              <option value="VAULT_OPERATOR">Vault Operator</option>
+              <option value="AUDITOR">Auditor</option>
+            </select>
+          </span>
+          <span>
+            <label className="inline-check"><input type="checkbox" checked={user.enabled} disabled={!canManage} onChange={(event) => onChange(user.id, { enabled: event.target.checked })} />Enabled</label>
+          </span>
+          <span>{user.unit}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-function ManagementPanel({ data }: { data: ConsoleData }) {
+function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubmit }: { data: ConsoleData; canManage: boolean; newVault: { name: string; classification: string; ownerUnit: string; members: string }; onVaultChange: (vault: { name: string; classification: string; ownerUnit: string; members: string }) => void; onVaultSubmit: (event: React.FormEvent) => void }) {
   return (
     <div className="options-panel management-panel">
       <h2><Settings size={18} />Management</h2>
@@ -639,6 +670,19 @@ function ManagementPanel({ data }: { data: ConsoleData }) {
         <div><dt>Secret health</dt><dd>{data.metrics.highRisk} high risk / {data.metrics.stale} stale / {data.metrics.reused} reused</dd></div>
         <div><dt>Requests</dt><dd>{data.metrics.pendingRequests} pending</dd></div>
       </dl>
+      <form className="vault-admin-form" onSubmit={onVaultSubmit}>
+        <h3><FolderLock size={16} />Create Vault Group</h3>
+        <label>Name<input value={newVault.name} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, name: event.target.value })} /></label>
+        <label>Classification<select value={newVault.classification} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, classification: event.target.value })}>
+          <option value="OFFICIAL">OFFICIAL</option>
+          <option value="OFFICIAL-SENSITIVE">OFFICIAL-SENSITIVE</option>
+          <option value="SECRET">SECRET</option>
+          <option value="TOP SECRET">TOP SECRET</option>
+        </select></label>
+        <label>Owner unit<input value={newVault.ownerUnit} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, ownerUnit: event.target.value })} /></label>
+        <label>Members<input value={newVault.members} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, members: event.target.value })} /></label>
+        <button className="secondary" disabled={!canManage || !newVault.name.trim()}><Plus size={16} />Create Group</button>
+      </form>
     </div>
   );
 }

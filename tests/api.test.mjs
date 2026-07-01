@@ -107,6 +107,56 @@ test("console payload respects users and audit permissions", async () => {
   });
 });
 
+test("security admins can manage vaults and user status", async () => {
+  await withApi(async (baseUrl) => {
+    const ada = await login(baseUrl, "ada@defence.local");
+    const createVault = await jsonFetch(`${baseUrl}/vaults`, ada.token, {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Red Team Operations",
+        classification: "SECRET",
+        ownerUnit: "Cyber Operations",
+        members: ["u1", "u2"]
+      })
+    });
+    assert.equal(createVault.status, 201);
+    const created = await createVault.json();
+    assert.equal(created.vault.name, "Red Team Operations");
+    assert.deepEqual(created.vault.members.sort(), ["u1", "u2"]);
+
+    const updateVault = await jsonFetch(`${baseUrl}/vaults/${created.vault.id}`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ members: ["u1", "u3"], classification: "TOP SECRET" })
+    });
+    assert.equal(updateVault.status, 200);
+    const updatedVault = await updateVault.json();
+    assert.equal(updatedVault.vault.classification, "TOP SECRET");
+    assert.deepEqual(updatedVault.vault.members.sort(), ["u1", "u3"]);
+
+    const disableMorgan = await jsonFetch(`${baseUrl}/users/u2`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ enabled: false, role: "AUDITOR" })
+    });
+    assert.equal(disableMorgan.status, 200);
+    const disabled = await disableMorgan.json();
+    assert.equal(disabled.user.enabled, false);
+    assert.equal(disabled.user.role, "AUDITOR");
+
+    const blockedLogin = await fetch(`${baseUrl}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "morgan@defence.local", password: "Passw0rd!" })
+    });
+    assert.equal(blockedLogin.status, 403);
+
+    const restoreMorgan = await jsonFetch(`${baseUrl}/users/u2`, ada.token, {
+      method: "PATCH",
+      body: JSON.stringify({ enabled: true, role: "VAULT_OPERATOR" })
+    });
+    assert.equal(restoreMorgan.status, 200);
+  });
+});
+
 test("logout revokes the active session token", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "ada@defence.local");

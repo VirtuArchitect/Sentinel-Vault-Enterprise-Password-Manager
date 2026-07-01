@@ -7,6 +7,7 @@ export type UserRecord = {
   role: Role;
   unit: string;
   mfa: boolean;
+  enabled: boolean;
   permissions: string[];
 };
 

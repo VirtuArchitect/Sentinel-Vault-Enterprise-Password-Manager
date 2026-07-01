@@ -41,11 +41,11 @@ Implemented:
 - Edit-secret UI.
 - Deleted-items view with restore action.
 - Version-history UI with restore action.
-
-Remaining:
-
 - Vault/group creation and membership management.
 - User enable/disable and role management UI.
+
+Remaining:
+- Tenant hierarchy and bulk import/export administration.
 
 ## Phase 5: Enterprise Integrations
 
