@@ -85,6 +85,7 @@ Implemented:
 - Integration configuration UI.
 - Production connector certification checklist for SIEM, ITSM, and DevOps integrations.
 - Connector certification evidence template and validator.
+- Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 
 Remaining:
 - Completed live receiver evidence files for each deployment environment.
@@ -107,6 +108,7 @@ Implemented:
 - TLS/IIS setup checklist with certificate guidance.
 - Signed-EXE-ready Inno Setup authoring and build script.
 - Windows release signature verification helper and release evidence template.
+- Deployment evidence bundle validator that includes Windows release evidence with the wider production gate.
 - Windows artifact signing helper with certificate-store and PFX support.
 - MSI WiX authoring scaffold and WiX build/validation script.
 - MSIX manifest authoring scaffold and Windows SDK build/validation script.

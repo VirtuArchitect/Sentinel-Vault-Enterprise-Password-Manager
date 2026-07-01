@@ -41,6 +41,7 @@ jobs:
       - name: Validate release evidence templates
         run: |
           pnpm validate:connector-evidence docs/templates/connector-certification-evidence.json
+          pnpm validate:deployment-evidence docs/templates/deployment-evidence-bundle.json
           pnpm validate:browser-rollout docs/templates/browser-extension-rollout-evidence.json
           pnpm validate:kms-hsm-evidence docs/templates/kms-hsm-provider-evidence.json
           pnpm validate:identity-evidence docs/templates/identity-provider-evidence.json

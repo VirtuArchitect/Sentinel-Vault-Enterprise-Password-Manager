@@ -1,0 +1,21 @@
+{
+  "format": "sentinel-deployment-evidence-bundle-v1",
+  "environment": "replace-with-environment",
+  "status": "planned",
+  "owner": "replace-with-owner",
+  "generatedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "evidence": {
+    "connector": "docs/templates/connector-certification-evidence.json",
+    "browserRollout": "docs/templates/browser-extension-rollout-evidence.json",
+    "identityProvider": "docs/templates/identity-provider-evidence.json",
+    "kmsHsm": "docs/templates/kms-hsm-provider-evidence.json",
+    "windowsRelease": "docs/templates/windows-release-evidence.json",
+    "storageMigration": "docs/templates/storage-migration-evidence.json",
+    "releaseProvenance": "docs/templates/release-provenance-template.json"
+  },
+  "approvals": {
+    "securityOwner": "replace-with-owner",
+    "operationsOwner": "replace-with-owner",
+    "releaseOwner": "replace-with-owner"
+  }
+}
