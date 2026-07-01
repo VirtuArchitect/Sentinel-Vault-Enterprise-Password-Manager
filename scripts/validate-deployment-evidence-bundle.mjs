@@ -25,7 +25,8 @@ const validators = {
   tenantIsolation: ["scripts/validate-tenant-isolation-evidence.mjs"],
   siemReceiverRotation: ["scripts/validate-siem-receiver-rotation-evidence.mjs"],
   releaseAttestation: ["scripts/validate-release-attestation-evidence.mjs"],
-  sast: ["scripts/validate-sast-evidence.mjs"]
+  sast: ["scripts/validate-sast-evidence.mjs"],
+  logRedaction: ["scripts/validate-log-redaction-evidence.mjs"]
 };
 
 const artifactFormats = {

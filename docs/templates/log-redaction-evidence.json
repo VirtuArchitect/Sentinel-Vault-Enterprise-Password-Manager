@@ -1,0 +1,54 @@
+{
+  "format": "sentinel-log-redaction-evidence-v1",
+  "status": "planned",
+  "environment": "replace-with-environment",
+  "collectedAt": "YYYY-MM-DDTHH:mm:ssZ",
+  "sink": {
+    "name": "replace-with-log-sink",
+    "type": "siem",
+    "environment": "replace-with-sink-environment",
+    "retentionDays": 0
+  },
+  "sources": {
+    "api": "planned",
+    "siemWebhook": "planned",
+    "windowsInstaller": "planned",
+    "browserExtension": "planned",
+    "nativeCompanion": "planned"
+  },
+  "samples": {
+    "eventsShipped": 0,
+    "syntheticSecretEvents": 0,
+    "syntheticTokenEvents": 0,
+    "parserFailures": 0
+  },
+  "redaction": {
+    "recursiveSensitiveFields": "planned",
+    "bearerTokens": "planned",
+    "sentinelServiceTokens": "planned",
+    "privateKeys": "planned",
+    "passwordValues": "planned",
+    "errorStacks": "planned",
+    "ticketWorkNotes": "planned",
+    "auditLedgerExports": "planned"
+  },
+  "controls": {
+    "schemaValidated": "planned",
+    "receiverSearchCompleted": "planned",
+    "alertingConfigured": "planned",
+    "retentionPolicyVerified": "planned",
+    "accessReviewCompleted": "planned"
+  },
+  "findings": {
+    "secretValuesFound": false,
+    "tokensFound": false,
+    "privateKeysFound": false,
+    "plaintextPasswordsFound": false
+  },
+  "approvals": {
+    "securityReviewer": "replace-with-reviewer",
+    "siemOwner": "replace-with-owner",
+    "operationsOwner": "replace-with-owner",
+    "changeTicket": "replace-with-ticket"
+  }
+}

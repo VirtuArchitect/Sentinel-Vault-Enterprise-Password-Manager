@@ -36,6 +36,7 @@ const writeBundleFixture = (dir, overrides = {}) => {
     tenantIsolation: "tenant-isolation-evidence.json",
     siemReceiverRotation: "siem-receiver-rotation-evidence.json",
     sast: "sast-evidence.json",
+    logRedaction: "log-redaction-evidence.json",
     storageMigration: "storage-migration-evidence.json",
     releaseAttestation: "release-attestation-evidence.json",
     releaseProvenance: "release-provenance-template.json"
@@ -83,6 +84,7 @@ test("deployment evidence bundle validates referenced evidence files", () => {
     assert.equal(validation.results.tenantIsolation.validated, true);
     assert.equal(validation.results.siemReceiverRotation.validated, true);
     assert.equal(validation.results.sast.validated, true);
+    assert.equal(validation.results.logRedaction.validated, true);
     assert.equal(validation.results.releaseAttestation.validated, true);
     assert.equal(validation.results.windowsRelease.validated, true);
   } finally {
@@ -110,6 +112,7 @@ test("deployment evidence bundle rejects missing referenced evidence", () => {
         tenantIsolation: "evidence/tenant-isolation-evidence.json",
         siemReceiverRotation: "evidence/siem-receiver-rotation-evidence.json",
         sast: "evidence/sast-evidence.json",
+        logRedaction: "evidence/log-redaction-evidence.json",
         storageMigration: "evidence/storage-migration-evidence.json",
         releaseAttestation: "evidence/release-attestation-evidence.json",
         releaseProvenance: "evidence/release-provenance-template.json"
