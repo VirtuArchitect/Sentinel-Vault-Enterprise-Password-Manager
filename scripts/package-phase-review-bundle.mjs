@@ -110,6 +110,20 @@ const evidenceKeySummary = {
 };
 assert.deepEqual(evidenceKeySummary.decisionActionEvidenceKeys, evidenceKeySummary.signoffEvidenceKeys, "decision and signoff evidence keys do not match");
 
+const commandCoverageSummary = {
+  decisionActionCommandScriptCount: phaseDecision.commandCoverageSummary.actionCommandScriptCount,
+  decisionGapCommandScriptCount: phaseDecision.commandCoverageSummary.gapCommandScriptCount,
+  decisionValidatorCommandCount: phaseDecision.commandCoverageSummary.validatorCommandCount,
+  decisionActionCommandScripts: phaseDecision.commandCoverageSummary.actionCommandScripts,
+  decisionGapCommandScripts: phaseDecision.commandCoverageSummary.gapCommandScripts,
+  signoffCommandScriptCount: phaseSignoffs.summary.commandScriptCount,
+  signoffValidatorCommandCount: phaseSignoffs.summary.validatorCommandCount,
+  signoffCommandScripts: phaseSignoffs.summary.commandScripts
+};
+assert.deepEqual(commandCoverageSummary.decisionActionCommandScripts, commandCoverageSummary.signoffCommandScripts, "decision and signoff command scripts do not match");
+assert.equal(commandCoverageSummary.decisionActionCommandScriptCount, commandCoverageSummary.signoffCommandScriptCount, "decision and signoff command script counts do not match");
+assert.equal(commandCoverageSummary.decisionValidatorCommandCount, commandCoverageSummary.signoffValidatorCommandCount, "decision and signoff validator command counts do not match");
+
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
     assert.equal(waiver.status, "approved", `waiver ${index + 1} must be approved for release review`);
@@ -139,6 +153,7 @@ const manifest = {
   },
   waiverSummary,
   evidenceKeySummary,
+  commandCoverageSummary,
   artifacts
 };
 
@@ -154,5 +169,7 @@ console.log(JSON.stringify({
   blockerCount: manifest.blockerCount,
   waiverCount: manifest.waiverSummary.waiverCount,
   approvedWaiverCount: manifest.waiverSummary.approvedCount,
-  waivedEvidenceKeyCount: manifest.evidenceKeySummary.waivedEvidenceKeyCount
+  waivedEvidenceKeyCount: manifest.evidenceKeySummary.waivedEvidenceKeyCount,
+  commandScriptCount: manifest.commandCoverageSummary.signoffCommandScriptCount,
+  validatorCommandCount: manifest.commandCoverageSummary.signoffValidatorCommandCount
 }, null, 2));

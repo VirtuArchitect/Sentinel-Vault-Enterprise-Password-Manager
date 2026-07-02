@@ -147,6 +147,7 @@ Implemented:
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.
 - Phase review bundle evidence-key summary that surfaces waived deployment-bundle gates and rejects stale review manifests.
 - Phase review bundle evidence-key summary binding for decision and signoff artifacts.
+- Phase review bundle command-script coverage binding for decision and signoff artifacts.
 - Phase closure and release archive evidence-key summary binding so final archives preserve waived deployment-bundle gate traceability.
 - Production release-gate evidence-key summary output and closure/review consistency check for waived deployment-bundle gates.
 - Release-mode phase review and closure validation that rejects proposed, expired, placeholder, or control-free waivers before final archive approval.

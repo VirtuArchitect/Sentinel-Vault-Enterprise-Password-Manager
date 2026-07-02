@@ -179,6 +179,8 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(result.artifactCount, 17);
     assert.equal(result.validated, true);
     assert.equal(result.ready, false);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(manifestPath));
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -201,6 +203,9 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(manifest.evidenceKeySummary.intakeEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.attachmentEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+    assert.ok(manifest.commandCoverageSummary.signoffCommandScriptCount > 20);
+    assert.equal(manifest.commandCoverageSummary.signoffValidatorCommandCount, 13);
+    assert.ok(manifest.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
     assert.ok(manifest.evidenceKeySummary.decisionActionEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.signoffEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
@@ -216,6 +221,8 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.decisionEvidenceKeyCount, 18);
     assert.equal(validation.signoffEvidenceKeyCount, 18);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -308,6 +315,29 @@ test("phase review bundle validator rejects stale evidence key summaries", () =>
     assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath
     ]), /evidence key summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review bundle validator rejects stale command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.commandCoverageSummary.signoffCommandScripts = [];
+    manifest.commandCoverageSummary.signoffCommandScriptCount = 0;
+    manifest.commandCoverageSummary.signoffValidatorCommandCount = 0;
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]), /command coverage summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -132,8 +132,23 @@ const evidenceKeySummary = {
 };
 assert.deepEqual(evidenceKeySummary.decisionActionEvidenceKeys, evidenceKeySummary.signoffEvidenceKeys, "decision and signoff evidence keys do not match");
 
+const commandCoverageSummary = {
+  decisionActionCommandScriptCount: phaseDecision.commandCoverageSummary.actionCommandScriptCount,
+  decisionGapCommandScriptCount: phaseDecision.commandCoverageSummary.gapCommandScriptCount,
+  decisionValidatorCommandCount: phaseDecision.commandCoverageSummary.validatorCommandCount,
+  decisionActionCommandScripts: phaseDecision.commandCoverageSummary.actionCommandScripts,
+  decisionGapCommandScripts: phaseDecision.commandCoverageSummary.gapCommandScripts,
+  signoffCommandScriptCount: phaseSignoffs.summary.commandScriptCount,
+  signoffValidatorCommandCount: phaseSignoffs.summary.validatorCommandCount,
+  signoffCommandScripts: phaseSignoffs.summary.commandScripts
+};
+assert.deepEqual(commandCoverageSummary.decisionActionCommandScripts, commandCoverageSummary.signoffCommandScripts, "decision and signoff command scripts do not match");
+assert.equal(commandCoverageSummary.decisionActionCommandScriptCount, commandCoverageSummary.signoffCommandScriptCount, "decision and signoff command script counts do not match");
+assert.equal(commandCoverageSummary.decisionValidatorCommandCount, commandCoverageSummary.signoffValidatorCommandCount, "decision and signoff validator command counts do not match");
+
 assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
 assert.deepEqual(manifest.evidenceKeySummary, evidenceKeySummary, "manifest evidence key summary does not match review artifacts");
+assert.deepEqual(manifest.commandCoverageSummary, commandCoverageSummary, "manifest command coverage summary does not match review artifacts");
 
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
@@ -156,5 +171,7 @@ console.log(JSON.stringify({
   approvedWaiverCount: waiverSummary.approvedCount,
   decisionEvidenceKeyCount: evidenceKeySummary.decisionActionEvidenceKeyCount,
   signoffEvidenceKeyCount: evidenceKeySummary.signoffEvidenceKeyCount,
-  waivedEvidenceKeyCount: evidenceKeySummary.waivedEvidenceKeyCount
+  waivedEvidenceKeyCount: evidenceKeySummary.waivedEvidenceKeyCount,
+  commandScriptCount: commandCoverageSummary.signoffCommandScriptCount,
+  validatorCommandCount: commandCoverageSummary.signoffValidatorCommandCount
 }, null, 2));
