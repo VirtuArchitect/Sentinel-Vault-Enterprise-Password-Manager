@@ -35,6 +35,11 @@ const blockerSummary = (readiness.blockers || []).reduce((summary, blocker) => {
   summary.set(key, (summary.get(key) || 0) + 1);
   return summary;
 }, new Map());
+const commandScripts = externalRequests.summary?.commandScripts || [];
+const commandScriptCount = externalRequests.summary?.commandScriptCount || commandScripts.length;
+const validatorCommandCount = readiness.externalRequests?.validatorCommandCount || 0;
+
+assert.equal(readiness.externalRequests?.commandScriptCount || 0, commandScriptCount, "readiness command script count does not match external requests");
 
 const renderRequest = (request, index) => `## ${index + 1}. ${request.phase}: ${request.title}
 
@@ -81,6 +86,13 @@ ${blockerSummary.size ? [...blockerSummary.entries()].map(([gate, count]) => `- 
 
 ${readiness.warnings?.length ? readiness.warnings.map((warning) => `- ${warning.gate}: ${warning.message}`).join("\n") : "- None"}
 
+## Command Coverage Summary
+
+- Command scripts: ${commandScriptCount}
+- Validator commands: ${validatorCommandCount}
+
+${commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${externalRequests.requests.map(renderRequest).join("\n")}
 `;
 
@@ -93,6 +105,8 @@ console.log(JSON.stringify({
   readinessPath,
   externalRequestsPath,
   requestCount: externalRequests.requests.length,
+  commandScriptCount,
+  validatorCommandCount,
   blockerCount: readiness.blockers?.length || 0,
   ready: readiness.ready
 }, null, 2));

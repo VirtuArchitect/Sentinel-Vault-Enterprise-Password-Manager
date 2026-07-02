@@ -39,6 +39,14 @@ assert.ok(checklist.includes(`Bundle owner: ${readiness.bundle.owner}`), "checkl
 assert.ok(checklist.includes(`Readiness: ${readiness.ready ? "ready" : "blocked"}`), "checklist readiness does not match readiness report");
 assert.ok(checklist.includes(`Generated from: \`${readinessPath}\``), "checklist source readiness path does not match");
 assert.ok(checklist.includes("pnpm report:phase-readiness"), "checklist must include the readiness rerun command");
+assert.ok(checklist.includes("## Command Coverage Summary"), "checklist must include command coverage summary");
+assert.ok(checklist.includes(`- Command scripts: ${externalRequests.summary?.commandScriptCount || 0}`), "checklist command script count does not match external requests");
+assert.ok(checklist.includes(`- Validator commands: ${readiness.externalRequests?.validatorCommandCount || 0}`), "checklist validator command count does not match readiness report");
+assert.equal(readiness.externalRequests?.commandScriptCount || 0, externalRequests.summary?.commandScriptCount || 0, "readiness command script count does not match external requests");
+
+for (const script of externalRequests.summary?.commandScripts || []) {
+  assert.ok(checklist.includes(`- \`pnpm ${script}\``), `missing command script coverage: ${script}`);
+}
 
 const blockerSummary = (readiness.blockers || []).reduce((summary, blocker) => {
   const key = blocker.gate.startsWith("evidence.") ? "evidence-items" : blocker.gate;
@@ -77,6 +85,8 @@ console.log(JSON.stringify({
   readinessPath,
   externalRequestsPath,
   requestCount: externalRequests.requests.length,
+  commandScriptCount: externalRequests.summary?.commandScriptCount || 0,
+  validatorCommandCount: readiness.externalRequests?.validatorCommandCount || 0,
   blockerSummaryCount: blockerSummary.size,
   validated: true
 }, null, 2));

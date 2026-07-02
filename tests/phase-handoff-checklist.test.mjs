@@ -52,6 +52,8 @@ test("phase handoff checklist turns readiness and external requests into owner a
 
     assert.equal(result.format, "sentinel-phase-handoff-checklist-result-v1");
     assert.equal(result.requestCount, 7);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(checklistPath));
@@ -63,6 +65,10 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.match(checklist, /Phase 2: Postgres HA dependency and environment approval/);
     assert.match(checklist, /Phase 6: MSI\/MSIX signing evidence from approved release host/);
     assert.match(checklist, /- \[ \] Approved code-signing certificate or PFX access on the release host/);
+    assert.match(checklist, /Command Coverage Summary/);
+    assert.match(checklist, /- Command scripts: [2-9][0-9]/);
+    assert.match(checklist, /- Validator commands: 13/);
+    assert.match(checklist, /- `pnpm validate:windows-signing`/);
     assert.match(checklist, /pnpm report:phase-readiness/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -82,7 +88,29 @@ test("phase handoff checklist validator accepts generated checklists", () => {
     assert.equal(validation.format, "sentinel-phase-handoff-checklist-validation-v1");
     assert.equal(validation.validated, true);
     assert.equal(validation.requestCount, 7);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
     assert.ok(validation.blockerSummaryCount > 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase handoff checklist validator rejects stale command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-handoff-command-invalid-${process.pid}-${Date.now()}`);
+  try {
+    const { checklistPath, readinessPath, requestsPath } = createChecklistWorkspace(dir);
+    const checklist = readFileSync(checklistPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(checklistPath, checklist);
+
+    assert.throws(() => runScript("scripts/validate-phase-handoff-checklist.mjs", [
+      "--checklist", checklistPath,
+      "--readiness", readinessPath,
+      "--external-requests", requestsPath
+    ]), /missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
