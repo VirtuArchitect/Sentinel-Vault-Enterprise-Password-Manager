@@ -138,6 +138,13 @@ Generated: ${report.generatedAt}
 
 This matrix maps each remaining phase blocker to deployment-bundle evidence and supporting artifacts so release reviewers can see which files prove each phase.
 
+## Command Coverage Summary
+
+- Command scripts: ${report.summary.commandScriptCount}
+- Validator commands: ${report.summary.validatorCommandCount}
+
+${report.summary.commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${phases.map((phase) => `## ${phase.id}: ${phase.phase} - ${phase.title}
 
 Owner role: ${phase.ownerRole}
@@ -167,5 +174,6 @@ console.log(JSON.stringify({
   deploymentBundleCoveredPhaseCount: report.summary.deploymentBundleCoveredPhaseCount,
   evidenceKeyCount: report.summary.evidenceKeyCount,
   commandScriptCount: report.summary.commandScriptCount,
+  validatorCommandCount: report.summary.validatorCommandCount,
   missingArtifactCount: report.summary.missingArtifactCount
 }, null, 2));

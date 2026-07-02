@@ -138,6 +138,7 @@ Implemented:
 - Phase action register markdown command coverage validation for owner-facing action records.
 - Phase gap matrix generator and validator that map every remaining blocker to deployment-bundle evidence keys and supporting artifacts.
 - Phase gap matrix command-script coverage binding to the strict external request pack.
+- Phase gap matrix markdown command coverage validation for owner-facing blocker evidence maps.
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.
 - Phase decision record command-script coverage binding across action and gap artifacts.
 - Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.

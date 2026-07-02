@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const matrixPath = path.resolve(args.get("--matrix") || "artifacts/deployment/pilot/phase-gap-matrix.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const bundlePath = args.get("--bundle") ? path.resolve(args.get("--bundle")) : null;
 const requestsPath = args.get("--external-requests") ? path.resolve(args.get("--external-requests")) : null;
 
@@ -66,6 +67,17 @@ const validatorCommandCount = requiredValidatorCommands.filter((command) => (
 assert.equal(matrix.summary.commandScriptCount, externalRequests.summary?.commandScriptCount || 0, "summary request command script count mismatch");
 assert.equal(matrix.summary.validatorCommandCount, validatorCommandCount, "summary validator command count mismatch");
 assert.deepEqual(matrix.summary.commandScripts, externalRequests.summary?.commandScripts || [], "summary command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase gap matrix markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${matrix.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${matrix.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of matrix.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
 
 const bundle = bundlePath ? readJson(bundlePath) : readJson(matrix.bundlePath);
 assert.equal(bundle.format, "sentinel-deployment-evidence-bundle-v1");
@@ -120,6 +132,7 @@ console.log(JSON.stringify({
   phaseCount: matrix.phases.length,
   evidenceKeyCount: matrix.summary.evidenceKeyCount,
   commandScriptCount: matrix.summary.commandScriptCount,
+  validatorCommandCount: matrix.summary.validatorCommandCount,
   deploymentBundleCoveredPhaseCount: matrix.summary.deploymentBundleCoveredPhaseCount,
   missingArtifactCount: matrix.summary.missingArtifactCount,
   validated: true

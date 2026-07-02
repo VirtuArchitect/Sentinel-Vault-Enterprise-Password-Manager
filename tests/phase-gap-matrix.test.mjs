@@ -45,6 +45,7 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     assert.equal(result.deploymentBundleCoveredPhaseCount, 7);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.equal(result.missingArtifactCount, 0);
     assert.ok(existsSync(matrixPath));
     assert.ok(existsSync(markdownPath));
@@ -62,17 +63,52 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     assert.ok(matrix.phases.some((phase) => phase.commandScripts.includes("validate:windows-signing")));
     assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.evidenceKey === "windowsRelease")));
     assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.bundleEvidenceName === "windowsRelease")));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Gap Matrix/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Gap Matrix/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-gap-matrix.mjs", [
       "--matrix", matrixPath,
+      "--markdown", markdownPath,
       "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]));
     assert.equal(validation.format, "sentinel-phase-gap-matrix-validation-v1");
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
     assert.equal(validation.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase gap matrix validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-gaps-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createGapWorkspace(dir);
+    const matrixPath = path.join(dir, "phase-gap-matrix.json");
+    const markdownPath = path.join(dir, "phase-gap-matrix.md");
+    runScript("scripts/prepare-phase-gap-matrix.mjs", [
+      "--dir", dir,
+      "--out", matrixPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-gap-matrix.mjs", [
+      "--matrix", matrixPath,
+      "--markdown", markdownPath,
+      "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
