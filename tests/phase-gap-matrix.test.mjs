@@ -50,8 +50,11 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
     assert.equal(matrix.format, "sentinel-phase-gap-matrix-v1");
     assert.equal(matrix.summary.phaseCount, 7);
+    assert.equal(matrix.summary.evidenceKeyCount, 18);
     assert.equal(matrix.summary.deploymentBundleCoveredPhaseCount, 7);
     assert.ok(matrix.phases.some((phase) => phase.blockerType === "postgres-ha-approval"));
+    assert.ok(matrix.phases.some((phase) => phase.evidenceKeys.includes("windowsSigning")));
+    assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.evidenceKey === "windowsRelease")));
     assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.bundleEvidenceName === "windowsRelease")));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Gap Matrix/);
 
@@ -61,6 +64,7 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]));
     assert.equal(validation.format, "sentinel-phase-gap-matrix-validation-v1");
+    assert.equal(validation.evidenceKeyCount, 18);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -86,6 +90,30 @@ test("phase gap matrix validator rejects stale mapping", () => {
       "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]), /deployment evidence mapping mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase gap matrix validator rejects stale evidence keys", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-gaps-keys-${process.pid}-${Date.now()}`);
+  try {
+    createGapWorkspace(dir);
+    const matrixPath = path.join(dir, "phase-gap-matrix.json");
+    runScript("scripts/prepare-phase-gap-matrix.mjs", [
+      "--dir", dir,
+      "--out", matrixPath,
+      "--markdown-out", path.join(dir, "phase-gap-matrix.md")
+    ]);
+    const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+    matrix.phases[0].evidenceKeys = ["changedEvidenceKey"];
+    writeFileSync(matrixPath, JSON.stringify(matrix, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-gap-matrix.mjs", [
+      "--matrix", matrixPath,
+      "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /evidence key mismatch/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

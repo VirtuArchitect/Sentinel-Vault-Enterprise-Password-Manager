@@ -61,6 +61,7 @@ const phases = requests.requests.map((request, index) => {
     return {
       templatePath: normalize(templatePath),
       coverage: bundleArtifact ? "deployment-bundle" : "supporting-artifact",
+      evidenceKey: bundleArtifact?.name || null,
       bundleEvidenceName: bundleArtifact?.name || null,
       resolvedPath,
       exists
@@ -73,6 +74,7 @@ const phases = requests.requests.map((request, index) => {
     title: request.title,
     blockerType: request.blockerType,
     ownerRole: request.ownerRole,
+    evidenceKeys: request.evidenceKeys || [],
     requiredInputCount: request.requiredInputs.length,
     commandCount: request.commands.length,
     acceptanceCriteriaCount: request.acceptanceCriteria.length,
@@ -94,6 +96,7 @@ const report = {
   summary: {
     phaseCount: phases.length,
     deploymentBundleEvidenceCount: bundleEvidence.length,
+    evidenceKeyCount: new Set(phases.flatMap((phase) => phase.evidenceKeys)).size,
     deploymentBundleCoveredPhaseCount: phases.filter((phase) => phase.coveredByDeploymentBundle).length,
     missingArtifactCount: phases.reduce((total, phase) => total + phase.missingArtifactCount, 0),
     supportingArtifactCount: phases.reduce((total, phase) => total + phase.supportingArtifactCount, 0)
@@ -117,7 +120,7 @@ Blocker type: ${phase.blockerType}
 Deployment-bundle coverage: ${phase.coveredByDeploymentBundle ? "yes" : "no"}
 
 Evidence mapping:
-${phase.templateMappings.map((mapping) => `- ${mapping.coverage}: \`${mapping.templatePath}\`${mapping.bundleEvidenceName ? ` -> \`${mapping.bundleEvidenceName}\`` : ""}${mapping.exists ? "" : " (missing)"}`).join("\n")}
+${phase.templateMappings.map((mapping) => `- ${mapping.coverage}: \`${mapping.templatePath}\`${mapping.evidenceKey ? ` -> \`${mapping.evidenceKey}\`` : ""}${mapping.exists ? "" : " (missing)"}`).join("\n")}
 
 Operator workload:
 - Required inputs: ${phase.requiredInputCount}

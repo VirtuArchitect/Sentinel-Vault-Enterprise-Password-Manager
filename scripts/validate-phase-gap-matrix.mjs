@@ -35,6 +35,7 @@ assert.ok(matrix.owner, "owner is required");
 assert.ok(matrix.status, "status is required");
 assert.ok(Array.isArray(matrix.phases), "phases must be an array");
 assert.equal(matrix.summary.phaseCount, matrix.phases.length, "summary phase count mismatch");
+assert.equal(matrix.summary.evidenceKeyCount, new Set(matrix.phases.flatMap((phase) => phase.evidenceKeys || [])).size, "summary evidence key count mismatch");
 assert.equal(matrix.summary.missingArtifactCount, matrix.phases.reduce((total, phase) => total + phase.missingArtifactCount, 0), "summary missing artifact count mismatch");
 assert.equal(matrix.summary.supportingArtifactCount, matrix.phases.reduce((total, phase) => total + phase.supportingArtifactCount, 0), "summary supporting artifact count mismatch");
 assert.equal(matrix.summary.deploymentBundleCoveredPhaseCount, matrix.phases.filter((phase) => phase.coveredByDeploymentBundle).length, "summary deployment bundle coverage count mismatch");
@@ -58,6 +59,7 @@ matrix.phases.forEach((phase, index) => {
   assert.equal(phase.title, request.title, `phase ${index + 1} title mismatch`);
   assert.equal(phase.blockerType, request.blockerType, `phase ${index + 1} blocker type mismatch`);
   assert.equal(phase.ownerRole, request.ownerRole, `phase ${index + 1} owner role mismatch`);
+  assert.deepEqual(phase.evidenceKeys, request.evidenceKeys || [], `phase ${index + 1} evidence key mismatch`);
   assert.equal(phase.requiredInputCount, request.requiredInputs.length, `phase ${index + 1} required input count mismatch`);
   assert.equal(phase.commandCount, request.commands.length, `phase ${index + 1} command count mismatch`);
   assert.equal(phase.acceptanceCriteriaCount, request.acceptanceCriteria.length, `phase ${index + 1} acceptance criteria count mismatch`);
@@ -80,8 +82,10 @@ matrix.phases.forEach((phase, index) => {
         && (artifact.path === normalize(templatePath) || artifact.basename === basename(templatePath))
       ));
       assert.ok(matchingArtifact, `phase ${index + 1} template ${mappingIndex + 1} deployment evidence mapping mismatch`);
+      assert.equal(mapping.evidenceKey, matchingArtifact.name, `phase ${index + 1} template ${mappingIndex + 1} evidence key mismatch`);
     } else {
       assert.equal(mapping.bundleEvidenceName, null, `phase ${index + 1} template ${mappingIndex + 1} supporting artifact cannot name bundle evidence`);
+      assert.equal(mapping.evidenceKey, null, `phase ${index + 1} template ${mappingIndex + 1} supporting artifact cannot name evidence key`);
     }
   });
 });
@@ -90,6 +94,7 @@ console.log(JSON.stringify({
   format: "sentinel-phase-gap-matrix-validation-v1",
   matrixPath,
   phaseCount: matrix.phases.length,
+  evidenceKeyCount: matrix.summary.evidenceKeyCount,
   deploymentBundleCoveredPhaseCount: matrix.summary.deploymentBundleCoveredPhaseCount,
   missingArtifactCount: matrix.summary.missingArtifactCount,
   validated: true
