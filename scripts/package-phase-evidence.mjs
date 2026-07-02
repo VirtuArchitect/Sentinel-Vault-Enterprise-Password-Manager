@@ -79,6 +79,12 @@ const manifest = {
   blockerCount: readiness.blockers?.length || 0,
   warningCount: readiness.warnings?.length || 0,
   requestCount: externalRequests.requests?.length || 0,
+  externalRequestSummary: {
+    evidenceKeyCount: readiness.externalRequests?.evidenceKeyCount || 0,
+    commandScriptCount: readiness.externalRequests?.commandScriptCount || 0,
+    validatorCommandCount: readiness.externalRequests?.validatorCommandCount || 0,
+    commandScripts: externalRequests.summary?.commandScripts || []
+  },
   remainingPhaseCount: phaseCompletion.remainingPhaseCount,
   remainingItemCount: phaseCompletion.remainingItemCount,
   remainingExternallyCovered: phaseCompletion.externallyCovered,
@@ -95,5 +101,7 @@ console.log(JSON.stringify({
   outputPath,
   artifactCount: Object.keys(artifacts).length,
   ready: manifest.ready,
-  blockerCount: manifest.blockerCount
+  blockerCount: manifest.blockerCount,
+  evidenceKeyCount: manifest.externalRequestSummary.evidenceKeyCount,
+  commandScriptCount: manifest.externalRequestSummary.commandScriptCount
 }, null, 2));

@@ -78,6 +78,10 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.equal(manifest.format, "sentinel-phase-evidence-pack-manifest-v1");
     assert.equal(manifest.environment, "pilot");
     assert.equal(manifest.requestCount, 7);
+    assert.equal(manifest.externalRequestSummary.evidenceKeyCount, 18);
+    assert.ok(manifest.externalRequestSummary.commandScriptCount > 20);
+    assert.equal(manifest.externalRequestSummary.validatorCommandCount, 13);
+    assert.ok(manifest.externalRequestSummary.commandScripts.includes("validate:windows-signing"));
     assert.equal(manifest.remainingExternallyCovered, true);
     assert.equal(Object.keys(manifest.artifacts).length, 12);
     assert.ok(manifest.artifacts.deploymentWorkspaceManifest);
@@ -110,6 +114,8 @@ test("phase evidence pack validator accepts unchanged manifests", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.artifactCount, 12);
     assert.equal(validation.ready, false);
+    assert.equal(validation.evidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -129,6 +135,28 @@ test("phase evidence pack validator rejects changed artifacts", () => {
     assert.throws(() => runScript("scripts/validate-phase-evidence-pack.mjs", [
       "--manifest", manifestPath
     ]), /phaseReadinessMarkdown .*changed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase evidence pack validator rejects stale external request summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-pack-summary-${process.pid}-${Date.now()}`);
+  try {
+    prepareEvidencePackInputs(dir);
+    const manifestPath = path.join(dir, "phase-evidence-pack-manifest.json");
+    runScript("scripts/package-phase-evidence.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.externalRequestSummary.commandScripts = [];
+    manifest.externalRequestSummary.commandScriptCount = 0;
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-evidence-pack.mjs", [
+      "--manifest", manifestPath
+    ]), /external request summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

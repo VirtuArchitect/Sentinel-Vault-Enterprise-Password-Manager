@@ -86,6 +86,12 @@ assert.equal(manifest.ready, readiness.ready, "manifest ready flag does not matc
 assert.equal(manifest.blockerCount, readiness.blockers?.length || 0, "manifest blocker count does not match readiness report");
 assert.equal(manifest.warningCount, readiness.warnings?.length || 0, "manifest warning count does not match readiness report");
 assert.equal(manifest.requestCount, externalRequests.requests?.length || 0, "manifest request count does not match external requests");
+assert.deepEqual(manifest.externalRequestSummary, {
+  evidenceKeyCount: readiness.externalRequests?.evidenceKeyCount || 0,
+  commandScriptCount: readiness.externalRequests?.commandScriptCount || 0,
+  validatorCommandCount: readiness.externalRequests?.validatorCommandCount || 0,
+  commandScripts: externalRequests.summary?.commandScripts || []
+}, "manifest external request summary does not match readiness and request pack");
 assert.equal(manifest.remainingPhaseCount, phaseCompletion.remainingPhaseCount, "manifest remaining phase count does not match completion audit");
 assert.equal(manifest.remainingItemCount, phaseCompletion.remainingItemCount, "manifest remaining item count does not match completion audit");
 assert.equal(manifest.remainingExternallyCovered, phaseCompletion.externallyCovered, "manifest external coverage flag does not match completion audit");
@@ -98,5 +104,7 @@ console.log(JSON.stringify({
   artifactCount: requiredArtifactNames.length,
   ready: manifest.ready,
   blockerCount: manifest.blockerCount,
+  evidenceKeyCount: manifest.externalRequestSummary.evidenceKeyCount,
+  commandScriptCount: manifest.externalRequestSummary.commandScriptCount,
   validated: true
 }, null, 2));
