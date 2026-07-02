@@ -35,12 +35,16 @@ assert.equal(decision.format, "sentinel-phase-decision-record-v1");
 assert.equal(actionRegister.format, "sentinel-phase-action-register-v1");
 assert.equal(decision.actionRegisterPath, actionRegisterPath, "phase decision record does not reference selected action register");
 
+const commandScriptsFor = (commands = []) => [...new Set(commands
+  .map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1])
+  .filter(Boolean))].sort();
 const ownerRoles = [...new Set(actionRegister.actions.map((action) => action.ownerRole))];
 const evidenceKeys = [...new Set(actionRegister.actions.flatMap((action) => action.evidenceKeys || []))].sort();
 const approvals = ownerRoles.map((ownerRole, index) => {
   const actions = actionRegister.actions.filter((action) => action.ownerRole === ownerRole);
   const pendingActions = actions.filter((action) => action.status !== "complete");
   const approvalEvidenceKeys = [...new Set(actions.flatMap((action) => action.evidenceKeys || []))].sort();
+  const approvalCommandScripts = [...new Set(actions.flatMap((action) => commandScriptsFor(action.commands)))].sort();
   return {
     id: `SIGN-${String(index + 1).padStart(2, "0")}`,
     ownerRole,
@@ -51,13 +55,16 @@ const approvals = ownerRoles.map((ownerRole, index) => {
     pendingActionCount: pendingActions.length,
     blockerTypes: [...new Set(actions.map((action) => action.blockerType))],
     evidenceKeys: approvalEvidenceKeys,
+    commandScriptCount: approvalCommandScripts.length,
+    commandScripts: approvalCommandScripts,
     actions: actions.map((action) => ({
       id: action.id,
       phase: action.phase,
       title: action.title,
       blockerType: action.blockerType,
       status: action.status,
-      evidenceKeys: action.evidenceKeys || []
+      evidenceKeys: action.evidenceKeys || [],
+      commandScripts: commandScriptsFor(action.commands)
     })),
     requiredSignoffEvidence: [
       "Named owner approval",
@@ -85,7 +92,10 @@ const matrix = {
     readyApprovalCount: approvals.filter((approval) => approval.status === "ready-for-signoff").length,
     pendingActionCount: approvals.reduce((total, approval) => total + approval.pendingActionCount, 0),
     evidenceKeyCount: evidenceKeys.length,
-    evidenceKeys
+    evidenceKeys,
+    commandScriptCount: actionRegister.summary.commandScriptCount || 0,
+    validatorCommandCount: decision.commandCoverageSummary?.validatorCommandCount || actionRegister.summary.validatorCommandCount || 0,
+    commandScripts: actionRegister.summary.commandScripts || []
   },
   approvals
 };
@@ -103,6 +113,8 @@ Summary:
 - Ready approvals: ${matrix.summary.readyApprovalCount}
 - Pending actions: ${matrix.summary.pendingActionCount}
 - Evidence keys: ${matrix.summary.evidenceKeyCount}
+- Command scripts: ${matrix.summary.commandScriptCount}
+- Validator commands: ${matrix.summary.validatorCommandCount}
 
 ${approvals.map((approval) => `## ${approval.id}: ${approval.ownerRole}
 
@@ -110,9 +122,10 @@ Status: ${approval.status}
 Pending actions: ${approval.pendingActionCount}
 Blocker types: ${approval.blockerTypes.join(", ")}
 Evidence keys: ${approval.evidenceKeys.join(", ")}
+Command scripts: ${approval.commandScripts.join(", ")}
 
 Actions:
-${approval.actions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.status}; ${action.evidenceKeys.join(", ")})`).join("\n")}
+${approval.actions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.status}; evidence: ${action.evidenceKeys.join(", ")}; commands: ${action.commandScripts.join(", ")})`).join("\n")}
 
 Required signoff evidence:
 ${approval.requiredSignoffEvidence.map((item) => `- [ ] ${item}`).join("\n")}`).join("\n\n")}
@@ -129,5 +142,7 @@ console.log(JSON.stringify({
   markdownPath,
   approvalCount: matrix.summary.approvalCount,
   blockedApprovalCount: matrix.summary.blockedApprovalCount,
-  pendingActionCount: matrix.summary.pendingActionCount
+  pendingActionCount: matrix.summary.pendingActionCount,
+  commandScriptCount: matrix.summary.commandScriptCount,
+  validatorCommandCount: matrix.summary.validatorCommandCount
 }, null, 2));

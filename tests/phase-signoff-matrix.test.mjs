@@ -94,6 +94,8 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(result.approvalCount, 7);
     assert.equal(result.blockedApprovalCount, 7);
     assert.equal(result.pendingActionCount, 7);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(matrixPath));
     assert.ok(existsSync(markdownPath));
 
@@ -101,10 +103,15 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(matrix.format, "sentinel-phase-signoff-matrix-v1");
     assert.equal(matrix.decision, "hold-phase-closure");
     assert.equal(matrix.summary.evidenceKeyCount, 18);
+    assert.ok(matrix.summary.commandScriptCount > 20);
+    assert.equal(matrix.summary.validatorCommandCount, 13);
+    assert.ok(matrix.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(matrix.summary.evidenceKeys.includes("windowsSigning"));
     assert.ok(matrix.approvals.some((approval) => approval.evidenceKeys.includes("windowsSigning")));
+    assert.ok(matrix.approvals.some((approval) => approval.commandScripts.includes("validate:windows-signing")));
     assert.ok(matrix.approvals.some((approval) => approval.ownerRole === "Security architecture owner"));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Signoff Matrix/);
+    assert.match(readFileSync(markdownPath, "utf8"), /Command scripts:/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-signoff-matrix.mjs", [
       "--matrix", matrixPath,
@@ -114,6 +121,8 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(validation.format, "sentinel-phase-signoff-matrix-validation-v1");
     assert.equal(validation.validated, true);
     assert.equal(validation.evidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -165,6 +174,35 @@ test("phase signoff matrix validator rejects stale evidence keys", () => {
       "--phase-decision", path.join(dir, "phase-decision-record.json"),
       "--phase-actions", path.join(dir, "phase-action-register.json")
     ]), /evidence key/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase signoff matrix validator rejects stale command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-signoffs-commands-${process.pid}-${Date.now()}`);
+  try {
+    createSignoffWorkspace(dir);
+    const matrixPath = path.join(dir, "phase-signoff-matrix.json");
+    runScript("scripts/prepare-phase-signoff-matrix.mjs", [
+      "--dir", dir,
+      "--out", matrixPath,
+      "--markdown-out", path.join(dir, "phase-signoff-matrix.md")
+    ]);
+    const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+    matrix.summary.commandScripts = [];
+    matrix.summary.commandScriptCount = 0;
+    matrix.summary.validatorCommandCount = 0;
+    matrix.approvals[0].commandScripts = ["changed:command"];
+    matrix.approvals[0].commandScriptCount = 1;
+    matrix.approvals[0].actions[0].commandScripts = ["changed:command"];
+    writeFileSync(matrixPath, JSON.stringify(matrix, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-signoff-matrix.mjs", [
+      "--matrix", matrixPath,
+      "--phase-decision", path.join(dir, "phase-decision-record.json"),
+      "--phase-actions", path.join(dir, "phase-action-register.json")
+    ]), /command script|validator command/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
