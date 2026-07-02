@@ -143,6 +143,7 @@ Implemented:
 - Phase decision and signoff evidence-key propagation so go/no-go records and approval views remain traceable to deployment-bundle gates.
 - Phase evidence intake generator and validator that turn external owner requests into deployment-specific intake folders, expected files, validation commands, and redaction checks.
 - Phase evidence intake and attachment inventory evidence-key propagation so owner files remain traceable to deployment-bundle gates.
+- Phase evidence intake command-script coverage binding to owner validation commands.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.
 - Phase review bundle evidence-key summary that surfaces waived deployment-bundle gates and rejects stale review manifests.

@@ -27,6 +27,9 @@ const markdownPath = path.resolve(args.get("--markdown-out") || path.join(eviden
 
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const commandScriptsFor = (commands = []) => [...new Set(commands
+  .map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1])
+  .filter(Boolean))].sort();
 
 assert.ok(existsSync(externalRequestsPath), `External evidence requests not found: ${externalRequestsPath}`);
 assert.ok(existsSync(gapMatrixPath), `Phase gap matrix not found: ${gapMatrixPath}`);
@@ -44,6 +47,8 @@ assert.equal(signoffMatrix.format, "sentinel-phase-signoff-matrix-v1");
 assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
 assert.equal(gapMatrix.summary.phaseCount, externalRequests.requests.length, "gap matrix request count mismatch");
 assert.equal(signoffMatrix.summary.pendingActionCount, externalRequests.requests.length, "signoff matrix pending action count mismatch");
+assert.deepEqual(gapMatrix.summary.commandScripts, externalRequests.summary.commandScripts, "gap matrix command scripts do not match request pack");
+assert.deepEqual(signoffMatrix.summary.commandScripts, externalRequests.summary.commandScripts, "signoff matrix command scripts do not match request pack");
 
 const signoffByOwner = new Map(signoffMatrix.approvals.map((approval) => [approval.ownerRole, approval]));
 const evidenceKeyByTemplate = new Map(Object.entries(bundleTemplate.evidence || {}).map(([key, templatePath]) => [templatePath, key]));
@@ -68,6 +73,7 @@ const intakeItems = externalRequests.requests.map((request, index) => {
       coverage: gap.templateMappings.find((mapping) => mapping.templatePath === templatePath)?.coverage || "supporting-artifact"
     })),
     validationCommands: request.commands,
+    commandScripts: commandScriptsFor(request.commands),
     acceptanceCriteria: request.acceptanceCriteria,
     redactionChecks: [
       "No plaintext secrets, bearer tokens, private keys, PFX passwords, or root-key material",
@@ -93,7 +99,10 @@ const intake = {
     blockedIntakeCount: intakeItems.filter((item) => item.status !== "ready-for-signoff").length,
     expectedFileCount: intakeItems.reduce((total, item) => total + item.expectedFiles.length, 0),
     evidenceKeyCount: new Set(intakeItems.flatMap((item) => item.evidenceKeys)).size,
-    commandCount: intakeItems.reduce((total, item) => total + item.validationCommands.length, 0)
+    commandCount: intakeItems.reduce((total, item) => total + item.validationCommands.length, 0),
+    commandScriptCount: externalRequests.summary.commandScriptCount || 0,
+    validatorCommandCount: gapMatrix.summary.validatorCommandCount || signoffMatrix.summary.validatorCommandCount || 0,
+    commandScripts: externalRequests.summary.commandScripts || []
   },
   intakeItems
 };
@@ -109,6 +118,8 @@ Summary:
 - Blocked items: ${intake.summary.blockedIntakeCount}
 - Expected files: ${intake.summary.expectedFileCount}
 - Validation commands: ${intake.summary.commandCount}
+- Command scripts: ${intake.summary.commandScriptCount}
+- Validator commands: ${intake.summary.validatorCommandCount}
 
 ${intakeItems.map((item) => `## ${item.id}: ${item.phase} - ${item.title}
 
@@ -124,6 +135,9 @@ ${item.expectedFiles.map((file) => `- \`${file.targetPath}\` from \`${file.templ
 
 Validation commands:
 ${item.validationCommands.map((command) => `- \`${command}\``).join("\n")}
+
+Command scripts:
+${item.commandScripts.map((script) => `- \`${script}\``).join("\n")}
 
 Redaction checks:
 ${item.redactionChecks.map((check) => `- [ ] ${check}`).join("\n")}
@@ -143,5 +157,7 @@ console.log(JSON.stringify({
   markdownPath,
   intakeCount: intake.summary.intakeCount,
   expectedFileCount: intake.summary.expectedFileCount,
-  blockedIntakeCount: intake.summary.blockedIntakeCount
+  blockedIntakeCount: intake.summary.blockedIntakeCount,
+  commandScriptCount: intake.summary.commandScriptCount,
+  validatorCommandCount: intake.summary.validatorCommandCount
 }, null, 2));

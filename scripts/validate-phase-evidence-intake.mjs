@@ -25,6 +25,9 @@ const bundleTemplatePath = args.get("--bundle-template") ? path.resolve(args.get
 
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const commandScriptsFor = (commands = []) => [...new Set(commands
+  .map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1])
+  .filter(Boolean))].sort();
 
 assert.ok(existsSync(intakePath), `Phase evidence intake not found: ${intakePath}`);
 const intake = readJson(intakePath);
@@ -56,6 +59,11 @@ assert.equal(intake.summary.blockedIntakeCount, intake.intakeItems.filter((item)
 assert.equal(intake.summary.expectedFileCount, intake.intakeItems.reduce((total, item) => total + item.expectedFiles.length, 0), "summary expected file count mismatch");
 assert.equal(intake.summary.evidenceKeyCount, new Set(intake.intakeItems.flatMap((item) => item.evidenceKeys || [])).size, "summary evidence key count mismatch");
 assert.equal(intake.summary.commandCount, intake.intakeItems.reduce((total, item) => total + item.validationCommands.length, 0), "summary command count mismatch");
+assert.equal(intake.summary.commandScriptCount, externalRequests.summary.commandScriptCount || 0, "summary command script count mismatch");
+assert.equal(intake.summary.validatorCommandCount, gapMatrix.summary.validatorCommandCount || signoffMatrix.summary.validatorCommandCount || 0, "summary validator command count mismatch");
+assert.deepEqual(intake.summary.commandScripts, externalRequests.summary.commandScripts || [], "summary command scripts mismatch");
+assert.deepEqual(intake.summary.commandScripts, gapMatrix.summary.commandScripts, "gap command scripts mismatch");
+assert.deepEqual(intake.summary.commandScripts, signoffMatrix.summary.commandScripts, "signoff command scripts mismatch");
 
 intake.intakeItems.forEach((item, index) => {
   const request = externalRequests.requests[index];
@@ -72,6 +80,7 @@ intake.intakeItems.forEach((item, index) => {
   assert.equal(item.intakeDir, expectedIntakeDir, `intake ${index + 1} folder mismatch`);
   assert.deepEqual(item.evidenceKeys, request.evidenceKeys || [], `intake ${index + 1} evidence key mismatch`);
   assert.deepEqual(item.validationCommands, request.commands, `intake ${index + 1} command mismatch`);
+  assert.deepEqual(item.commandScripts, commandScriptsFor(request.commands), `intake ${index + 1} command script mismatch`);
   assert.deepEqual(item.acceptanceCriteria, request.acceptanceCriteria, `intake ${index + 1} acceptance criteria mismatch`);
   assert.ok(item.redactionChecks.length >= 3, `intake ${index + 1} redaction checks incomplete`);
   assert.equal(item.expectedFiles.length, request.evidenceTemplates.length, `intake ${index + 1} expected file count mismatch`);
@@ -93,5 +102,7 @@ console.log(JSON.stringify({
   intakeCount: intake.summary.intakeCount,
   expectedFileCount: intake.summary.expectedFileCount,
   blockedIntakeCount: intake.summary.blockedIntakeCount,
+  commandScriptCount: intake.summary.commandScriptCount,
+  validatorCommandCount: intake.summary.validatorCommandCount,
   validated: true
 }, null, 2));
