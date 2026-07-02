@@ -123,7 +123,10 @@ const report = {
   externalRequests: {
     path: externalRequestsPath,
     validated: externalValidation.ok,
-    requestCount: externalValidation.result?.requestCount || 0
+    requestCount: externalValidation.result?.requestCount || 0,
+    evidenceKeyCount: externalValidation.result?.evidenceKeyCount || 0,
+    commandScriptCount: externalValidation.result?.commandScriptCount || 0,
+    validatorCommandCount: externalValidation.result?.validatorCommandCount || 0
   },
   deploymentEvidence: {
     validated: deploymentStatus.ok,
@@ -154,6 +157,9 @@ Ready: ${report.ready ? "yes" : "no"}
 - Request pack: \`${externalRequestsPath}\`
 - Strict validation: ${report.externalRequests.validated ? "passed" : "failed"}
 - Request count: ${report.externalRequests.requestCount}
+- Evidence keys: ${report.externalRequests.evidenceKeyCount}
+- Command scripts: ${report.externalRequests.commandScriptCount}
+- Validator commands: ${report.externalRequests.validatorCommandCount}
 
 ## Blockers
 

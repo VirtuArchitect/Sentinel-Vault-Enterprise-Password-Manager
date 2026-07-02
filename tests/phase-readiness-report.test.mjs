@@ -52,6 +52,9 @@ test("phase readiness report combines deployment and external evidence blockers"
     assert.equal(report.failOnBlockers, false);
     assert.equal(report.externalRequests.validated, true);
     assert.equal(report.externalRequests.requestCount, 7);
+    assert.equal(report.externalRequests.evidenceKeyCount, 18);
+    assert.ok(report.externalRequests.commandScriptCount > 20);
+    assert.equal(report.externalRequests.validatorCommandCount, 13);
     assert.equal(report.deploymentEvidence.validated, true);
     assert.equal(report.ready, false);
     assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-evidence-status"));
@@ -59,6 +62,7 @@ test("phase readiness report combines deployment and external evidence blockers"
     assert.ok(existsSync(reportPath));
     assert.ok(existsSync(markdownPath));
     assert.match(readFileSync(markdownPath, "utf8"), /Ready: no/);
+    assert.match(readFileSync(markdownPath, "utf8"), /Command scripts:/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -129,6 +133,8 @@ test("phase readiness validator accepts current reports", () => {
     assert.equal(result.format, "sentinel-phase-readiness-report-validation-v1");
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.evidenceKeyCount, 18);
     assert.equal(result.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });

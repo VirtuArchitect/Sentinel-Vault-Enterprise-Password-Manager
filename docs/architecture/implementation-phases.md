@@ -118,6 +118,7 @@ Implemented:
 - External evidence request evidence-key mapping and validator drift check against the deployment evidence bundle template.
 - External evidence request command-script summary and validator drift check against `package.json` scripts.
 - Combined Phase 2-8 completion audit and readiness reporter that composes roadmap, deployment evidence status, and strict external evidence request validation.
+- Phase readiness report command-script and evidence-key coverage summary from strict external request validation.
 - Phase readiness report validator and production release-gate check for stale or not-ready readiness artifacts.
 - Phase completion audit validator that rejects stale roadmap counts, uncovered remaining work, and request-pack drift.
 - Fail-on-blockers readiness mode for CI or release gates that must stop when Phase 2-8 evidence is incomplete.
