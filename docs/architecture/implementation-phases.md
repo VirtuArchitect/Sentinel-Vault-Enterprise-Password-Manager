@@ -132,6 +132,7 @@ Implemented:
 - Phase gap matrix generator and validator that map every remaining blocker to deployment-bundle evidence keys and supporting artifacts.
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.
 - Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.
+- Phase decision and signoff evidence-key propagation so go/no-go records and approval views remain traceable to deployment-bundle gates.
 - Phase evidence intake generator and validator that turn external owner requests into deployment-specific intake folders, expected files, validation commands, and redaction checks.
 - Phase evidence intake and attachment inventory evidence-key propagation so owner files remain traceable to deployment-bundle gates.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.

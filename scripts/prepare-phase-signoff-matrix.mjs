@@ -36,9 +36,11 @@ assert.equal(actionRegister.format, "sentinel-phase-action-register-v1");
 assert.equal(decision.actionRegisterPath, actionRegisterPath, "phase decision record does not reference selected action register");
 
 const ownerRoles = [...new Set(actionRegister.actions.map((action) => action.ownerRole))];
+const evidenceKeys = [...new Set(actionRegister.actions.flatMap((action) => action.evidenceKeys || []))].sort();
 const approvals = ownerRoles.map((ownerRole, index) => {
   const actions = actionRegister.actions.filter((action) => action.ownerRole === ownerRole);
   const pendingActions = actions.filter((action) => action.status !== "complete");
+  const approvalEvidenceKeys = [...new Set(actions.flatMap((action) => action.evidenceKeys || []))].sort();
   return {
     id: `SIGN-${String(index + 1).padStart(2, "0")}`,
     ownerRole,
@@ -48,12 +50,14 @@ const approvals = ownerRoles.map((ownerRole, index) => {
     actionCount: actions.length,
     pendingActionCount: pendingActions.length,
     blockerTypes: [...new Set(actions.map((action) => action.blockerType))],
+    evidenceKeys: approvalEvidenceKeys,
     actions: actions.map((action) => ({
       id: action.id,
       phase: action.phase,
       title: action.title,
       blockerType: action.blockerType,
-      status: action.status
+      status: action.status,
+      evidenceKeys: action.evidenceKeys || []
     })),
     requiredSignoffEvidence: [
       "Named owner approval",
@@ -79,7 +83,9 @@ const matrix = {
     approvalCount: approvals.length,
     blockedApprovalCount: approvals.filter((approval) => approval.status === "blocked-pending-evidence").length,
     readyApprovalCount: approvals.filter((approval) => approval.status === "ready-for-signoff").length,
-    pendingActionCount: approvals.reduce((total, approval) => total + approval.pendingActionCount, 0)
+    pendingActionCount: approvals.reduce((total, approval) => total + approval.pendingActionCount, 0),
+    evidenceKeyCount: evidenceKeys.length,
+    evidenceKeys
   },
   approvals
 };
@@ -96,15 +102,17 @@ Summary:
 - Blocked approvals: ${matrix.summary.blockedApprovalCount}
 - Ready approvals: ${matrix.summary.readyApprovalCount}
 - Pending actions: ${matrix.summary.pendingActionCount}
+- Evidence keys: ${matrix.summary.evidenceKeyCount}
 
 ${approvals.map((approval) => `## ${approval.id}: ${approval.ownerRole}
 
 Status: ${approval.status}
 Pending actions: ${approval.pendingActionCount}
 Blocker types: ${approval.blockerTypes.join(", ")}
+Evidence keys: ${approval.evidenceKeys.join(", ")}
 
 Actions:
-${approval.actions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.status})`).join("\n")}
+${approval.actions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.status}; ${action.evidenceKeys.join(", ")})`).join("\n")}
 
 Required signoff evidence:
 ${approval.requiredSignoffEvidence.map((item) => `- [ ] ${item}`).join("\n")}`).join("\n\n")}

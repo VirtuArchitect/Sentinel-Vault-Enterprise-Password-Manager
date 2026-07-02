@@ -41,13 +41,17 @@ assert.equal(actionRegister.phaseGatePath, phaseGatePath, "phase action register
 assert.equal(gapMatrix.summary.phaseCount, actionRegister.actions.length, "phase gap matrix action count does not match phase action register");
 
 const pendingActions = actionRegister.actions.filter((action) => action.status !== "complete");
+const actionEvidenceKeys = [...new Set(actionRegister.actions.flatMap((action) => action.evidenceKeys || []))].sort();
+const gapEvidenceKeys = [...new Set(gapMatrix.phases.flatMap((phase) => phase.evidenceKeys || []))].sort();
 const missingArtifacts = gapMatrix.phases.flatMap((phase) => (
   phase.templateMappings
     .filter((mapping) => !mapping.exists)
     .map((mapping) => ({
       phase: phase.phase,
       title: phase.title,
-      templatePath: mapping.templatePath
+      templatePath: mapping.templatePath,
+      evidenceKey: mapping.evidenceKey || null,
+      phaseEvidenceKeys: phase.evidenceKeys || []
     }))
 ));
 const ownerRoles = [...new Set(actionRegister.actions.map((action) => action.ownerRole))];
@@ -75,18 +79,29 @@ const record = {
   remainingItemCount: phaseGate.remainingItemCount,
   pendingActionCount: pendingActions.length,
   missingArtifactCount: missingArtifacts.length,
+  evidenceKeySummary: {
+    actionEvidenceKeyCount: actionEvidenceKeys.length,
+    gapEvidenceKeyCount: gapEvidenceKeys.length,
+    actionEvidenceKeys,
+    gapEvidenceKeys
+  },
   ownerRoles,
-  requiredApprovals: ownerRoles.map((ownerRole) => ({
-    ownerRole,
-    status: decision === "approve-phase-closure" ? "required-before-release" : "blocked-until-evidence-complete"
-  })),
+  requiredApprovals: ownerRoles.map((ownerRole) => {
+    const actions = actionRegister.actions.filter((action) => action.ownerRole === ownerRole);
+    return {
+      ownerRole,
+      status: decision === "approve-phase-closure" ? "required-before-release" : "blocked-until-evidence-complete",
+      evidenceKeys: [...new Set(actions.flatMap((action) => action.evidenceKeys || []))].sort()
+    };
+  }),
   pendingActions: pendingActions.map((action) => ({
     id: action.id,
     phase: action.phase,
     title: action.title,
     ownerRole: action.ownerRole,
     blockerType: action.blockerType,
-    status: action.status
+    status: action.status,
+    evidenceKeys: action.evidenceKeys || []
   })),
   missingArtifacts
 };
@@ -107,12 +122,14 @@ Readiness:
 - Remaining items: ${record.remainingItemCount}
 - Pending owner actions: ${record.pendingActionCount}
 - Missing mapped artifacts: ${record.missingArtifactCount}
+- Action evidence keys: ${record.evidenceKeySummary.actionEvidenceKeyCount}
+- Gap evidence keys: ${record.evidenceKeySummary.gapEvidenceKeyCount}
 
 Required approvals:
-${record.requiredApprovals.map((approval) => `- ${approval.ownerRole}: ${approval.status}`).join("\n")}
+${record.requiredApprovals.map((approval) => `- ${approval.ownerRole}: ${approval.status} (${approval.evidenceKeys.join(", ")})`).join("\n")}
 
 Pending actions:
-${record.pendingActions.length > 0 ? record.pendingActions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.ownerRole})`).join("\n") : "- none"}
+${record.pendingActions.length > 0 ? record.pendingActions.map((action) => `- ${action.id}: ${action.phase} - ${action.title} (${action.ownerRole}; ${action.evidenceKeys.join(", ")})`).join("\n") : "- none"}
 `;
 
 mkdirSync(path.dirname(outputPath), { recursive: true });

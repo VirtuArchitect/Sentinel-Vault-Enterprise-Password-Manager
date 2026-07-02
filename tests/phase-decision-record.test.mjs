@@ -96,6 +96,10 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.equal(record.format, "sentinel-phase-decision-record-v1");
     assert.equal(record.decision, "hold-phase-closure");
     assert.equal(record.pendingActions.length, 7);
+    assert.equal(record.evidenceKeySummary.actionEvidenceKeyCount, 18);
+    assert.equal(record.evidenceKeySummary.gapEvidenceKeyCount, 18);
+    assert.ok(record.evidenceKeySummary.actionEvidenceKeys.includes("windowsSigning"));
+    assert.ok(record.pendingActions.some((action) => action.evidenceKeys.includes("windowsSigning")));
     assert.ok(record.requiredApprovals.some((approval) => approval.ownerRole === "Release owner"));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Decision Record/);
 
@@ -107,6 +111,7 @@ test("phase decision record holds closure while blockers remain", () => {
     ]));
     assert.equal(validation.format, "sentinel-phase-decision-record-validation-v1");
     assert.equal(validation.validated, true);
+    assert.equal(validation.evidenceKeyCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -132,6 +137,33 @@ test("phase decision record validator rejects stale decisions", () => {
       "--phase-actions", path.join(dir, "phase-action-register.json"),
       "--phase-gaps", path.join(dir, "phase-gap-matrix.json")
     ]), /decision does not match/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase decision record validator rejects stale evidence keys", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-decision-evidence-${process.pid}-${Date.now()}`);
+  try {
+    createDecisionWorkspace(dir);
+    const recordPath = path.join(dir, "phase-decision-record.json");
+    runScript("scripts/prepare-phase-decision-record.mjs", [
+      "--dir", dir,
+      "--out", recordPath,
+      "--markdown-out", path.join(dir, "phase-decision-record.md")
+    ]);
+    const record = JSON.parse(readFileSync(recordPath, "utf8"));
+    record.pendingActions[0].evidenceKeys = ["changedEvidenceKey"];
+    record.evidenceKeySummary.actionEvidenceKeys = [];
+    record.evidenceKeySummary.actionEvidenceKeyCount = 0;
+    writeFileSync(recordPath, JSON.stringify(record, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-decision-record.mjs", [
+      "--record", recordPath,
+      "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+      "--phase-actions", path.join(dir, "phase-action-register.json"),
+      "--phase-gaps", path.join(dir, "phase-gap-matrix.json")
+    ]), /evidence key/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

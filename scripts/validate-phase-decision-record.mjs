@@ -56,13 +56,17 @@ assert.equal(actionRegister.phaseGatePath, gatePath, "phase action register does
 assert.equal(gapMatrix.summary.phaseCount, actionRegister.actions.length, "phase gap matrix action count does not match phase action register");
 
 const pendingActions = actionRegister.actions.filter((action) => action.status !== "complete");
+const actionEvidenceKeys = [...new Set(actionRegister.actions.flatMap((action) => action.evidenceKeys || []))].sort();
+const gapEvidenceKeys = [...new Set(gapMatrix.phases.flatMap((phase) => phase.evidenceKeys || []))].sort();
 const missingArtifacts = gapMatrix.phases.flatMap((phase) => (
   phase.templateMappings
     .filter((mapping) => !mapping.exists)
     .map((mapping) => ({
       phase: phase.phase,
       title: phase.title,
-      templatePath: mapping.templatePath
+      templatePath: mapping.templatePath,
+      evidenceKey: mapping.evidenceKey || null,
+      phaseEvidenceKeys: phase.evidenceKeys || []
     }))
 ));
 const ownerRoles = [...new Set(actionRegister.actions.map((action) => action.ownerRole))];
@@ -83,8 +87,21 @@ assert.equal(record.remainingPhaseCount, phaseGate.remainingPhaseCount, "remaini
 assert.equal(record.remainingItemCount, phaseGate.remainingItemCount, "remaining item count mismatch");
 assert.equal(record.pendingActionCount, pendingActions.length, "pending action count mismatch");
 assert.equal(record.missingArtifactCount, missingArtifacts.length, "missing artifact count mismatch");
+assert.deepEqual(record.evidenceKeySummary, {
+  actionEvidenceKeyCount: actionEvidenceKeys.length,
+  gapEvidenceKeyCount: gapEvidenceKeys.length,
+  actionEvidenceKeys,
+  gapEvidenceKeys
+}, "evidence key summary mismatch");
 assert.deepEqual(record.ownerRoles, ownerRoles, "owner roles mismatch");
 assert.equal(record.requiredApprovals.length, ownerRoles.length, "required approval count mismatch");
+
+record.requiredApprovals.forEach((approval, index) => {
+  const ownerRole = ownerRoles[index];
+  const actions = actionRegister.actions.filter((action) => action.ownerRole === ownerRole);
+  assert.equal(approval.ownerRole, ownerRole, `required approval ${index + 1} owner role mismatch`);
+  assert.deepEqual(approval.evidenceKeys, [...new Set(actions.flatMap((action) => action.evidenceKeys || []))].sort(), `required approval ${index + 1} evidence key mismatch`);
+});
 
 record.pendingActions.forEach((pendingAction, index) => {
   const action = pendingActions[index];
@@ -92,6 +109,7 @@ record.pendingActions.forEach((pendingAction, index) => {
   assert.equal(pendingAction.id, action.id, `pending action ${index + 1} id mismatch`);
   assert.equal(pendingAction.title, action.title, `pending action ${index + 1} title mismatch`);
   assert.equal(pendingAction.status, action.status, `pending action ${index + 1} status mismatch`);
+  assert.deepEqual(pendingAction.evidenceKeys, action.evidenceKeys || [], `pending action ${index + 1} evidence key mismatch`);
 });
 assert.deepEqual(record.missingArtifacts, missingArtifacts, "missing artifacts mismatch");
 
@@ -102,5 +120,6 @@ console.log(JSON.stringify({
   ready: record.ready,
   pendingActionCount: record.pendingActionCount,
   blockerCount: record.blockerCount,
+  evidenceKeyCount: record.evidenceKeySummary.actionEvidenceKeyCount,
   validated: true
 }, null, 2));
