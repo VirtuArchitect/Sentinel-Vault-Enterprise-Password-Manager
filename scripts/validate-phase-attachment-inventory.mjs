@@ -50,6 +50,9 @@ assert.equal(inventory.summary.expectedFileCount, inventory.attachments.reduce((
 assert.equal(inventory.summary.attachedFileCount, inventory.attachments.reduce((total, item) => total + item.attachedFileCount, 0), "summary attached file count mismatch");
 assert.equal(inventory.summary.missingFileCount, inventory.attachments.reduce((total, item) => total + item.missingFileCount, 0), "summary missing file count mismatch");
 assert.equal(inventory.summary.redactionFindingCount, inventory.attachments.reduce((total, item) => total + item.redactionFindingCount, 0), "summary redaction finding count mismatch");
+assert.equal(inventory.summary.commandScriptCount, intake.summary.commandScriptCount || 0, "summary command script count mismatch");
+assert.equal(inventory.summary.validatorCommandCount, intake.summary.validatorCommandCount || 0, "summary validator command count mismatch");
+assert.deepEqual(inventory.summary.commandScripts, intake.summary.commandScripts || [], "summary command scripts mismatch");
 
 inventory.attachments.forEach((attachment, index) => {
   const intakeItem = intake.intakeItems[index];
@@ -60,6 +63,7 @@ inventory.attachments.forEach((attachment, index) => {
   assert.equal(attachment.blockerType, intakeItem.blockerType, `attachment ${index + 1} blocker mismatch`);
   assert.equal(attachment.intakeDir, intakeItem.intakeDir, `attachment ${index + 1} intake folder mismatch`);
   assert.deepEqual(attachment.evidenceKeys, intakeItem.evidenceKeys || [], `attachment ${index + 1} evidence key mismatch`);
+  assert.deepEqual(attachment.commandScripts, intakeItem.commandScripts || [], `attachment ${index + 1} command scripts mismatch`);
   assert.equal(attachment.files.length, intakeItem.expectedFiles.length, `attachment ${index + 1} file count mismatch`);
   assert.equal(attachment.expectedFileCount, attachment.files.length, `attachment ${index + 1} expected count mismatch`);
   assert.equal(attachment.attachedFileCount, attachment.files.filter((file) => file.status !== "missing").length, `attachment ${index + 1} attached count mismatch`);
@@ -104,5 +108,7 @@ console.log(JSON.stringify({
   attachedFileCount: inventory.summary.attachedFileCount,
   missingFileCount: inventory.summary.missingFileCount,
   redactionFindingCount: inventory.summary.redactionFindingCount,
+  commandScriptCount: inventory.summary.commandScriptCount,
+  validatorCommandCount: inventory.summary.validatorCommandCount,
   validated: true
 }, null, 2));

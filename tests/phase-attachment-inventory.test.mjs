@@ -109,13 +109,19 @@ test("phase attachment inventory reports missing and attached intake files", () 
     assert.equal(result.attachedFileCount, 1);
     assert.equal(result.missingFileCount, 21);
     assert.equal(result.redactionFindingCount, 0);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(inventoryPath));
     assert.ok(existsSync(markdownPath));
 
     const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
     assert.equal(inventory.format, "sentinel-phase-attachment-inventory-v1");
+    assert.ok(inventory.summary.commandScriptCount > 20);
+    assert.equal(inventory.summary.validatorCommandCount, 13);
+    assert.ok(inventory.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(inventory.attachments.some((item) => item.attachedFileCount === 1));
     assert.ok(inventory.attachments.some((item) => item.evidenceKeys.includes("windowsSigning")));
+    assert.ok(inventory.attachments.some((item) => item.commandScripts.includes("validate:windows-signing")));
     assert.ok(inventory.attachments.some((item) => item.files.some((file) => file.evidenceKey === "windowsRelease")));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Attachment Inventory/);
 
@@ -125,6 +131,8 @@ test("phase attachment inventory reports missing and attached intake files", () 
     ]));
     assert.equal(validation.format, "sentinel-phase-attachment-inventory-validation-v1");
     assert.equal(validation.validated, true);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -172,6 +180,32 @@ test("phase attachment inventory validator rejects stale evidence key mappings",
       "--inventory", inventoryPath,
       "--intake", path.join(dir, "phase-evidence-intake.json")
     ]), /evidence key mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase attachment inventory validator rejects stale command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-attachments-command-stale-${process.pid}-${Date.now()}`);
+  try {
+    createInventoryWorkspace(dir);
+    const inventoryPath = path.join(dir, "phase-attachment-inventory.json");
+    runScript("scripts/prepare-phase-attachment-inventory.mjs", [
+      "--dir", dir,
+      "--out", inventoryPath,
+      "--markdown-out", path.join(dir, "phase-attachment-inventory.md")
+    ]);
+    const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
+    inventory.summary.commandScripts = [];
+    inventory.summary.commandScriptCount = 0;
+    inventory.summary.validatorCommandCount = 0;
+    inventory.attachments[0].commandScripts = ["changed:command"];
+    writeFileSync(inventoryPath, JSON.stringify(inventory, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-attachment-inventory.mjs", [
+      "--inventory", inventoryPath,
+      "--intake", path.join(dir, "phase-evidence-intake.json")
+    ]), /command script|validator command/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

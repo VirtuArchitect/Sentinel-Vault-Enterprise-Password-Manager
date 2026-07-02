@@ -105,6 +105,7 @@ const attachments = intake.intakeItems.map((item) => {
     blockerType: item.blockerType,
     intakeDir: item.intakeDir,
     evidenceKeys: item.evidenceKeys || [],
+    commandScripts: item.commandScripts || [],
     expectedFileCount: files.length,
     attachedFileCount: files.filter((file) => file.status !== "missing").length,
     missingFileCount: files.filter((file) => file.status === "missing").length,
@@ -125,7 +126,10 @@ const inventory = {
     expectedFileCount: attachments.reduce((total, item) => total + item.expectedFileCount, 0),
     attachedFileCount: attachments.reduce((total, item) => total + item.attachedFileCount, 0),
     missingFileCount: attachments.reduce((total, item) => total + item.missingFileCount, 0),
-    redactionFindingCount: attachments.reduce((total, item) => total + item.redactionFindingCount, 0)
+    redactionFindingCount: attachments.reduce((total, item) => total + item.redactionFindingCount, 0),
+    commandScriptCount: intake.summary.commandScriptCount || 0,
+    validatorCommandCount: intake.summary.validatorCommandCount || 0,
+    commandScripts: intake.summary.commandScripts || []
   },
   attachments
 };
@@ -142,6 +146,8 @@ Summary:
 - Attached files: ${inventory.summary.attachedFileCount}
 - Missing files: ${inventory.summary.missingFileCount}
 - Redaction findings: ${inventory.summary.redactionFindingCount}
+- Command scripts: ${inventory.summary.commandScriptCount}
+- Validator commands: ${inventory.summary.validatorCommandCount}
 
 ${attachments.map((item) => `## ${item.id}: ${item.phase} - ${item.title}
 
@@ -149,6 +155,7 @@ Owner role: ${item.ownerRole}
 Attached files: ${item.attachedFileCount}
 Missing files: ${item.missingFileCount}
 Redaction findings: ${item.redactionFindingCount}
+Command scripts: ${item.commandScripts.join(", ")}
 
 Files:
 ${item.files.map((file) => `- ${file.status}: \`${file.targetPath}\`${file.sha256 ? ` (${file.sha256})` : ""}`).join("\n")}`).join("\n\n")}
@@ -166,5 +173,7 @@ console.log(JSON.stringify({
   expectedFileCount: inventory.summary.expectedFileCount,
   attachedFileCount: inventory.summary.attachedFileCount,
   missingFileCount: inventory.summary.missingFileCount,
-  redactionFindingCount: inventory.summary.redactionFindingCount
+  redactionFindingCount: inventory.summary.redactionFindingCount,
+  commandScriptCount: inventory.summary.commandScriptCount,
+  validatorCommandCount: inventory.summary.validatorCommandCount
 }, null, 2));
