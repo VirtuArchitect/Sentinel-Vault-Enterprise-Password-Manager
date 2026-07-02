@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const matrixPath = path.resolve(args.get("--matrix") || "artifacts/deployment/pilot/phase-signoff-matrix.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const decisionPath = args.get("--phase-decision") ? path.resolve(args.get("--phase-decision")) : null;
 const actionRegisterPath = args.get("--phase-actions") ? path.resolve(args.get("--phase-actions")) : null;
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
@@ -59,6 +60,17 @@ assert.equal(matrix.summary.commandScriptCount, actionRegister.summary.commandSc
 assert.equal(matrix.summary.validatorCommandCount, decision.commandCoverageSummary?.validatorCommandCount || actionRegister.summary.validatorCommandCount || 0, "summary validator command count mismatch");
 assert.deepEqual(matrix.summary.commandScripts, actionRegister.summary.commandScripts || [], "summary command scripts mismatch");
 assert.deepEqual(matrix.summary.commandScripts, decision.commandCoverageSummary.actionCommandScripts, "decision command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase signoff matrix markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${matrix.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${matrix.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of matrix.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
 
 matrix.approvals.forEach((approval, index) => {
   const ownerRole = ownerRoles[index];

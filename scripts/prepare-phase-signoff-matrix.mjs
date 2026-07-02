@@ -116,6 +116,13 @@ Summary:
 - Command scripts: ${matrix.summary.commandScriptCount}
 - Validator commands: ${matrix.summary.validatorCommandCount}
 
+## Command Coverage Summary
+
+- Command scripts: ${matrix.summary.commandScriptCount}
+- Validator commands: ${matrix.summary.validatorCommandCount}
+
+${matrix.summary.commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${approvals.map((approval) => `## ${approval.id}: ${approval.ownerRole}
 
 Status: ${approval.status}

@@ -110,11 +110,16 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.ok(matrix.approvals.some((approval) => approval.evidenceKeys.includes("windowsSigning")));
     assert.ok(matrix.approvals.some((approval) => approval.commandScripts.includes("validate:windows-signing")));
     assert.ok(matrix.approvals.some((approval) => approval.ownerRole === "Security architecture owner"));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Signoff Matrix/);
-    assert.match(readFileSync(markdownPath, "utf8"), /Command scripts:/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Signoff Matrix/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-signoff-matrix.mjs", [
       "--matrix", matrixPath,
+      "--markdown", markdownPath,
       "--phase-decision", path.join(dir, "phase-decision-record.json"),
       "--phase-actions", path.join(dir, "phase-action-register.json")
     ]));
@@ -123,6 +128,34 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validatorCommandCount, 13);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase signoff matrix validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-signoffs-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createSignoffWorkspace(dir);
+    const matrixPath = path.join(dir, "phase-signoff-matrix.json");
+    const markdownPath = path.join(dir, "phase-signoff-matrix.md");
+    runScript("scripts/prepare-phase-signoff-matrix.mjs", [
+      "--dir", dir,
+      "--out", matrixPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-signoff-matrix.mjs", [
+      "--matrix", matrixPath,
+      "--markdown", markdownPath,
+      "--phase-decision", path.join(dir, "phase-decision-record.json"),
+      "--phase-actions", path.join(dir, "phase-action-register.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
