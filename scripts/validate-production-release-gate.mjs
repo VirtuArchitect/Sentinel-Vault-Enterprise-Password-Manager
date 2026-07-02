@@ -281,6 +281,9 @@ if (review) {
 
 if (closure) {
   assert.equal(closure.format, "sentinel-phase-closure-archive-manifest-v1");
+  if (review?.evidenceKeySummary) {
+    assert.deepEqual(closure.review?.evidenceKeySummary, review.evidenceKeySummary, "closure evidence key summary does not match phase review");
+  }
   if (closure.review?.target !== target) {
     blockers.push({
       gate: "closure-target",
@@ -320,6 +323,10 @@ const report = {
   blockers,
   warnings
 };
+
+if (review?.evidenceKeySummary || closure?.review?.evidenceKeySummary) {
+  report.evidenceKeySummary = closure?.review?.evidenceKeySummary || review?.evidenceKeySummary;
+}
 
 const text = JSON.stringify(report, null, 2);
 if (outputPath) {

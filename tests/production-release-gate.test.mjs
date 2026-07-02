@@ -199,6 +199,8 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-target"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-review"));
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-decision"));
+      assert.equal(report.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+      assert.ok(report.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
 
       const saved = JSON.parse(readFileSync(outputPath, "utf8"));
       assert.equal(saved.blockerCount, report.blockerCount);
@@ -275,6 +277,31 @@ test("production release gate report validator rejects stale reports and not-rea
     ]), (error) => {
       assert.equal(error.status, 1);
       assert.match(error.stderr.toString(), /production release gate report is not ready/);
+      return true;
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release gate rejects stale closure evidence key summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-gate-key-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseGateWorkspace(dir);
+    const closurePath = path.join(dir, "phase-closure-archive-manifest.json");
+    const outputPath = path.join(dir, "production-release-gate.json");
+    const closure = JSON.parse(readFileSync(closurePath, "utf8"));
+    closure.review.evidenceKeySummary.waivedEvidenceKeys = [];
+    closure.review.evidenceKeySummary.waivedEvidenceKeyCount = 0;
+    writeFileSync(closurePath, JSON.stringify(closure, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate.mjs", [
+      "--dir", dir,
+      "--target", "production",
+      "--out", outputPath
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /closure evidence key summary/);
       return true;
     });
   } finally {
