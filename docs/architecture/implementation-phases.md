@@ -135,6 +135,7 @@ Implemented:
 - Phase gate validation report validator and production release-gate check for stale or not-ready gate artifacts.
 - Phase action register generator and validator that turn the validated gate and external evidence requests into owner-specific action records with deployment-bundle evidence-key traceability.
 - Phase action register command-script coverage binding to the validated phase gate and request pack.
+- Phase action register markdown command coverage validation for owner-facing action records.
 - Phase gap matrix generator and validator that map every remaining blocker to deployment-bundle evidence keys and supporting artifacts.
 - Phase gap matrix command-script coverage binding to the strict external request pack.
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.

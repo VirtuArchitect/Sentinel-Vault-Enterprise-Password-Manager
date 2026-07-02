@@ -78,6 +78,7 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(result.format, "sentinel-phase-action-register-result-v1");
     assert.equal(result.actionCount, 7);
     assert.equal(result.ready, false);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(registerPath));
     assert.ok(existsSync(markdownPath));
 
@@ -92,17 +93,52 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(register.actions[0].id, "ACT-01");
     assert.ok(register.actions.some((action) => action.evidenceKeys.includes("windowsSigning")));
     assert.ok(register.actions.some((action) => action.blockerType === "certificate-backed-release"));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Action Register/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Action Register/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-action-register.mjs", [
       "--register", registerPath,
+      "--markdown", markdownPath,
       "--phase-gate", path.join(dir, "phase-gate-validation.json"),
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]));
     assert.equal(validation.format, "sentinel-phase-action-register-validation-v1");
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
     assert.equal(validation.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase action register validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-actions-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createActionWorkspace(dir);
+    const registerPath = path.join(dir, "phase-action-register.json");
+    const markdownPath = path.join(dir, "phase-action-register.md");
+    runScript("scripts/prepare-phase-action-register.mjs", [
+      "--dir", dir,
+      "--out", registerPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-action-register.mjs", [
+      "--register", registerPath,
+      "--markdown", markdownPath,
+      "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

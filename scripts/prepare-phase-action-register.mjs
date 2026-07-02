@@ -103,6 +103,13 @@ Evidence keys: ${report.summary.evidenceKeyCount}
 Command scripts: ${report.summary.commandScriptCount}
 Validator commands: ${report.summary.validatorCommandCount}
 
+## Command Coverage Summary
+
+- Command scripts: ${report.summary.commandScriptCount}
+- Validator commands: ${report.summary.validatorCommandCount}
+
+${report.summary.commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${actions.map((action) => `## ${action.id}: ${action.phase}: ${action.title}
 
 Owner role: ${action.ownerRole}
@@ -137,6 +144,7 @@ console.log(JSON.stringify({
   actionCount: actions.length,
   evidenceKeyCount: report.summary.evidenceKeyCount,
   commandScriptCount: report.summary.commandScriptCount,
+  validatorCommandCount: report.summary.validatorCommandCount,
   ready: report.gate.ready,
   blockerCount: report.gate.blockerCount
 }, null, 2));

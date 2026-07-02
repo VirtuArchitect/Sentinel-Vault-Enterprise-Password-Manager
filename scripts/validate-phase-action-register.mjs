@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const registerPath = path.resolve(args.get("--register") || "artifacts/deployment/pilot/phase-action-register.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const phaseGatePath = args.get("--phase-gate") ? path.resolve(args.get("--phase-gate")) : null;
 const externalRequestsPath = args.get("--external-requests") ? path.resolve(args.get("--external-requests")) : null;
 
@@ -32,6 +33,7 @@ assert.ok(existsSync(register.completionAuditPath), `completionAuditPath does no
 
 if (phaseGatePath) assert.equal(path.resolve(register.phaseGatePath), phaseGatePath, "phase gate path does not match");
 if (externalRequestsPath) assert.equal(path.resolve(register.externalRequestsPath), externalRequestsPath, "external requests path does not match");
+if (markdownPath) assert.ok(existsSync(markdownPath), `Phase action register markdown not found: ${markdownPath}`);
 
 const phaseGate = JSON.parse(readFileSync(register.phaseGatePath, "utf8"));
 const externalRequests = JSON.parse(readFileSync(register.externalRequestsPath, "utf8"));
@@ -53,6 +55,16 @@ assert.equal(register.summary.commandScriptCount, externalRequests.summary?.comm
 assert.equal(register.summary.validatorCommandCount, phaseGate.externalRequestSummary?.validatorCommandCount || 0, "summary validator command count mismatch");
 assert.deepEqual(register.summary.commandScripts, externalRequests.summary?.commandScripts || [], "summary command scripts mismatch");
 
+if (markdownPath) {
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${register.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${register.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of register.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
+
 for (const [index, request] of externalRequests.requests.entries()) {
   const action = register.actions[index];
   assert.ok(action, `missing action ${index + 1}`);
@@ -73,6 +85,7 @@ console.log(JSON.stringify({
   actionCount: register.actions.length,
   evidenceKeyCount: register.summary.evidenceKeyCount,
   commandScriptCount: register.summary.commandScriptCount,
+  validatorCommandCount: register.summary.validatorCommandCount,
   ready: register.gate.ready,
   validated: true
 }, null, 2));
