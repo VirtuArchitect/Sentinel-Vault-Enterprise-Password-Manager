@@ -61,10 +61,9 @@ Copy-Tree -Source (Join-Path $root "companions\windows") -Destination (Join-Path
 if (Test-Path $zipPath) {
   Remove-Item -LiteralPath $zipPath -Force
 }
-tar.exe -a -cf $zipPath -C $stageRoot .
-if ($LASTEXITCODE -ne 0) {
-  throw "tar.exe failed creating $zipPath with exit code $LASTEXITCODE"
-}
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($stageRoot, $zipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
 
 Write-Host "Windows package created:"
 Write-Host $zipPath
