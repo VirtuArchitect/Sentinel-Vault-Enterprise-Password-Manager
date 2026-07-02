@@ -115,10 +115,16 @@ test("phase evidence intake maps owner requests to intake folders and validation
     assert.ok(intake.intakeItems.some((item) => item.commandScripts.includes("validate:windows-signing")));
     assert.ok(intake.intakeItems.some((item) => item.expectedFiles.some((file) => file.evidenceKey === "windowsSigning")));
     assert.ok(intake.intakeItems.every((item) => item.redactionChecks.length >= 3));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Evidence Intake/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Evidence Intake/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-evidence-intake.mjs", [
       "--intake", intakePath,
+      "--markdown", markdownPath,
       "--external-requests", path.join(dir, "external-evidence-requests.json"),
       "--phase-gaps", path.join(dir, "phase-gap-matrix.json"),
       "--phase-signoffs", path.join(dir, "phase-signoff-matrix.json")
@@ -177,6 +183,35 @@ test("phase evidence intake validator rejects stale evidence key mappings", () =
       "--phase-gaps", path.join(dir, "phase-gap-matrix.json"),
       "--phase-signoffs", path.join(dir, "phase-signoff-matrix.json")
     ]), /evidence key mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase evidence intake validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-intake-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createIntakeWorkspace(dir);
+    const intakePath = path.join(dir, "phase-evidence-intake.json");
+    const markdownPath = path.join(dir, "phase-evidence-intake.md");
+    runScript("scripts/prepare-phase-evidence-intake.mjs", [
+      "--dir", dir,
+      "--out", intakePath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-evidence-intake.mjs", [
+      "--intake", intakePath,
+      "--markdown", markdownPath,
+      "--external-requests", path.join(dir, "external-evidence-requests.json"),
+      "--phase-gaps", path.join(dir, "phase-gap-matrix.json"),
+      "--phase-signoffs", path.join(dir, "phase-signoff-matrix.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

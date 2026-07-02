@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const intakePath = path.resolve(args.get("--intake") || "artifacts/deployment/pilot/phase-evidence-intake.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const externalRequestsPath = args.get("--external-requests") ? path.resolve(args.get("--external-requests")) : null;
 const gapMatrixPath = args.get("--phase-gaps") ? path.resolve(args.get("--phase-gaps")) : null;
 const signoffMatrixPath = args.get("--phase-signoffs") ? path.resolve(args.get("--phase-signoffs")) : null;
@@ -64,6 +65,17 @@ assert.equal(intake.summary.validatorCommandCount, gapMatrix.summary.validatorCo
 assert.deepEqual(intake.summary.commandScripts, externalRequests.summary.commandScripts || [], "summary command scripts mismatch");
 assert.deepEqual(intake.summary.commandScripts, gapMatrix.summary.commandScripts, "gap command scripts mismatch");
 assert.deepEqual(intake.summary.commandScripts, signoffMatrix.summary.commandScripts, "signoff command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase evidence intake markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${intake.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${intake.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of intake.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
 
 intake.intakeItems.forEach((item, index) => {
   const request = externalRequests.requests[index];

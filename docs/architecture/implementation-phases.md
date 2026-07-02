@@ -149,6 +149,7 @@ Implemented:
 - Phase evidence intake generator and validator that turn external owner requests into deployment-specific intake folders, expected files, validation commands, and redaction checks.
 - Phase evidence intake and attachment inventory evidence-key propagation so owner files remain traceable to deployment-bundle gates.
 - Phase evidence intake command-script coverage binding to owner validation commands.
+- Phase evidence intake markdown command coverage validation for owner evidence collection.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
 - Phase attachment inventory command-script coverage binding to evidence intake commands.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.

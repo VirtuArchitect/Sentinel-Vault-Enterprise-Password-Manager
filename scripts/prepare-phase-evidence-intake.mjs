@@ -121,6 +121,13 @@ Summary:
 - Command scripts: ${intake.summary.commandScriptCount}
 - Validator commands: ${intake.summary.validatorCommandCount}
 
+## Command Coverage Summary
+
+- Command scripts: ${intake.summary.commandScriptCount}
+- Validator commands: ${intake.summary.validatorCommandCount}
+
+${intake.summary.commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${intakeItems.map((item) => `## ${item.id}: ${item.phase} - ${item.title}
 
 Owner role: ${item.ownerRole}
