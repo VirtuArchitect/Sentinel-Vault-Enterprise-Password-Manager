@@ -89,15 +89,41 @@ test("external evidence request validator accepts strict generated request packs
       "--markdown-out", markdownPath
     ]);
 
-    const result = JSON.parse(runValidator(["--requests", jsonPath, "--strict"]));
+    const result = JSON.parse(runValidator(["--requests", jsonPath, "--markdown", markdownPath, "--strict"]));
     assert.equal(result.format, "sentinel-external-evidence-requests-validation-v1");
     assert.equal(result.validated, true);
     assert.equal(result.strict, true);
+    assert.equal(result.markdownPath, markdownPath);
     assert.equal(result.requestCount, 7);
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
     assert.equal(result.validatorCommandCount, 13);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("external evidence request validator rejects stale markdown request packs", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-markdown-invalid-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8")
+      .replace("- `pnpm validate:native-companion -- <native-companion-evidence.json>`\n", "");
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runValidator([
+      "--requests", jsonPath,
+      "--markdown", markdownPath,
+      "--strict"
+    ]), /markdown is missing command/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

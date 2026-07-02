@@ -19,6 +19,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 
 const rootDir = path.resolve(import.meta.dirname, "..");
 const requestPath = path.resolve(args.get("--requests") || cliArgs.find((arg) => !arg.startsWith("--")) || "artifacts/deployment/replace-with-environment/external-evidence-requests.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const bundleTemplatePath = path.resolve(args.get("--bundle-template") || "docs/templates/deployment-evidence-bundle.json");
 const packageJsonPath = path.resolve(args.get("--package-json") || "package.json");
 const strict = args.has("--strict");
@@ -58,9 +59,13 @@ const assertArray = (value, name, minLength = 1) => {
 const resolveTemplate = (templatePath) => path.resolve(rootDir, templatePath);
 
 assert.ok(existsSync(requestPath), `External evidence request pack not found: ${requestPath}`);
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `External evidence request markdown not found: ${markdownPath}`);
+}
 assert.ok(existsSync(bundleTemplatePath), `Deployment evidence bundle template not found: ${bundleTemplatePath}`);
 assert.ok(existsSync(packageJsonPath), `package.json not found: ${packageJsonPath}`);
 const report = JSON.parse(readFileSync(requestPath, "utf8"));
+const markdown = markdownPath ? readFileSync(markdownPath, "utf8") : null;
 const bundleTemplate = JSON.parse(readFileSync(bundleTemplatePath, "utf8"));
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
@@ -126,6 +131,43 @@ for (const [index, request] of report.requests.entries()) {
   }
 }
 
+const expectedCommandScripts = [...commandScripts].sort();
+assert.equal(report.summary.commandScriptCount, expectedCommandScripts.length, "summary command script count mismatch");
+assert.deepEqual(report.summary.commandScripts, expectedCommandScripts, "summary command scripts mismatch");
+
+if (markdown) {
+  assert.match(markdown, /^# Sentinel Vault External Evidence Requests/m, "markdown title is missing");
+  assert.ok(markdown.includes(`Environment: ${report.environment}`), "markdown environment does not match request pack");
+  assert.ok(markdown.includes(`Owner: ${report.owner}`), "markdown owner does not match request pack");
+  assert.ok(markdown.includes("Command scripts:"), "markdown command script section is missing");
+
+  for (const script of expectedCommandScripts) {
+    assert.ok(markdown.includes(`\`pnpm ${script}\``), `markdown is missing command script: ${script}`);
+  }
+
+  for (const [index, request] of report.requests.entries()) {
+    assert.ok(markdown.includes(`## ${index + 1}. ${request.phase}: ${request.title}`), `markdown is missing request heading: ${request.title}`);
+    assert.ok(markdown.includes(`Owner role: ${request.ownerRole}`), `markdown is missing owner role for ${request.title}`);
+    assert.ok(markdown.includes(`Blocker type: ${request.blockerType}`), `markdown is missing blocker type for ${request.title}`);
+
+    for (const input of request.requiredInputs) {
+      assert.ok(markdown.includes(`- ${input}`), `markdown is missing required input for ${request.title}: ${input}`);
+    }
+    for (const templatePath of request.evidenceTemplates) {
+      assert.ok(markdown.includes(`- \`${templatePath}\``), `markdown is missing evidence template for ${request.title}: ${templatePath}`);
+    }
+    for (const evidenceKey of request.evidenceKeys) {
+      assert.ok(markdown.includes(`- \`${evidenceKey}\``), `markdown is missing evidence key for ${request.title}: ${evidenceKey}`);
+    }
+    for (const command of request.commands) {
+      assert.ok(markdown.includes(`- \`${command}\``), `markdown is missing command for ${request.title}: ${command}`);
+    }
+    for (const criterion of request.acceptanceCriteria) {
+      assert.ok(markdown.includes(`- ${criterion}`), `markdown is missing acceptance criterion for ${request.title}: ${criterion}`);
+    }
+  }
+}
+
 for (const [requestKey, blockerType] of requiredRequests.entries()) {
   assert.ok(requestKeys.has(requestKey), `missing required request: ${requestKey}`);
   assert.ok(report.requests.some((request) => request.blockerType === blockerType), `missing blocker type: ${blockerType}`);
@@ -134,10 +176,6 @@ for (const [requestKey, blockerType] of requiredRequests.entries()) {
 for (const command of requiredValidatorCommands) {
   assert.ok(allCommands.some((candidate) => candidate.startsWith(command)), `missing validator command: ${command}`);
 }
-
-const expectedCommandScripts = [...commandScripts].sort();
-assert.equal(report.summary.commandScriptCount, expectedCommandScripts.length, "summary command script count mismatch");
-assert.deepEqual(report.summary.commandScripts, expectedCommandScripts, "summary command scripts mismatch");
 
 assert.ok(templatePaths.has("docs/templates/windows-release-evidence.json"), "Windows release evidence template is required");
 assert.ok(templatePaths.has("docs/templates/windows-signing-execution-evidence.json"), "Windows signing execution evidence template is required");
@@ -151,6 +189,7 @@ assert.ok(templatePaths.has("docs/templates/native-companion-evidence.json"), "N
 const result = {
   format: "sentinel-external-evidence-requests-validation-v1",
   requestPath,
+  markdownPath,
   strict,
   environment: report.environment,
   owner: report.owner,

@@ -254,7 +254,7 @@ Prepare an environment-specific deployment evidence workspace:
 pnpm prepare:deployment-evidence -- --environment "pilot" --owner "Platform Security" --out-dir ".\artifacts\deployment\pilot"
 pnpm validate:deployment-workspace -- --manifest ".\artifacts\deployment\pilot\deployment-evidence-workspace-manifest.json" --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 pnpm report:external-evidence -- --environment "pilot" --owner "Platform Security" --out ".\artifacts\deployment\pilot\external-evidence-requests.json" --markdown-out ".\artifacts\deployment\pilot\external-evidence-requests.md"
-pnpm validate:external-evidence -- --requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --strict
+pnpm validate:external-evidence -- --requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --markdown ".\artifacts\deployment\pilot\external-evidence-requests.md" --strict
 pnpm report:deployment-evidence -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-evidence-status.json"
 pnpm validate:deployment-status -- --report ".\artifacts\deployment\pilot\deployment-evidence-status.json" --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 pnpm report:deployment-redaction -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --out ".\artifacts\deployment\pilot\deployment-redaction-report.json" --markdown-out ".\artifacts\deployment\pilot\deployment-redaction-report.md" --fail-on-findings
