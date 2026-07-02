@@ -85,6 +85,10 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(register.format, "sentinel-phase-action-register-v1");
     assert.equal(register.actions.length, 7);
     assert.equal(register.summary.evidenceKeyCount, 18);
+    assert.ok(register.summary.commandScriptCount > 20);
+    assert.equal(register.summary.validatorCommandCount, 13);
+    assert.ok(register.summary.commandScripts.includes("validate:windows-signing"));
+    assert.equal(register.gate.externalRequestSummary.evidenceKeyCount, 18);
     assert.equal(register.actions[0].id, "ACT-01");
     assert.ok(register.actions.some((action) => action.evidenceKeys.includes("windowsSigning")));
     assert.ok(register.actions.some((action) => action.blockerType === "certificate-backed-release"));
@@ -97,7 +101,35 @@ test("phase action register creates owner action records from the phase gate", (
     ]));
     assert.equal(validation.format, "sentinel-phase-action-register-validation-v1");
     assert.equal(validation.evidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase action register validator rejects stale command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-actions-commands-${process.pid}-${Date.now()}`);
+  try {
+    createActionWorkspace(dir);
+    const registerPath = path.join(dir, "phase-action-register.json");
+    runScript("scripts/prepare-phase-action-register.mjs", [
+      "--dir", dir,
+      "--out", registerPath,
+      "--markdown-out", path.join(dir, "phase-action-register.md")
+    ]);
+    const register = JSON.parse(readFileSync(registerPath, "utf8"));
+    register.summary.commandScripts = [];
+    register.summary.commandScriptCount = 0;
+    register.gate.externalRequestSummary.commandScripts = [];
+    register.gate.externalRequestSummary.commandScriptCount = 0;
+    writeFileSync(registerPath, JSON.stringify(register, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-action-register.mjs", [
+      "--register", registerPath,
+      "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /external request summary|command script/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

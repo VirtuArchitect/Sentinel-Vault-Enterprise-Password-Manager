@@ -45,9 +45,13 @@ assert.equal(register.gate.ready, phaseGate.ready, "gate ready flag is stale");
 assert.equal(register.gate.blockerCount, phaseGate.blockerCount, "gate blocker count is stale");
 assert.equal(register.gate.remainingPhaseCount, phaseGate.remainingPhaseCount, "gate remaining phase count is stale");
 assert.equal(register.gate.remainingItemCount, phaseGate.remainingItemCount, "gate remaining item count is stale");
+assert.deepEqual(register.gate.externalRequestSummary, phaseGate.externalRequestSummary, "gate external request summary is stale");
 assert.ok(Array.isArray(register.actions), "actions must be an array");
 assert.equal(register.actions.length, externalRequests.requests.length, "action count does not match external requests");
 assert.equal(register.summary.evidenceKeyCount, new Set(register.actions.flatMap((action) => action.evidenceKeys || [])).size, "summary evidence key count mismatch");
+assert.equal(register.summary.commandScriptCount, externalRequests.summary?.commandScriptCount || 0, "summary command script count mismatch");
+assert.equal(register.summary.validatorCommandCount, phaseGate.externalRequestSummary?.validatorCommandCount || 0, "summary validator command count mismatch");
+assert.deepEqual(register.summary.commandScripts, externalRequests.summary?.commandScripts || [], "summary command scripts mismatch");
 
 for (const [index, request] of externalRequests.requests.entries()) {
   const action = register.actions[index];
@@ -68,6 +72,7 @@ console.log(JSON.stringify({
   registerPath,
   actionCount: register.actions.length,
   evidenceKeyCount: register.summary.evidenceKeyCount,
+  commandScriptCount: register.summary.commandScriptCount,
   ready: register.gate.ready,
   validated: true
 }, null, 2));

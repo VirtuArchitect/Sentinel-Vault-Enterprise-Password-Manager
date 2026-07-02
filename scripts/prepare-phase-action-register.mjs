@@ -77,11 +77,15 @@ const report = {
     blockerCount: phaseGate.blockerCount,
     warningCount: phaseGate.warningCount,
     remainingPhaseCount: phaseGate.remainingPhaseCount,
-    remainingItemCount: phaseGate.remainingItemCount
+    remainingItemCount: phaseGate.remainingItemCount,
+    externalRequestSummary: phaseGate.externalRequestSummary
   },
   summary: {
     actionCount: actions.length,
     evidenceKeyCount: new Set(actions.flatMap((action) => action.evidenceKeys)).size,
+    commandScriptCount: externalRequests.summary?.commandScriptCount || 0,
+    validatorCommandCount: phaseGate.externalRequestSummary?.validatorCommandCount || 0,
+    commandScripts: externalRequests.summary?.commandScripts || [],
     ownerRoles: [...new Set(actions.map((action) => action.ownerRole))],
     blockerTypes: [...new Set(actions.map((action) => action.blockerType))]
   },
@@ -95,6 +99,9 @@ Gate ready: ${report.gate.ready ? "yes" : "no"}
 Blockers: ${report.gate.blockerCount}
 Remaining phases: ${report.gate.remainingPhaseCount}
 Remaining items: ${report.gate.remainingItemCount}
+Evidence keys: ${report.summary.evidenceKeyCount}
+Command scripts: ${report.summary.commandScriptCount}
+Validator commands: ${report.summary.validatorCommandCount}
 
 ${actions.map((action) => `## ${action.id}: ${action.phase}: ${action.title}
 
@@ -128,6 +135,8 @@ console.log(JSON.stringify({
   outputPath,
   markdownPath,
   actionCount: actions.length,
+  evidenceKeyCount: report.summary.evidenceKeyCount,
+  commandScriptCount: report.summary.commandScriptCount,
   ready: report.gate.ready,
   blockerCount: report.gate.blockerCount
 }, null, 2));
