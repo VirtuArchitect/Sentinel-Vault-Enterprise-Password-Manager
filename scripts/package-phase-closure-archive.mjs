@@ -73,6 +73,7 @@ const archive = {
     waiverSummary: reviewManifest.waiverSummary,
     evidenceKeySummary: reviewManifest.evidenceKeySummary,
     commandCoverageSummary: reviewManifest.commandCoverageSummary,
+    markdownCoverageSummary: reviewManifest.markdownCoverageSummary,
     artifactCount: artifactNames.length,
     artifactNames
   }
@@ -92,5 +93,6 @@ console.log(JSON.stringify({
   approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0,
   waivedEvidenceKeyCount: archive.review.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
   commandScriptCount: archive.review.commandCoverageSummary?.signoffCommandScriptCount || 0,
-  validatorCommandCount: archive.review.commandCoverageSummary?.signoffValidatorCommandCount || 0
+  validatorCommandCount: archive.review.commandCoverageSummary?.signoffValidatorCommandCount || 0,
+  commandCoverageMarkdownArtifactCount: archive.review.markdownCoverageSummary?.artifactCount || 0
 }, null, 2));

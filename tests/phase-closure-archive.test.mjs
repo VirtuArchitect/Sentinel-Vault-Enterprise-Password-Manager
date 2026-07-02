@@ -200,6 +200,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.ok(archive.review.commandCoverageSummary.signoffCommandScriptCount > 20);
     assert.equal(archive.review.commandCoverageSummary.signoffValidatorCommandCount, 13);
     assert.ok(archive.review.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
+    assert.equal(archive.review.markdownCoverageSummary.artifactCount, 7);
+    assert.equal(archive.review.markdownCoverageSummary.validatorCommandCount, 13);
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -212,6 +214,7 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validatorCommandCount, 13);
+    assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -331,6 +334,29 @@ test("phase closure archive validator rejects stale command coverage summaries",
       "--manifest", archivePath,
       "--phase-review", path.join(dir, "phase-review-bundle-manifest.json")
     ]), /command coverage summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase closure archive validator rejects stale markdown coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-closure-markdown-summary-${process.pid}-${Date.now()}`);
+  try {
+    createClosureWorkspace(dir);
+    const archivePath = path.join(dir, "phase-closure-archive-manifest.json");
+    runScript("scripts/package-phase-closure-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.review.markdownCoverageSummary.artifactNames = [];
+    archive.review.markdownCoverageSummary.artifactCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-closure-archive.mjs", [
+      "--manifest", archivePath,
+      "--phase-review", path.join(dir, "phase-review-bundle-manifest.json")
+    ]), /markdown coverage summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
