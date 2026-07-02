@@ -186,6 +186,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.match(result.sourceCommit, /^[a-f0-9]{40}$/);
     assert.equal(result.decision, "hold-phase-closure");
     assert.equal(result.artifactCount, 17);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(archivePath));
 
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
@@ -195,6 +197,9 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(archive.review.waiverSummary.proposedCount, 22);
     assert.equal(archive.review.evidenceKeySummary.waivedEvidenceKeyCount, 18);
     assert.ok(archive.review.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
+    assert.ok(archive.review.commandCoverageSummary.signoffCommandScriptCount > 20);
+    assert.equal(archive.review.commandCoverageSummary.signoffValidatorCommandCount, 13);
+    assert.ok(archive.review.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -205,6 +210,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.waiverCount, 22);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -300,6 +307,30 @@ test("phase closure archive validator rejects stale evidence key summaries", () 
       "--manifest", archivePath,
       "--phase-review", path.join(dir, "phase-review-bundle-manifest.json")
     ]), /evidence key summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase closure archive validator rejects stale command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-closure-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createClosureWorkspace(dir);
+    const archivePath = path.join(dir, "phase-closure-archive-manifest.json");
+    runScript("scripts/package-phase-closure-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.review.commandCoverageSummary.signoffCommandScripts = [];
+    archive.review.commandCoverageSummary.signoffCommandScriptCount = 0;
+    archive.review.commandCoverageSummary.signoffValidatorCommandCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-closure-archive.mjs", [
+      "--manifest", archivePath,
+      "--phase-review", path.join(dir, "phase-review-bundle-manifest.json")
+    ]), /command coverage summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
