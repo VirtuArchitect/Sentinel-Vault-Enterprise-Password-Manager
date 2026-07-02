@@ -61,7 +61,8 @@ const archive = {
     validated: closure.review?.validated,
     waiverSummary: closure.review?.waiverSummary,
     evidenceKeySummary: closure.review?.evidenceKeySummary,
-    commandCoverageSummary: closure.review?.commandCoverageSummary
+    commandCoverageSummary: closure.review?.commandCoverageSummary,
+    markdownCoverageSummary: closure.review?.markdownCoverageSummary
   },
   releaseGate: {
     report: hashFile(releaseGatePath),
@@ -86,5 +87,6 @@ console.log(JSON.stringify({
   cleanTree: archive.source?.cleanTree === true,
   waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
   commandScriptCount: archive.closure.commandCoverageSummary?.signoffCommandScriptCount || 0,
-  validatorCommandCount: archive.closure.commandCoverageSummary?.signoffValidatorCommandCount || 0
+  validatorCommandCount: archive.closure.commandCoverageSummary?.signoffValidatorCommandCount || 0,
+  commandCoverageMarkdownArtifactCount: archive.closure.markdownCoverageSummary?.artifactCount || 0
 }, null, 2));

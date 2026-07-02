@@ -101,6 +101,7 @@ assert.equal(archive.closure.validated, closure.review?.validated, "closure vali
 assert.deepEqual(archive.closure.waiverSummary, closure.review?.waiverSummary, "closure waiver summary mismatch");
 assert.deepEqual(archive.closure.evidenceKeySummary, closure.review?.evidenceKeySummary, "closure evidence key summary mismatch");
 assert.deepEqual(archive.closure.commandCoverageSummary, closure.review?.commandCoverageSummary, "closure command coverage summary mismatch");
+assert.deepEqual(archive.closure.markdownCoverageSummary, closure.review?.markdownCoverageSummary, "closure markdown coverage summary mismatch");
 assert.deepEqual(archive.releaseGate.commandCoverageSummary, releaseGate.commandCoverageSummary, "release gate command coverage summary mismatch");
 assert.deepEqual(archive.closure.commandCoverageSummary, archive.releaseGate.commandCoverageSummary, "closure and release gate command coverage summaries mismatch");
 
@@ -134,6 +135,7 @@ console.log(JSON.stringify({
   waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
   commandScriptCount: archive.closure.commandCoverageSummary?.signoffCommandScriptCount || 0,
   validatorCommandCount: archive.closure.commandCoverageSummary?.signoffValidatorCommandCount || 0,
+  commandCoverageMarkdownArtifactCount: archive.closure.markdownCoverageSummary?.artifactCount || 0,
   closureValidated: closureValidation.validated === true,
   releaseGateValidated: releaseGateValidation.validated === true,
   validated: true

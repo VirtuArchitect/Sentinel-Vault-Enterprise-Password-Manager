@@ -157,6 +157,8 @@ test("production release archive binds closure archive and release gate report",
     assert.ok(archive.closure.commandCoverageSummary.signoffCommandScriptCount > 20);
     assert.equal(archive.closure.commandCoverageSummary.signoffValidatorCommandCount, 13);
     assert.ok(archive.closure.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
+    assert.equal(archive.closure.markdownCoverageSummary.artifactCount, 7);
+    assert.equal(archive.closure.markdownCoverageSummary.validatorCommandCount, 13);
     assert.deepEqual(archive.releaseGate.commandCoverageSummary, archive.closure.commandCoverageSummary);
 
     const validation = JSON.parse(runScript("scripts/validate-production-release-archive.mjs", [
@@ -170,6 +172,7 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validatorCommandCount, 13);
+    assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
     assert.equal(validation.closureValidated, true);
     assert.equal(validation.releaseGateValidated, true);
     assert.equal(validation.validated, true);
@@ -287,6 +290,31 @@ test("production release archive rejects stale command coverage summaries", () =
       "--dir", dir,
       "--target", "production"
     ]), /command coverage summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release archive rejects stale markdown coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-archive-markdown-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseArchiveWorkspace(dir);
+    const archivePath = path.join(dir, "production-release-archive-manifest.json");
+    runScript("scripts/package-production-release-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.closure.markdownCoverageSummary.artifactNames = [];
+    archive.closure.markdownCoverageSummary.artifactCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-archive.mjs", [
+      "--manifest", archivePath,
+      "--dir", dir,
+      "--target", "production"
+    ]), /markdown coverage summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
