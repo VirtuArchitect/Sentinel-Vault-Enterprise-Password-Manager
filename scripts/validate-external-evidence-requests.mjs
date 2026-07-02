@@ -19,6 +19,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 
 const rootDir = path.resolve(import.meta.dirname, "..");
 const requestPath = path.resolve(args.get("--requests") || cliArgs.find((arg) => !arg.startsWith("--")) || "artifacts/deployment/replace-with-environment/external-evidence-requests.json");
+const bundleTemplatePath = path.resolve(args.get("--bundle-template") || "docs/templates/deployment-evidence-bundle.json");
 const strict = args.has("--strict");
 const placeholder = /replace-with|YYYY-MM-DD|TODO|TBD/i;
 
@@ -56,7 +57,12 @@ const assertArray = (value, name, minLength = 1) => {
 const resolveTemplate = (templatePath) => path.resolve(rootDir, templatePath);
 
 assert.ok(existsSync(requestPath), `External evidence request pack not found: ${requestPath}`);
+assert.ok(existsSync(bundleTemplatePath), `Deployment evidence bundle template not found: ${bundleTemplatePath}`);
 const report = JSON.parse(readFileSync(requestPath, "utf8"));
+const bundleTemplate = JSON.parse(readFileSync(bundleTemplatePath, "utf8"));
+assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
+assert.ok(bundleTemplate.evidence && typeof bundleTemplate.evidence === "object", "deployment evidence bundle template must include evidence map");
+const bundleEvidenceKeys = new Set(Object.keys(bundleTemplate.evidence));
 
 assert.equal(report.format, "sentinel-external-evidence-requests-v1");
 assert.ok(report.environment && typeof report.environment === "string", "environment is required");
@@ -72,6 +78,7 @@ if (strict) {
 const requestKeys = new Set();
 const allCommands = [];
 const templatePaths = new Set();
+const requestedEvidenceKeys = new Set();
 
 for (const [index, request] of report.requests.entries()) {
   assert.ok(request.phase && typeof request.phase === "string", `requests[${index}].phase is required`);
@@ -80,6 +87,7 @@ for (const [index, request] of report.requests.entries()) {
   assert.ok(request.blockerType && typeof request.blockerType === "string", `requests[${index}].blockerType is required`);
   assertArray(request.requiredInputs, `requests[${index}].requiredInputs`, 3);
   assertArray(request.evidenceTemplates, `requests[${index}].evidenceTemplates`);
+  assertArray(request.evidenceKeys, `requests[${index}].evidenceKeys`);
   assertArray(request.commands, `requests[${index}].commands`, 2);
   assertArray(request.acceptanceCriteria, `requests[${index}].acceptanceCriteria`, 3);
 
@@ -90,6 +98,11 @@ for (const [index, request] of report.requests.entries()) {
     const absolutePath = resolveTemplate(templatePath);
     assert.ok(existsSync(absolutePath), `evidence template does not exist: ${templatePath}`);
     templatePaths.add(templatePath);
+  }
+
+  for (const evidenceKey of request.evidenceKeys) {
+    assert.ok(bundleEvidenceKeys.has(evidenceKey), `evidence key is not present in deployment bundle template: ${evidenceKey}`);
+    requestedEvidenceKeys.add(evidenceKey);
   }
 
   allCommands.push(...request.commands);
@@ -121,6 +134,7 @@ const result = {
   owner: report.owner,
   requestCount: report.requests.length,
   templateCount: templatePaths.size,
+  evidenceKeyCount: requestedEvidenceKeys.size,
   validatorCommandCount: requiredValidatorCommands.length,
   validated: true
 };

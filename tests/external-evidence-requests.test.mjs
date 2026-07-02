@@ -53,6 +53,10 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
     assert.ok(report.requests.some((request) => request.evidenceTemplates.includes("docs/templates/windows-signing-execution-evidence.json")));
+    assert.ok(report.requests.some((request) => request.evidenceKeys.includes("windowsSigning")));
+    assert.ok(report.requests.some((request) => request.evidenceKeys.includes("sourceMigration")));
+    assert.ok(report.requests.some((request) => request.evidenceKeys.includes("kmsHsmSdkApproval")));
+    assert.ok(report.requests.every((request) => request.evidenceKeys.length >= 2));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:native-companion -- <native-companion-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>")));
@@ -87,6 +91,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.equal(result.strict, true);
     assert.equal(result.requestCount, 7);
     assert.ok(result.templateCount >= 10);
+    assert.equal(result.evidenceKeyCount, 18);
     assert.equal(result.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -109,6 +114,27 @@ test("external evidence request validator rejects incomplete request packs", () 
     writeFileSync(jsonPath, JSON.stringify(report, null, 2));
 
     assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /requests must include at least 7 item/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("external evidence request validator rejects evidence keys missing from bundle template", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-key-invalid-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+    const report = JSON.parse(readFileSync(jsonPath, "utf8"));
+    report.requests[0].evidenceKeys.push("missingBundleEvidenceKey");
+    writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /evidence key is not present/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

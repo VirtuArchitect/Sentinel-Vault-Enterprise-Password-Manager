@@ -28,6 +28,10 @@ const requests = [
       "docs/templates/storage-migration-evidence.json",
       "docs/architecture/postgres-schema.sql"
     ],
+    evidenceKeys: [
+      "postgresHa",
+      "storageMigration"
+    ],
     commands: [
       "pnpm plan:postgres -- --state <deployment-state.json> --out <postgres-migration-plan.json>",
       "pnpm release:postgres-ha -- --status approved --migration-plan <postgres-migration-plan.json> --storage-migration-evidence <storage-migration-evidence.json> --out <postgres-ha-approval-evidence.json>",
@@ -56,6 +60,11 @@ const requests = [
       "docs/templates/source-export-column-map.json",
       "docs/templates/storage-migration-evidence.json",
       "docs/templates/tenant-isolation-evidence.json"
+    ],
+    evidenceKeys: [
+      "sourceMigration",
+      "storageMigration",
+      "tenantIsolation"
     ],
     commands: [
       "pnpm convert:source-export -- --source <source-export.csv> --format mapped-csv --mapping <column-map.json> --vault-id <target-vault-id> --out <normalized-import.json> --evidence <migration-evidence.json>",
@@ -88,6 +97,12 @@ const requests = [
       "docs/templates/siem-receiver-rotation-evidence.json",
       "docs/templates/devops-token-response-evidence.json"
     ],
+    evidenceKeys: [
+      "connector",
+      "itsmWorkNotes",
+      "siemReceiverRotation",
+      "devopsTokenResponse"
+    ],
     commands: [
       "pnpm preflight:connectors -- --siem-url <receiver-url> --ticket-ref <approved-ticket>",
       "pnpm release:connector-evidence -- --preflight <connector-live-preflight.json> --out <connector-certification-evidence.json>",
@@ -119,6 +134,12 @@ const requests = [
       "docs/templates/windows-install-hardening-evidence.json",
       "docs/templates/release-attestation-evidence.json"
     ],
+    evidenceKeys: [
+      "windowsRelease",
+      "windowsSigning",
+      "windowsInstallHardening",
+      "releaseAttestation"
+    ],
     commands: [
       "pnpm package:windows:msi",
       "pnpm package:windows:msix",
@@ -149,6 +170,10 @@ const requests = [
       "docs/templates/kms-hsm-sdk-approval-evidence.json",
       "docs/templates/kms-hsm-provider-evidence.json"
     ],
+    evidenceKeys: [
+      "kmsHsmSdkApproval",
+      "kmsHsm"
+    ],
     commands: [
       "pnpm preflight:kms-hsm -- --endpoint <gateway-url> --key-id <key-id> --out <kms-hsm-gateway-preflight.json>",
       "pnpm release:kms-hsm -- --preflight <kms-hsm-gateway-preflight.json> --out <kms-hsm-provider-evidence.json>",
@@ -175,6 +200,10 @@ const requests = [
     evidenceTemplates: [
       "docs/templates/browser-extension-identity-evidence.json",
       "docs/templates/browser-extension-rollout-evidence.json"
+    ],
+    evidenceKeys: [
+      "browserIdentity",
+      "browserRollout"
     ],
     commands: [
       "pnpm package:extension",
@@ -204,6 +233,10 @@ const requests = [
       "docs/templates/credential-provider-approval-evidence.json",
       "docs/templates/native-companion-evidence.json",
       "docs/security/autotype-credential-provider-review.md"
+    ],
+    evidenceKeys: [
+      "credentialProviderApproval",
+      "nativeCompanion"
     ],
     commands: [
       "pnpm release:credential-provider-approval -- --status approved --report <credential-provider-approval-report.json> --native-companion-evidence <native-companion-evidence.json> --artifact <signed-credential-provider-artifact> --out <credential-provider-approval-evidence.json>",
@@ -250,6 +283,9 @@ ${request.requiredInputs.map((input) => `- ${input}`).join("\n")}
 
 Evidence templates:
 ${request.evidenceTemplates.map((template) => `- \`${template}\``).join("\n")}
+
+Deployment bundle evidence keys:
+${request.evidenceKeys.map((key) => `- \`${key}\``).join("\n")}
 
 Commands:
 ${request.commands.map((command) => `- \`${command}\``).join("\n")}
