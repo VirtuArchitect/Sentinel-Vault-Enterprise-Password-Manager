@@ -19,6 +19,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const inventoryPath = path.resolve(args.get("--inventory") || "artifacts/deployment/pilot/phase-attachment-inventory.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const intakePath = args.get("--intake") ? path.resolve(args.get("--intake")) : null;
 const requireComplete = args.get("--require-complete") === true || args.get("--require-complete") === "true";
 const requireRedacted = args.get("--require-redacted") === true || args.get("--require-redacted") === "true";
@@ -53,6 +54,17 @@ assert.equal(inventory.summary.redactionFindingCount, inventory.attachments.redu
 assert.equal(inventory.summary.commandScriptCount, intake.summary.commandScriptCount || 0, "summary command script count mismatch");
 assert.equal(inventory.summary.validatorCommandCount, intake.summary.validatorCommandCount || 0, "summary validator command count mismatch");
 assert.deepEqual(inventory.summary.commandScripts, intake.summary.commandScripts || [], "summary command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase attachment inventory markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${inventory.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${inventory.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of inventory.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
 
 inventory.attachments.forEach((attachment, index) => {
   const intakeItem = intake.intakeItems[index];

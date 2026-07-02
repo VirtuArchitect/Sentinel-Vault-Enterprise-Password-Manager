@@ -123,10 +123,16 @@ test("phase attachment inventory reports missing and attached intake files", () 
     assert.ok(inventory.attachments.some((item) => item.evidenceKeys.includes("windowsSigning")));
     assert.ok(inventory.attachments.some((item) => item.commandScripts.includes("validate:windows-signing")));
     assert.ok(inventory.attachments.some((item) => item.files.some((file) => file.evidenceKey === "windowsRelease")));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Attachment Inventory/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Attachment Inventory/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-attachment-inventory.mjs", [
       "--inventory", inventoryPath,
+      "--markdown", markdownPath,
       "--intake", path.join(dir, "phase-evidence-intake.json")
     ]));
     assert.equal(validation.format, "sentinel-phase-attachment-inventory-validation-v1");
@@ -180,6 +186,33 @@ test("phase attachment inventory validator rejects stale evidence key mappings",
       "--inventory", inventoryPath,
       "--intake", path.join(dir, "phase-evidence-intake.json")
     ]), /evidence key mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase attachment inventory validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-attachments-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createInventoryWorkspace(dir);
+    const inventoryPath = path.join(dir, "phase-attachment-inventory.json");
+    const markdownPath = path.join(dir, "phase-attachment-inventory.md");
+    runScript("scripts/prepare-phase-attachment-inventory.mjs", [
+      "--dir", dir,
+      "--out", inventoryPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-attachment-inventory.mjs", [
+      "--inventory", inventoryPath,
+      "--markdown", markdownPath,
+      "--intake", path.join(dir, "phase-evidence-intake.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
