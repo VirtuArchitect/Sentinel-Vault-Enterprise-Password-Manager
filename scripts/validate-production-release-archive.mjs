@@ -99,6 +99,7 @@ assert.equal(archive.closure.decision, closure.review?.decision, "closure decisi
 assert.equal(archive.closure.ready, closure.review?.ready, "closure ready flag mismatch");
 assert.equal(archive.closure.validated, closure.review?.validated, "closure validated flag mismatch");
 assert.deepEqual(archive.closure.waiverSummary, closure.review?.waiverSummary, "closure waiver summary mismatch");
+assert.deepEqual(archive.closure.evidenceKeySummary, closure.review?.evidenceKeySummary, "closure evidence key summary mismatch");
 
 const closureValidation = runJson("scripts/validate-phase-closure-archive.mjs", [
   "--manifest", selectedClosurePath,
@@ -127,6 +128,7 @@ console.log(JSON.stringify({
   warningCount: archive.warningCount,
   requireClean: selectedRequireClean,
   cleanTree: archive.source?.cleanTree === true,
+  waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
   closureValidated: closureValidation.validated === true,
   releaseGateValidated: releaseGateValidation.validated === true,
   validated: true

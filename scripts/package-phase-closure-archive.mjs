@@ -71,6 +71,7 @@ const archive = {
     blockerCount: reviewManifest.blockerCount,
     warningCount: reviewManifest.warningCount,
     waiverSummary: reviewManifest.waiverSummary,
+    evidenceKeySummary: reviewManifest.evidenceKeySummary,
     artifactCount: artifactNames.length,
     artifactNames
   }
@@ -87,5 +88,6 @@ console.log(JSON.stringify({
   decision: archive.review.decision,
   artifactCount: archive.review.artifactCount,
   waiverCount: archive.review.waiverSummary?.waiverCount || 0,
-  approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0
+  approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0,
+  waivedEvidenceKeyCount: archive.review.evidenceKeySummary?.waivedEvidenceKeyCount || 0
 }, null, 2));

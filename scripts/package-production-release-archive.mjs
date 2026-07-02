@@ -59,7 +59,8 @@ const archive = {
     decision: closure.review?.decision,
     ready: closure.review?.ready,
     validated: closure.review?.validated,
-    waiverSummary: closure.review?.waiverSummary
+    waiverSummary: closure.review?.waiverSummary,
+    evidenceKeySummary: closure.review?.evidenceKeySummary
   },
   releaseGate: {
     report: hashFile(releaseGatePath),
@@ -80,5 +81,6 @@ console.log(JSON.stringify({
   ready: archive.ready,
   blockerCount: archive.blockerCount,
   warningCount: archive.warningCount,
-  cleanTree: archive.source?.cleanTree === true
+  cleanTree: archive.source?.cleanTree === true,
+  waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0
 }, null, 2));

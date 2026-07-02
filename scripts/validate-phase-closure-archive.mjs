@@ -72,6 +72,7 @@ assert.equal(archive.review.warningCount, reviewManifest.warningCount, "review w
 assert.equal(archive.review.artifactCount, Object.keys(reviewManifest.artifacts || {}).length, "review artifact count mismatch");
 assert.deepEqual(archive.review.artifactNames, Object.keys(reviewManifest.artifacts || {}), "review artifact names mismatch");
 assert.deepEqual(archive.review.waiverSummary, reviewManifest.waiverSummary, "review waiver summary mismatch");
+assert.deepEqual(archive.review.evidenceKeySummary, reviewManifest.evidenceKeySummary, "review evidence key summary mismatch");
 
 if (requireApprovedWaivers) {
   const waiverRegisterPath = reviewManifest.artifacts?.phaseWaiverRegister?.path;
@@ -106,5 +107,6 @@ console.log(JSON.stringify({
   artifactCount: archive.review.artifactCount,
   waiverCount: archive.review.waiverSummary?.waiverCount || 0,
   approvedWaiverCount: archive.review.waiverSummary?.approvedCount || 0,
+  waivedEvidenceKeyCount: archive.review.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
   validated: true
 }, null, 2));

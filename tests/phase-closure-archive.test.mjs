@@ -193,6 +193,8 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(archive.review.artifactNames.length, 17);
     assert.equal(archive.review.waiverSummary.waiverCount, 22);
     assert.equal(archive.review.waiverSummary.proposedCount, 22);
+    assert.equal(archive.review.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+    assert.ok(archive.review.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -202,6 +204,7 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(validation.format, "sentinel-phase-closure-archive-validation-v1");
     assert.equal(validation.validated, true);
     assert.equal(validation.waiverCount, 22);
+    assert.equal(validation.waivedEvidenceKeyCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -274,6 +277,29 @@ test("phase closure archive validator rejects changed review manifests", () => {
       "--manifest", archivePath,
       "--phase-review", reviewPath
     ]), /review manifest .*changed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase closure archive validator rejects stale evidence key summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-closure-key-summary-${process.pid}-${Date.now()}`);
+  try {
+    createClosureWorkspace(dir);
+    const archivePath = path.join(dir, "phase-closure-archive-manifest.json");
+    runScript("scripts/package-phase-closure-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.review.evidenceKeySummary.waivedEvidenceKeys = [];
+    archive.review.evidenceKeySummary.waivedEvidenceKeyCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-closure-archive.mjs", [
+      "--manifest", archivePath,
+      "--phase-review", path.join(dir, "phase-review-bundle-manifest.json")
+    ]), /evidence key summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

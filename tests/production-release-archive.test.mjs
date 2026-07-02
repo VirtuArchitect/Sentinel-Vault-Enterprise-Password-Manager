@@ -150,6 +150,8 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(archive.format, "sentinel-production-release-archive-manifest-v1");
     assert.match(archive.closure.manifest.sha256, /^[a-f0-9]{64}$/);
     assert.match(archive.releaseGate.report.sha256, /^[a-f0-9]{64}$/);
+    assert.equal(archive.closure.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+    assert.ok(archive.closure.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
 
     const validation = JSON.parse(runScript("scripts/validate-production-release-archive.mjs", [
       "--manifest", archivePath,
@@ -159,6 +161,7 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(validation.format, "sentinel-production-release-archive-validation-v1");
     assert.equal(validation.ready, false);
     assert.equal(validation.requireClean, false);
+    assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.equal(validation.closureValidated, true);
     assert.equal(validation.releaseGateValidated, true);
     assert.equal(validation.validated, true);
@@ -225,6 +228,31 @@ test("production release archive rejects changed release gate reports and not-re
       assert.match(error.stderr.toString(), /production release gate report is not ready/);
       return true;
     });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release archive rejects stale closure evidence key summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-archive-key-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseArchiveWorkspace(dir);
+    const archivePath = path.join(dir, "production-release-archive-manifest.json");
+    runScript("scripts/package-production-release-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.closure.evidenceKeySummary.waivedEvidenceKeys = [];
+    archive.closure.evidenceKeySummary.waivedEvidenceKeyCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-archive.mjs", [
+      "--manifest", archivePath,
+      "--dir", dir,
+      "--target", "production"
+    ]), /closure evidence key summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
