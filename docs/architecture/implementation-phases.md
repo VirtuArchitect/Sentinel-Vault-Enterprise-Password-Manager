@@ -166,6 +166,7 @@ Implemented:
 - Composite production release gate check for direct phase completion audit consistency and fail-on-remaining enforcement.
 - README release-sequence drift test that requires the documented operator workflow to include every final-gate validation command.
 - Production release archive manifest and validator that hash-bind the closure archive to the saved production release-gate report.
+- Production release archive command-script coverage binding across closure and release-gate reports.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
 
 Remaining:

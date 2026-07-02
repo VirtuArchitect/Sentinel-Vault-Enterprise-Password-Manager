@@ -144,6 +144,8 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(result.target, "production");
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
     assert.ok(existsSync(archivePath));
 
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
@@ -152,6 +154,10 @@ test("production release archive binds closure archive and release gate report",
     assert.match(archive.releaseGate.report.sha256, /^[a-f0-9]{64}$/);
     assert.equal(archive.closure.evidenceKeySummary.waivedEvidenceKeyCount, 18);
     assert.ok(archive.closure.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
+    assert.ok(archive.closure.commandCoverageSummary.signoffCommandScriptCount > 20);
+    assert.equal(archive.closure.commandCoverageSummary.signoffValidatorCommandCount, 13);
+    assert.ok(archive.closure.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
+    assert.deepEqual(archive.releaseGate.commandCoverageSummary, archive.closure.commandCoverageSummary);
 
     const validation = JSON.parse(runScript("scripts/validate-production-release-archive.mjs", [
       "--manifest", archivePath,
@@ -162,6 +168,8 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(validation.ready, false);
     assert.equal(validation.requireClean, false);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
     assert.equal(validation.closureValidated, true);
     assert.equal(validation.releaseGateValidated, true);
     assert.equal(validation.validated, true);
@@ -253,6 +261,32 @@ test("production release archive rejects stale closure evidence key summaries", 
       "--dir", dir,
       "--target", "production"
     ]), /closure evidence key summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release archive rejects stale command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-archive-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseArchiveWorkspace(dir);
+    const archivePath = path.join(dir, "production-release-archive-manifest.json");
+    runScript("scripts/package-production-release-archive.mjs", [
+      "--dir", dir,
+      "--out", archivePath
+    ]);
+
+    const archive = JSON.parse(readFileSync(archivePath, "utf8"));
+    archive.closure.commandCoverageSummary.signoffCommandScripts = [];
+    archive.closure.commandCoverageSummary.signoffCommandScriptCount = 0;
+    archive.closure.commandCoverageSummary.signoffValidatorCommandCount = 0;
+    writeFileSync(archivePath, JSON.stringify(archive, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-archive.mjs", [
+      "--manifest", archivePath,
+      "--dir", dir,
+      "--target", "production"
+    ]), /command coverage summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

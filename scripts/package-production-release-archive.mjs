@@ -60,14 +60,16 @@ const archive = {
     ready: closure.review?.ready,
     validated: closure.review?.validated,
     waiverSummary: closure.review?.waiverSummary,
-    evidenceKeySummary: closure.review?.evidenceKeySummary
+    evidenceKeySummary: closure.review?.evidenceKeySummary,
+    commandCoverageSummary: closure.review?.commandCoverageSummary
   },
   releaseGate: {
     report: hashFile(releaseGatePath),
     ready: releaseGate.ready,
     blockerCount: releaseGate.blockerCount,
     warningCount: releaseGate.warningCount,
-    generatedAt: releaseGate.generatedAt
+    generatedAt: releaseGate.generatedAt,
+    commandCoverageSummary: releaseGate.commandCoverageSummary
   }
 };
 
@@ -82,5 +84,7 @@ console.log(JSON.stringify({
   blockerCount: archive.blockerCount,
   warningCount: archive.warningCount,
   cleanTree: archive.source?.cleanTree === true,
-  waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0
+  waivedEvidenceKeyCount: archive.closure.evidenceKeySummary?.waivedEvidenceKeyCount || 0,
+  commandScriptCount: archive.closure.commandCoverageSummary?.signoffCommandScriptCount || 0,
+  validatorCommandCount: archive.closure.commandCoverageSummary?.signoffValidatorCommandCount || 0
 }, null, 2));
