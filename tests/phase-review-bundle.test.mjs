@@ -209,6 +209,10 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(manifest.commandCoverageSummary.waiverCommandScriptCount, manifest.commandCoverageSummary.signoffCommandScriptCount);
     assert.equal(manifest.commandCoverageSummary.waiverValidatorCommandCount, 13);
     assert.ok(manifest.commandCoverageSummary.waiverCommandScripts.includes("validate:windows-signing"));
+    assert.equal(manifest.markdownCoverageSummary.artifactCount, 7);
+    assert.ok(manifest.markdownCoverageSummary.artifactNames.includes("phaseWaiverRegisterMarkdown"));
+    assert.equal(manifest.markdownCoverageSummary.commandScriptCount, manifest.commandCoverageSummary.signoffCommandScriptCount);
+    assert.equal(manifest.markdownCoverageSummary.validatorCommandCount, 13);
     assert.ok(manifest.evidenceKeySummary.decisionActionEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.signoffEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
@@ -226,6 +230,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validatorCommandCount, 13);
+    assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -341,6 +346,30 @@ test("phase review bundle validator rejects stale command coverage summaries", (
     assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath
     ]), /command coverage summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review bundle validator rejects stale markdown command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-markdown-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    const markdownPath = path.join(dir, "phase-waiver-register.md");
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]), /phaseWaiverRegisterMarkdown .*changed|missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

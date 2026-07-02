@@ -152,9 +152,33 @@ assert.deepEqual(commandCoverageSummary.signoffCommandScripts, commandCoverageSu
 assert.equal(commandCoverageSummary.signoffCommandScriptCount, commandCoverageSummary.waiverCommandScriptCount, "signoff and waiver command script counts do not match");
 assert.equal(commandCoverageSummary.signoffValidatorCommandCount, commandCoverageSummary.waiverValidatorCommandCount, "signoff and waiver validator command counts do not match");
 
+const commandCoverageMarkdownArtifacts = [
+  "phaseActionRegisterMarkdown",
+  "phaseGapMatrixMarkdown",
+  "phaseDecisionRecordMarkdown",
+  "phaseSignoffMatrixMarkdown",
+  "phaseEvidenceIntakeMarkdown",
+  "phaseAttachmentInventoryMarkdown",
+  "phaseWaiverRegisterMarkdown"
+];
+const markdownCoverageSummary = {
+  artifactCount: commandCoverageMarkdownArtifacts.length,
+  artifactNames: commandCoverageMarkdownArtifacts,
+  commandScriptCount: commandCoverageSummary.signoffCommandScriptCount,
+  validatorCommandCount: commandCoverageSummary.signoffValidatorCommandCount
+};
+for (const artifactName of commandCoverageMarkdownArtifacts) {
+  const markdown = readFileSync(manifest.artifacts[artifactName].path, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), `${artifactName} must include command coverage summary`);
+  for (const script of commandCoverageSummary.signoffCommandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `${artifactName} missing command script coverage: ${script}`);
+  }
+}
+
 assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
 assert.deepEqual(manifest.evidenceKeySummary, evidenceKeySummary, "manifest evidence key summary does not match review artifacts");
 assert.deepEqual(manifest.commandCoverageSummary, commandCoverageSummary, "manifest command coverage summary does not match review artifacts");
+assert.deepEqual(manifest.markdownCoverageSummary, markdownCoverageSummary, "manifest markdown coverage summary does not match review artifacts");
 
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
@@ -179,5 +203,6 @@ console.log(JSON.stringify({
   signoffEvidenceKeyCount: evidenceKeySummary.signoffEvidenceKeyCount,
   waivedEvidenceKeyCount: evidenceKeySummary.waivedEvidenceKeyCount,
   commandScriptCount: commandCoverageSummary.signoffCommandScriptCount,
-  validatorCommandCount: commandCoverageSummary.signoffValidatorCommandCount
+  validatorCommandCount: commandCoverageSummary.signoffValidatorCommandCount,
+  commandCoverageMarkdownArtifactCount: markdownCoverageSummary.artifactCount
 }, null, 2));

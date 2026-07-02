@@ -130,6 +130,29 @@ assert.deepEqual(commandCoverageSummary.signoffCommandScripts, commandCoverageSu
 assert.equal(commandCoverageSummary.signoffCommandScriptCount, commandCoverageSummary.waiverCommandScriptCount, "signoff and waiver command script counts do not match");
 assert.equal(commandCoverageSummary.signoffValidatorCommandCount, commandCoverageSummary.waiverValidatorCommandCount, "signoff and waiver validator command counts do not match");
 
+const commandCoverageMarkdownArtifacts = [
+  "phaseActionRegisterMarkdown",
+  "phaseGapMatrixMarkdown",
+  "phaseDecisionRecordMarkdown",
+  "phaseSignoffMatrixMarkdown",
+  "phaseEvidenceIntakeMarkdown",
+  "phaseAttachmentInventoryMarkdown",
+  "phaseWaiverRegisterMarkdown"
+];
+for (const artifactName of commandCoverageMarkdownArtifacts) {
+  const markdown = readFileSync(artifactMap[artifactName], "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), `${artifactName} must include command coverage summary`);
+  for (const script of commandCoverageSummary.signoffCommandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `${artifactName} missing command script coverage: ${script}`);
+  }
+}
+const markdownCoverageSummary = {
+  artifactCount: commandCoverageMarkdownArtifacts.length,
+  artifactNames: commandCoverageMarkdownArtifacts,
+  commandScriptCount: commandCoverageSummary.signoffCommandScriptCount,
+  validatorCommandCount: commandCoverageSummary.signoffValidatorCommandCount
+};
+
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
     assert.equal(waiver.status, "approved", `waiver ${index + 1} must be approved for release review`);
@@ -160,6 +183,7 @@ const manifest = {
   waiverSummary,
   evidenceKeySummary,
   commandCoverageSummary,
+  markdownCoverageSummary,
   artifacts
 };
 
@@ -177,5 +201,6 @@ console.log(JSON.stringify({
   approvedWaiverCount: manifest.waiverSummary.approvedCount,
   waivedEvidenceKeyCount: manifest.evidenceKeySummary.waivedEvidenceKeyCount,
   commandScriptCount: manifest.commandCoverageSummary.signoffCommandScriptCount,
-  validatorCommandCount: manifest.commandCoverageSummary.signoffValidatorCommandCount
+  validatorCommandCount: manifest.commandCoverageSummary.signoffValidatorCommandCount,
+  commandCoverageMarkdownArtifactCount: manifest.markdownCoverageSummary.artifactCount
 }, null, 2));

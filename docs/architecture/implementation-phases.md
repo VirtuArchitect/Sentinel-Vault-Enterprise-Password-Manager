@@ -160,6 +160,7 @@ Implemented:
 - Phase review bundle evidence-key summary binding for decision and signoff artifacts.
 - Phase review bundle command-script coverage binding for decision and signoff artifacts.
 - Phase review bundle command-script coverage binding for waiver artifacts.
+- Phase review bundle markdown command coverage binding for owner-facing review artifacts.
 - Phase closure and release archive evidence-key summary binding so final archives preserve waived deployment-bundle gate traceability.
 - Phase closure archive command-script coverage binding for final review manifests.
 - Production release-gate evidence-key summary output and closure/review consistency check for waived deployment-bundle gates.
