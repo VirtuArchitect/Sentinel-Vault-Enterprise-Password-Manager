@@ -85,6 +85,13 @@ const record = {
     actionEvidenceKeys,
     gapEvidenceKeys
   },
+  commandCoverageSummary: {
+    actionCommandScriptCount: actionRegister.summary.commandScriptCount || 0,
+    gapCommandScriptCount: gapMatrix.summary.commandScriptCount || 0,
+    validatorCommandCount: gapMatrix.summary.validatorCommandCount || actionRegister.summary.validatorCommandCount || 0,
+    actionCommandScripts: actionRegister.summary.commandScripts || [],
+    gapCommandScripts: gapMatrix.summary.commandScripts || []
+  },
   ownerRoles,
   requiredApprovals: ownerRoles.map((ownerRole) => {
     const actions = actionRegister.actions.filter((action) => action.ownerRole === ownerRole);
@@ -124,6 +131,9 @@ Readiness:
 - Missing mapped artifacts: ${record.missingArtifactCount}
 - Action evidence keys: ${record.evidenceKeySummary.actionEvidenceKeyCount}
 - Gap evidence keys: ${record.evidenceKeySummary.gapEvidenceKeyCount}
+- Action command scripts: ${record.commandCoverageSummary.actionCommandScriptCount}
+- Gap command scripts: ${record.commandCoverageSummary.gapCommandScriptCount}
+- Validator commands: ${record.commandCoverageSummary.validatorCommandCount}
 
 Required approvals:
 ${record.requiredApprovals.map((approval) => `- ${approval.ownerRole}: ${approval.status} (${approval.evidenceKeys.join(", ")})`).join("\n")}

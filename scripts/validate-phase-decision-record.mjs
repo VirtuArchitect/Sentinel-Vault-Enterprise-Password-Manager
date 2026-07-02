@@ -93,6 +93,14 @@ assert.deepEqual(record.evidenceKeySummary, {
   actionEvidenceKeys,
   gapEvidenceKeys
 }, "evidence key summary mismatch");
+assert.deepEqual(record.commandCoverageSummary, {
+  actionCommandScriptCount: actionRegister.summary.commandScriptCount || 0,
+  gapCommandScriptCount: gapMatrix.summary.commandScriptCount || 0,
+  validatorCommandCount: gapMatrix.summary.validatorCommandCount || actionRegister.summary.validatorCommandCount || 0,
+  actionCommandScripts: actionRegister.summary.commandScripts || [],
+  gapCommandScripts: gapMatrix.summary.commandScripts || []
+}, "command coverage summary mismatch");
+assert.deepEqual(record.commandCoverageSummary.actionCommandScripts, record.commandCoverageSummary.gapCommandScripts, "action and gap command scripts mismatch");
 assert.deepEqual(record.ownerRoles, ownerRoles, "owner roles mismatch");
 assert.equal(record.requiredApprovals.length, ownerRoles.length, "required approval count mismatch");
 
@@ -121,5 +129,6 @@ console.log(JSON.stringify({
   pendingActionCount: record.pendingActionCount,
   blockerCount: record.blockerCount,
   evidenceKeyCount: record.evidenceKeySummary.actionEvidenceKeyCount,
+  commandScriptCount: record.commandCoverageSummary.actionCommandScriptCount,
   validated: true
 }, null, 2));
