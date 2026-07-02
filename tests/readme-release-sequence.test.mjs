@@ -26,7 +26,8 @@ const requiredReleaseCommands = [
   "pnpm validate:phase-waivers",
   "pnpm validate:phase-review",
   "pnpm validate:phase-closure",
-  "pnpm validate:release-gate"
+  "pnpm validate:release-gate",
+  "pnpm validate:release-gate-report"
 ];
 
 test("README release sequence documents final gate validation commands", () => {
@@ -34,4 +35,5 @@ test("README release sequence documents final gate validation commands", () => {
   assert.deepEqual(missing, [], `README release sequence is missing commands: ${missing.join(", ")}`);
   assert.match(readme, /validate:phase-gate-report.+--require-ready/, "phase gate report validation must require readiness");
   assert.match(readme, /validate:release-gate.+--target "production".+--require-clean/, "release gate command must target production and require a clean source tree");
+  assert.match(readme, /validate:release-gate-report.+--target "production".+--require-clean.+--require-ready/, "release gate report validation must target production, require a clean source tree, and require readiness");
 });

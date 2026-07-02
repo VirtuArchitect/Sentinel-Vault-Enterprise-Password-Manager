@@ -290,6 +290,7 @@ pnpm validate:phase-closure -- --manifest ".\artifacts\deployment\pilot\phase-cl
 pnpm validate:phase-review -- --manifest ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json" --require-approved-waivers
 pnpm validate:phase-closure -- --manifest ".\artifacts\deployment\pilot\phase-closure-archive-manifest.json" --phase-review ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json" --require-approved-waivers --require-clean
 pnpm validate:release-gate -- --dir ".\artifacts\deployment\pilot" --target "production" --require-clean --out ".\artifacts\deployment\pilot\production-release-gate.json"
+pnpm validate:release-gate-report -- --dir ".\artifacts\deployment\pilot" --report ".\artifacts\deployment\pilot\production-release-gate.json" --target "production" --require-clean --require-ready
 pnpm report:phase-readiness -- --bundle ".\artifacts\deployment\pilot\deployment-evidence-bundle.json" --external-requests ".\artifacts\deployment\pilot\external-evidence-requests.json" --target "pilot" --fail-on-blockers
 pnpm validate:deployment-evidence -- ".\artifacts\deployment\pilot\deployment-evidence-bundle.json"
 ```

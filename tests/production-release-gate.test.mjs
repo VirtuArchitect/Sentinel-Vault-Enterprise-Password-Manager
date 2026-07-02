@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -202,6 +202,79 @@ test("production release gate rejects placeholder phase workspaces", () => {
 
       const saved = JSON.parse(readFileSync(outputPath, "utf8"));
       assert.equal(saved.blockerCount, report.blockerCount);
+      return true;
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release gate report validator accepts current blocked reports", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-gate-report-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseGateWorkspace(dir);
+    const outputPath = path.join(dir, "production-release-gate.json");
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate.mjs", [
+      "--dir", dir,
+      "--out", outputPath
+    ]), { status: 1 });
+
+    const validation = JSON.parse(runScript("scripts/validate-production-release-gate-report.mjs", [
+      "--dir", dir,
+      "--report", outputPath,
+      "--target", "production"
+    ]));
+
+    assert.equal(validation.format, "sentinel-production-release-gate-report-validation-v1");
+    assert.equal(validation.ready, false);
+    assert.ok(validation.blockerCount > 0);
+    assert.equal(validation.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release gate report validator rejects stale reports and not-ready release mode", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-gate-report-stale-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseGateWorkspace(dir);
+    const outputPath = path.join(dir, "production-release-gate.json");
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate.mjs", [
+      "--dir", dir,
+      "--out", outputPath
+    ]), { status: 1 });
+
+    const report = JSON.parse(readFileSync(outputPath, "utf8"));
+    report.ready = true;
+    report.blockerCount = 0;
+    report.blockers = [];
+    writeFileSync(outputPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate-report.mjs", [
+      "--dir", dir,
+      "--report", outputPath,
+      "--target", "production"
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /production release gate report is stale/);
+      return true;
+    });
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate.mjs", [
+      "--dir", dir,
+      "--out", outputPath
+    ]), { status: 1 });
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate-report.mjs", [
+      "--dir", dir,
+      "--report", outputPath,
+      "--target", "production",
+      "--require-ready"
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /production release gate report is not ready/);
       return true;
     });
   } finally {

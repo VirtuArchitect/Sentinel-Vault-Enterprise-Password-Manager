@@ -138,6 +138,7 @@ Implemented:
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.
 - Composite production release gate that validates deployment evidence, readiness, approved waivers, final review, closure archive provenance, and clean source state in one command.
+- Production release-gate report validator that rejects stale archived gate output and can require release-ready status.
 - Composite production release gate check for deployment workspace manifest integrity and evidence-template drift.
 - Composite production release gate check for strict external evidence request-pack completeness.
 - Composite production release gate check for direct phase evidence pack integrity.
