@@ -56,6 +56,7 @@ const actions = externalRequests.requests.map((request, index) => {
     blockerType: request.blockerType,
     status: phaseGate.ready ? "complete" : "pending-external-evidence",
     phaseRemaining: remaining?.remaining || [],
+    evidenceKeys: request.evidenceKeys || [],
     requiredInputs: request.requiredInputs,
     evidenceTemplates: request.evidenceTemplates,
     commands: request.commands,
@@ -80,6 +81,7 @@ const report = {
   },
   summary: {
     actionCount: actions.length,
+    evidenceKeyCount: new Set(actions.flatMap((action) => action.evidenceKeys)).size,
     ownerRoles: [...new Set(actions.map((action) => action.ownerRole))],
     blockerTypes: [...new Set(actions.map((action) => action.blockerType))]
   },
@@ -102,6 +104,9 @@ Status: ${action.status}
 
 Required inputs:
 ${action.requiredInputs.map((input) => `- [ ] ${input}`).join("\n")}
+
+Deployment bundle evidence keys:
+${action.evidenceKeys.map((key) => `- \`${key}\``).join("\n")}
 
 Evidence templates:
 ${action.evidenceTemplates.map((template) => `- \`${template}\``).join("\n")}

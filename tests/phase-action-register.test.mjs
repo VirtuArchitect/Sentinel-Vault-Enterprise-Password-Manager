@@ -84,7 +84,9 @@ test("phase action register creates owner action records from the phase gate", (
     const register = JSON.parse(readFileSync(registerPath, "utf8"));
     assert.equal(register.format, "sentinel-phase-action-register-v1");
     assert.equal(register.actions.length, 7);
+    assert.equal(register.summary.evidenceKeyCount, 18);
     assert.equal(register.actions[0].id, "ACT-01");
+    assert.ok(register.actions.some((action) => action.evidenceKeys.includes("windowsSigning")));
     assert.ok(register.actions.some((action) => action.blockerType === "certificate-backed-release"));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Action Register/);
 
@@ -94,6 +96,7 @@ test("phase action register creates owner action records from the phase gate", (
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]));
     assert.equal(validation.format, "sentinel-phase-action-register-validation-v1");
+    assert.equal(validation.evidenceKeyCount, 18);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -119,6 +122,30 @@ test("phase action register validator rejects stale actions", () => {
       "--phase-gate", path.join(dir, "phase-gate-validation.json"),
       "--external-requests", path.join(dir, "external-evidence-requests.json")
     ]), /action 1 title mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase action register validator rejects stale evidence keys", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-actions-keys-${process.pid}-${Date.now()}`);
+  try {
+    createActionWorkspace(dir);
+    const registerPath = path.join(dir, "phase-action-register.json");
+    runScript("scripts/prepare-phase-action-register.mjs", [
+      "--dir", dir,
+      "--out", registerPath,
+      "--markdown-out", path.join(dir, "phase-action-register.md")
+    ]);
+    const register = JSON.parse(readFileSync(registerPath, "utf8"));
+    register.actions[0].evidenceKeys = ["changedEvidenceKey"];
+    writeFileSync(registerPath, JSON.stringify(register, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-action-register.mjs", [
+      "--register", registerPath,
+      "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /evidence key mismatch/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

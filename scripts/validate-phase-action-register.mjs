@@ -47,6 +47,7 @@ assert.equal(register.gate.remainingPhaseCount, phaseGate.remainingPhaseCount, "
 assert.equal(register.gate.remainingItemCount, phaseGate.remainingItemCount, "gate remaining item count is stale");
 assert.ok(Array.isArray(register.actions), "actions must be an array");
 assert.equal(register.actions.length, externalRequests.requests.length, "action count does not match external requests");
+assert.equal(register.summary.evidenceKeyCount, new Set(register.actions.flatMap((action) => action.evidenceKeys || [])).size, "summary evidence key count mismatch");
 
 for (const [index, request] of externalRequests.requests.entries()) {
   const action = register.actions[index];
@@ -55,6 +56,7 @@ for (const [index, request] of externalRequests.requests.entries()) {
   assert.equal(action.title, request.title, `action ${index + 1} title mismatch`);
   assert.equal(action.ownerRole, request.ownerRole, `action ${index + 1} ownerRole mismatch`);
   assert.equal(action.blockerType, request.blockerType, `action ${index + 1} blockerType mismatch`);
+  assert.deepEqual(action.evidenceKeys, request.evidenceKeys || [], `action ${index + 1} evidence key mismatch`);
   assert.deepEqual(action.requiredInputs, request.requiredInputs, `action ${index + 1} required inputs mismatch`);
   assert.deepEqual(action.evidenceTemplates, request.evidenceTemplates, `action ${index + 1} evidence templates mismatch`);
   assert.deepEqual(action.commands, request.commands, `action ${index + 1} commands mismatch`);
@@ -65,6 +67,7 @@ console.log(JSON.stringify({
   format: "sentinel-phase-action-register-validation-v1",
   registerPath,
   actionCount: register.actions.length,
+  evidenceKeyCount: register.summary.evidenceKeyCount,
   ready: register.gate.ready,
   validated: true
 }, null, 2));
