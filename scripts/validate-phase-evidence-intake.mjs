@@ -21,6 +21,7 @@ const intakePath = path.resolve(args.get("--intake") || "artifacts/deployment/pi
 const externalRequestsPath = args.get("--external-requests") ? path.resolve(args.get("--external-requests")) : null;
 const gapMatrixPath = args.get("--phase-gaps") ? path.resolve(args.get("--phase-gaps")) : null;
 const signoffMatrixPath = args.get("--phase-signoffs") ? path.resolve(args.get("--phase-signoffs")) : null;
+const bundleTemplatePath = args.get("--bundle-template") ? path.resolve(args.get("--bundle-template")) : null;
 
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8"));
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -34,21 +35,26 @@ assert.ok(Array.isArray(intake.intakeItems), "intakeItems must be an array");
 const externalRequests = readJson(externalRequestsPath || intake.externalRequestsPath);
 const gapMatrix = readJson(gapMatrixPath || intake.gapMatrixPath);
 const signoffMatrix = readJson(signoffMatrixPath || intake.signoffMatrixPath);
+const bundleTemplate = readJson(bundleTemplatePath || intake.bundleTemplatePath || "docs/templates/deployment-evidence-bundle.json");
 
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(gapMatrix.format, "sentinel-phase-gap-matrix-v1");
 assert.equal(signoffMatrix.format, "sentinel-phase-signoff-matrix-v1");
+assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
 assert.equal(intake.externalRequestsPath, externalRequestsPath || intake.externalRequestsPath, "external requests path mismatch");
 assert.equal(intake.gapMatrixPath, gapMatrixPath || intake.gapMatrixPath, "gap matrix path mismatch");
 assert.equal(intake.signoffMatrixPath, signoffMatrixPath || intake.signoffMatrixPath, "signoff matrix path mismatch");
+assert.equal(intake.bundleTemplatePath, bundleTemplatePath || intake.bundleTemplatePath, "bundle template path mismatch");
 assert.equal(intake.environment, externalRequests.environment, "environment mismatch");
 assert.equal(intake.owner, externalRequests.owner, "owner mismatch");
 assert.equal(intake.intakeItems.length, externalRequests.requests.length, "intake item count mismatch");
 
 const signoffByOwner = new Map(signoffMatrix.approvals.map((approval) => [approval.ownerRole, approval]));
+const evidenceKeyByTemplate = new Map(Object.entries(bundleTemplate.evidence || {}).map(([key, templatePath]) => [templatePath, key]));
 assert.equal(intake.summary.intakeCount, intake.intakeItems.length, "summary intake count mismatch");
 assert.equal(intake.summary.blockedIntakeCount, intake.intakeItems.filter((item) => item.status !== "ready-for-signoff").length, "summary blocked count mismatch");
 assert.equal(intake.summary.expectedFileCount, intake.intakeItems.reduce((total, item) => total + item.expectedFiles.length, 0), "summary expected file count mismatch");
+assert.equal(intake.summary.evidenceKeyCount, new Set(intake.intakeItems.flatMap((item) => item.evidenceKeys || [])).size, "summary evidence key count mismatch");
 assert.equal(intake.summary.commandCount, intake.intakeItems.reduce((total, item) => total + item.validationCommands.length, 0), "summary command count mismatch");
 
 intake.intakeItems.forEach((item, index) => {
@@ -64,6 +70,7 @@ intake.intakeItems.forEach((item, index) => {
   assert.equal(item.blockerType, request.blockerType, `intake ${index + 1} blocker mismatch`);
   assert.equal(item.status, signoff?.status || "blocked-pending-evidence", `intake ${index + 1} status mismatch`);
   assert.equal(item.intakeDir, expectedIntakeDir, `intake ${index + 1} folder mismatch`);
+  assert.deepEqual(item.evidenceKeys, request.evidenceKeys || [], `intake ${index + 1} evidence key mismatch`);
   assert.deepEqual(item.validationCommands, request.commands, `intake ${index + 1} command mismatch`);
   assert.deepEqual(item.acceptanceCriteria, request.acceptanceCriteria, `intake ${index + 1} acceptance criteria mismatch`);
   assert.ok(item.redactionChecks.length >= 3, `intake ${index + 1} redaction checks incomplete`);
@@ -72,6 +79,8 @@ intake.intakeItems.forEach((item, index) => {
   item.expectedFiles.forEach((file, fileIndex) => {
     const templatePath = request.evidenceTemplates[fileIndex];
     const mapping = gap.templateMappings.find((candidate) => candidate.templatePath === templatePath);
+    const expectedEvidenceKey = evidenceKeyByTemplate.get(templatePath) || null;
+    assert.equal(file.evidenceKey, expectedEvidenceKey, `intake ${index + 1} file ${fileIndex + 1} evidence key mismatch`);
     assert.equal(file.templatePath, templatePath, `intake ${index + 1} file ${fileIndex + 1} template mismatch`);
     assert.equal(file.targetPath, `${expectedIntakeDir}/${path.basename(templatePath)}`, `intake ${index + 1} file ${fileIndex + 1} target mismatch`);
     assert.equal(file.coverage, mapping?.coverage || "supporting-artifact", `intake ${index + 1} file ${fileIndex + 1} coverage mismatch`);

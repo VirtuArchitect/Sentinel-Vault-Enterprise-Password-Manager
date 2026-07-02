@@ -133,6 +133,7 @@ Implemented:
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.
 - Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.
 - Phase evidence intake generator and validator that turn external owner requests into deployment-specific intake folders, expected files, validation commands, and redaction checks.
+- Phase evidence intake and attachment inventory evidence-key propagation so owner files remain traceable to deployment-bundle gates.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with approval, expiry, and compensating-control fields.
 - Release-mode phase review and closure validation that rejects proposed, expired, placeholder, or control-free waivers before final archive approval.

@@ -115,6 +115,8 @@ test("phase attachment inventory reports missing and attached intake files", () 
     const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
     assert.equal(inventory.format, "sentinel-phase-attachment-inventory-v1");
     assert.ok(inventory.attachments.some((item) => item.attachedFileCount === 1));
+    assert.ok(inventory.attachments.some((item) => item.evidenceKeys.includes("windowsSigning")));
+    assert.ok(inventory.attachments.some((item) => item.files.some((file) => file.evidenceKey === "windowsRelease")));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Attachment Inventory/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-attachment-inventory.mjs", [
@@ -147,6 +149,29 @@ test("phase attachment inventory validator rejects changed attachments", () => {
       "--inventory", inventoryPath,
       "--intake", path.join(dir, "phase-evidence-intake.json")
     ]), /byte length changed|SHA-256 changed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase attachment inventory validator rejects stale evidence key mappings", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-attachments-key-stale-${process.pid}-${Date.now()}`);
+  try {
+    createInventoryWorkspace(dir);
+    const inventoryPath = path.join(dir, "phase-attachment-inventory.json");
+    runScript("scripts/prepare-phase-attachment-inventory.mjs", [
+      "--dir", dir,
+      "--out", inventoryPath,
+      "--markdown-out", path.join(dir, "phase-attachment-inventory.md")
+    ]);
+    const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
+    inventory.attachments[0].evidenceKeys = ["changedEvidenceKey"];
+    writeFileSync(inventoryPath, JSON.stringify(inventory, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-attachment-inventory.mjs", [
+      "--inventory", inventoryPath,
+      "--intake", path.join(dir, "phase-evidence-intake.json")
+    ]), /evidence key mismatch/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -73,6 +73,7 @@ const attachments = intake.intakeItems.map((item) => {
     if (!existsSync(resolvedPath)) {
       return {
         templatePath: expectedFile.templatePath,
+        evidenceKey: expectedFile.evidenceKey || null,
         targetPath: expectedFile.targetPath,
         resolvedPath,
         status: "missing",
@@ -86,6 +87,7 @@ const attachments = intake.intakeItems.map((item) => {
     const redactionFindings = scanAttachment(resolvedPath, hashed.buffer);
     return {
       templatePath: expectedFile.templatePath,
+      evidenceKey: expectedFile.evidenceKey || null,
       targetPath: expectedFile.targetPath,
       resolvedPath,
       status: redactionFindings.length > 0 ? "redaction-review-required" : "attached",
@@ -102,6 +104,7 @@ const attachments = intake.intakeItems.map((item) => {
     ownerRole: item.ownerRole,
     blockerType: item.blockerType,
     intakeDir: item.intakeDir,
+    evidenceKeys: item.evidenceKeys || [],
     expectedFileCount: files.length,
     attachedFileCount: files.filter((file) => file.status !== "missing").length,
     missingFileCount: files.filter((file) => file.status === "missing").length,

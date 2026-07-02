@@ -59,6 +59,7 @@ inventory.attachments.forEach((attachment, index) => {
   assert.equal(attachment.ownerRole, intakeItem.ownerRole, `attachment ${index + 1} owner mismatch`);
   assert.equal(attachment.blockerType, intakeItem.blockerType, `attachment ${index + 1} blocker mismatch`);
   assert.equal(attachment.intakeDir, intakeItem.intakeDir, `attachment ${index + 1} intake folder mismatch`);
+  assert.deepEqual(attachment.evidenceKeys, intakeItem.evidenceKeys || [], `attachment ${index + 1} evidence key mismatch`);
   assert.equal(attachment.files.length, intakeItem.expectedFiles.length, `attachment ${index + 1} file count mismatch`);
   assert.equal(attachment.expectedFileCount, attachment.files.length, `attachment ${index + 1} expected count mismatch`);
   assert.equal(attachment.attachedFileCount, attachment.files.filter((file) => file.status !== "missing").length, `attachment ${index + 1} attached count mismatch`);
@@ -68,6 +69,7 @@ inventory.attachments.forEach((attachment, index) => {
   attachment.files.forEach((file, fileIndex) => {
     const expectedFile = intakeItem.expectedFiles[fileIndex];
     const expectedResolvedPath = path.resolve(inventory.evidenceDir, expectedFile.targetPath);
+    assert.equal(file.evidenceKey, expectedFile.evidenceKey || null, `attachment ${index + 1} file ${fileIndex + 1} evidence key mismatch`);
     assert.equal(file.templatePath, expectedFile.templatePath, `attachment ${index + 1} file ${fileIndex + 1} template mismatch`);
     assert.equal(file.targetPath, expectedFile.targetPath, `attachment ${index + 1} file ${fileIndex + 1} target mismatch`);
     assert.equal(file.resolvedPath, expectedResolvedPath, `attachment ${index + 1} file ${fileIndex + 1} resolved path mismatch`);

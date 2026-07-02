@@ -21,6 +21,7 @@ const evidenceDir = path.resolve(args.get("--dir") || "artifacts/deployment/pilo
 const externalRequestsPath = path.resolve(args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json"));
 const gapMatrixPath = path.resolve(args.get("--phase-gaps") || path.join(evidenceDir, "phase-gap-matrix.json"));
 const signoffMatrixPath = path.resolve(args.get("--phase-signoffs") || path.join(evidenceDir, "phase-signoff-matrix.json"));
+const bundleTemplatePath = path.resolve(args.get("--bundle-template") || "docs/templates/deployment-evidence-bundle.json");
 const outputPath = path.resolve(args.get("--out") || path.join(evidenceDir, "phase-evidence-intake.json"));
 const markdownPath = path.resolve(args.get("--markdown-out") || path.join(evidenceDir, "phase-evidence-intake.md"));
 
@@ -30,18 +31,22 @@ const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 assert.ok(existsSync(externalRequestsPath), `External evidence requests not found: ${externalRequestsPath}`);
 assert.ok(existsSync(gapMatrixPath), `Phase gap matrix not found: ${gapMatrixPath}`);
 assert.ok(existsSync(signoffMatrixPath), `Phase signoff matrix not found: ${signoffMatrixPath}`);
+assert.ok(existsSync(bundleTemplatePath), `Deployment evidence bundle template not found: ${bundleTemplatePath}`);
 
 const externalRequests = readJson(externalRequestsPath);
 const gapMatrix = readJson(gapMatrixPath);
 const signoffMatrix = readJson(signoffMatrixPath);
+const bundleTemplate = readJson(bundleTemplatePath);
 
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(gapMatrix.format, "sentinel-phase-gap-matrix-v1");
 assert.equal(signoffMatrix.format, "sentinel-phase-signoff-matrix-v1");
+assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
 assert.equal(gapMatrix.summary.phaseCount, externalRequests.requests.length, "gap matrix request count mismatch");
 assert.equal(signoffMatrix.summary.pendingActionCount, externalRequests.requests.length, "signoff matrix pending action count mismatch");
 
 const signoffByOwner = new Map(signoffMatrix.approvals.map((approval) => [approval.ownerRole, approval]));
+const evidenceKeyByTemplate = new Map(Object.entries(bundleTemplate.evidence || {}).map(([key, templatePath]) => [templatePath, key]));
 const intakeItems = externalRequests.requests.map((request, index) => {
   const gap = gapMatrix.phases[index];
   const signoff = signoffByOwner.get(request.ownerRole);
@@ -55,7 +60,9 @@ const intakeItems = externalRequests.requests.map((request, index) => {
     blockerType: request.blockerType,
     status: signoff?.status || "blocked-pending-evidence",
     intakeDir,
+    evidenceKeys: request.evidenceKeys || [],
     expectedFiles: request.evidenceTemplates.map((templatePath) => ({
+      evidenceKey: evidenceKeyByTemplate.get(templatePath) || null,
       templatePath,
       targetPath: `${intakeDir}/${path.basename(templatePath)}`,
       coverage: gap.templateMappings.find((mapping) => mapping.templatePath === templatePath)?.coverage || "supporting-artifact"
@@ -78,12 +85,14 @@ const intake = {
   externalRequestsPath,
   gapMatrixPath,
   signoffMatrixPath,
+  bundleTemplatePath,
   environment: externalRequests.environment,
   owner: externalRequests.owner,
   summary: {
     intakeCount: intakeItems.length,
     blockedIntakeCount: intakeItems.filter((item) => item.status !== "ready-for-signoff").length,
     expectedFileCount: intakeItems.reduce((total, item) => total + item.expectedFiles.length, 0),
+    evidenceKeyCount: new Set(intakeItems.flatMap((item) => item.evidenceKeys)).size,
     commandCount: intakeItems.reduce((total, item) => total + item.validationCommands.length, 0)
   },
   intakeItems
@@ -107,8 +116,11 @@ Owner role: ${item.ownerRole}
 Status: ${item.status}
 Intake folder: \`${item.intakeDir}\`
 
+Deployment bundle evidence keys:
+${item.evidenceKeys.map((key) => `- \`${key}\``).join("\n")}
+
 Expected files:
-${item.expectedFiles.map((file) => `- \`${file.targetPath}\` from \`${file.templatePath}\` (${file.coverage})`).join("\n")}
+${item.expectedFiles.map((file) => `- \`${file.targetPath}\` from \`${file.templatePath}\`${file.evidenceKey ? ` for \`${file.evidenceKey}\`` : ""} (${file.coverage})`).join("\n")}
 
 Validation commands:
 ${item.validationCommands.map((command) => `- \`${command}\``).join("\n")}
