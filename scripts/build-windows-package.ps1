@@ -38,10 +38,16 @@ Copy-Item -Path (Join-Path $root "server.mjs") -Destination $appRoot
 Copy-Item -Path (Join-Path $root "package.json") -Destination $appRoot
 Copy-Item -Path (Join-Path $root "pnpm-lock.yaml") -Destination $appRoot
 Copy-Tree -Source (Join-Path $root "dist") -Destination (Join-Path $appRoot "dist")
-Copy-Tree -Source (Join-Path $root "node_modules") -Destination (Join-Path $appRoot "node_modules")
 
 New-Item -ItemType Directory -Path (Join-Path $appRoot "src") | Out-Null
 Copy-Tree -Source (Join-Path $root "src\server") -Destination (Join-Path $appRoot "src\server")
+
+Push-Location $appRoot
+try {
+  pnpm install --prod --frozen-lockfile --config.node-linker=hoisted
+} finally {
+  Pop-Location
+}
 
 Copy-Item -Path (Join-Path $root "deployments\windows\install.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\uninstall.ps1") -Destination $stageRoot

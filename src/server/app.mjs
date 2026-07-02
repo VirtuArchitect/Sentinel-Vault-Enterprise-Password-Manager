@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import path from "node:path";
-import { createServer as createViteServer } from "vite";
 import { config, validateConfig } from "./config.mjs";
 import { authRoutes } from "./routes/authRoutes.mjs";
 import { consoleRoutes } from "./routes/consoleRoutes.mjs";
@@ -40,6 +39,7 @@ export const createApp = async () => {
     app.use(express.static(config.distDir));
     app.get("/{*splat}", (_req, res) => res.sendFile(path.join(config.distDir, "index.html")));
   } else {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   }
