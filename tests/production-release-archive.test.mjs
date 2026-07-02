@@ -158,9 +158,21 @@ test("production release archive binds closure archive and release gate report",
     ]));
     assert.equal(validation.format, "sentinel-production-release-archive-validation-v1");
     assert.equal(validation.ready, false);
+    assert.equal(validation.requireClean, false);
     assert.equal(validation.closureValidated, true);
     assert.equal(validation.releaseGateValidated, true);
     assert.equal(validation.validated, true);
+
+    assert.throws(() => runScript("scripts/validate-production-release-archive.mjs", [
+      "--manifest", archivePath,
+      "--dir", dir,
+      "--target", "production",
+      "--require-clean"
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /archive clean-source validation mode mismatch/);
+      return true;
+    });
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

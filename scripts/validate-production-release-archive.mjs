@@ -25,7 +25,7 @@ const evidenceDir = args.get("--dir") ? path.resolve(args.get("--dir")) : null;
 const closurePath = args.get("--phase-closure") ? path.resolve(args.get("--phase-closure")) : null;
 const releaseGatePath = args.get("--release-gate") ? path.resolve(args.get("--release-gate")) : null;
 const target = args.get("--target") || null;
-const requireClean = args.get("--require-clean") === true || args.get("--require-clean") === "true";
+const requireCleanArg = args.has("--require-clean") ? args.get("--require-clean") : null;
 const requireReady = args.get("--require-ready") === true || args.get("--require-ready") === "true";
 const requireApprovedWaivers = args.get("--require-approved-waivers") === true || args.get("--require-approved-waivers") === "true";
 
@@ -59,6 +59,9 @@ const selectedEvidenceDir = evidenceDir || path.resolve(archive.evidenceDir);
 const selectedClosurePath = closurePath || archive.closure.manifest.path;
 const selectedReleaseGatePath = releaseGatePath || archive.releaseGate.report.path;
 const selectedTarget = target || archive.target;
+const selectedRequireClean = requireCleanArg === null
+  ? archive.requireClean
+  : requireCleanArg === true || requireCleanArg === "true";
 
 assert.equal(path.resolve(archive.evidenceDir), selectedEvidenceDir, "archive evidence directory mismatch");
 assert.equal(archive.target, selectedTarget, "archive target mismatch");
@@ -84,6 +87,7 @@ assert.equal(path.resolve(releaseGate.evidenceDir), selectedEvidenceDir, "releas
 assert.equal(closure.review?.target, archive.target, "closure target mismatch");
 assert.equal(releaseGate.target, archive.target, "release gate target mismatch");
 assert.equal(releaseGate.requireClean, archive.requireClean, "release gate clean-source mode mismatch");
+assert.equal(selectedRequireClean, archive.requireClean, "archive clean-source validation mode mismatch");
 assert.equal(archive.ready, releaseGate.ready, "archive ready flag mismatch");
 assert.equal(archive.blockerCount, releaseGate.blockerCount, "archive blocker count mismatch");
 assert.equal(archive.warningCount, releaseGate.warningCount, "archive warning count mismatch");
@@ -98,14 +102,14 @@ assert.deepEqual(archive.closure.waiverSummary, closure.review?.waiverSummary, "
 
 const closureValidation = runJson("scripts/validate-phase-closure-archive.mjs", [
   "--manifest", selectedClosurePath,
-  ...(requireClean ? ["--require-clean"] : []),
+  ...(selectedRequireClean ? ["--require-clean"] : []),
   ...(requireApprovedWaivers ? ["--require-approved-waivers"] : [])
 ]);
 const releaseGateValidation = runJson("scripts/validate-production-release-gate-report.mjs", [
   "--dir", selectedEvidenceDir,
   "--report", selectedReleaseGatePath,
   "--target", selectedTarget,
-  ...(requireClean ? ["--require-clean"] : []),
+  ...(selectedRequireClean ? ["--require-clean"] : []),
   ...(requireReady ? ["--require-ready"] : [])
 ]);
 
@@ -121,6 +125,7 @@ console.log(JSON.stringify({
   ready: archive.ready,
   blockerCount: archive.blockerCount,
   warningCount: archive.warningCount,
+  requireClean: selectedRequireClean,
   cleanTree: archive.source?.cleanTree === true,
   closureValidated: closureValidation.validated === true,
   releaseGateValidated: releaseGateValidation.validated === true,
