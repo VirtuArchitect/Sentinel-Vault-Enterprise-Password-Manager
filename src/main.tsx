@@ -54,7 +54,7 @@ function SentinelLogo({ size = "medium" }: { size?: "small" | "medium" | "large"
 }
 
 function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: ConsoleData) => void; initialError?: string }) {
-  const [email, setEmail] = useState("ada@defence.local");
+  const [email, setEmail] = useState("avery.stone@enterprise.example");
   const [password, setPassword] = useState("Passw0rd!");
   const [idToken, setIdToken] = useState("");
   const [identity, setIdentity] = useState<IdentityStatus | null>(null);
@@ -115,7 +115,7 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
             <span>Enterprise Password Manager</span>
           </div>
         </header>
-        <p className="login-intro">Sign in with a defence identity to access the multi-user password vault and audit-controlled workbench.</p>
+        <p className="login-intro">Sign in with an enterprise identity to access the multi-user password vault and audit-controlled workbench.</p>
         <form onSubmit={submit} className="unlock-form">
           {externalIdentity ? (
             <>
@@ -147,9 +147,9 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
         {!externalIdentity && (
           <div className="demo-accounts">
             <span>Demo identities</span>
-            <button type="button" onClick={() => setEmail("ada@defence.local")}>Security Admin</button>
-            <button type="button" onClick={() => setEmail("morgan@defence.local")}>Vault Operator</button>
-            <button type="button" onClick={() => setEmail("iris@defence.local")}>Auditor</button>
+            <button type="button" onClick={() => setEmail("avery.stone@enterprise.example")}>Security Admin</button>
+            <button type="button" onClick={() => setEmail("morgan.vale@enterprise.example")}>Vault Operator</button>
+            <button type="button" onClick={() => setEmail("iris.chen@enterprise.example")}>Auditor</button>
             <small>Password: Passw0rd!</small>
           </div>
         )}
@@ -191,9 +191,10 @@ function App() {
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
   const [editSecret, setEditSecret] = useState<AddSecret>(blankSecret());
-  const [newVault, setNewVault] = useState({ name: "", tenantId: "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+  const [newVault, setNewVault] = useState({ name: "", tenantId: "", classification: "CONFIDENTIAL", ownerUnit: "", members: "u1,u2" });
   const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", itsmAllowedStates: "open,active,approved,in_progress,scheduled", devopsApiEnabled: false });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
@@ -371,6 +372,11 @@ function App() {
     setToast(`Copied user name for ${secret.name}`);
   };
 
+  const notify = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2400);
+  };
+
   const updatePolicy = (patch: Partial<Policies>) => {
     action(async () => {
       await api("/api/policies", { method: "PATCH", body: JSON.stringify(patch) }, token);
@@ -387,7 +393,7 @@ function App() {
     event.preventDefault();
     action(async () => {
       await api("/api/vaults", { method: "POST", body: JSON.stringify({ ...newVault, members: newVault.members.split(",").map((member) => member.trim()) }) }, token);
-      setNewVault({ name: "", tenantId: data.tenants[0]?.id || "", classification: "SECRET", ownerUnit: "", members: "u1,u2" });
+      setNewVault({ name: "", tenantId: data.tenants[0]?.id || "", classification: "CONFIDENTIAL", ownerUnit: "", members: "u1,u2" });
     }, "Vault group created");
   };
 
@@ -405,16 +411,88 @@ function App() {
     }, decision === "approve" ? "Temporary access approved" : "Temporary access denied");
   };
 
+  const runMenuCommand = (command: () => void) => {
+    command();
+    setActiveMenu(null);
+  };
+
+  const menuSections = [
+    {
+      label: "File",
+      items: [
+        { label: "New Entry", disabled: !can("vault:write"), action: () => setAddOpen(true) },
+        { label: "Save Snapshot", action: () => notify("Vault state is saved automatically after every change") },
+        { label: "Lock Workspace", action: () => setLocked(true) },
+        { label: "Sign Out", action: signOut }
+      ]
+    },
+    {
+      label: "Edit",
+      items: [
+        { label: "Copy User Name", disabled: !selectedSecret, action: () => selectedSecret && copyUsername(selectedSecret) },
+        { label: "Edit Entry", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && startEditSecret(selectedSecret) },
+        { label: "Delete Entry", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items") }
+      ]
+    },
+    {
+      label: "View",
+      items: [
+        { label: "Entries", action: () => setTab("entries") },
+        { label: "Access Requests", action: () => setTab("access") },
+        { label: "Audit Trail", action: () => setTab("audit") },
+        { label: "Users", action: () => setTab("users") },
+        { label: "Policy Options", action: () => setTab("policy") },
+        { label: "Management", action: () => setTab("manage") }
+      ]
+    },
+    {
+      label: "Entry",
+      items: [
+        { label: "Reveal Secret", disabled: !selectedSecret || viewingDeleted, action: () => selectedSecret && revealSecret(selectedSecret) },
+        { label: "Rotate Secret", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated") },
+        { label: "Share With Auditor", disabled: !selectedSecret || viewingDeleted || !can("vault:share"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor") },
+        { label: "Restore Deleted Entry", disabled: !selectedSecret || !viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }, token); setSelectedGroup("all"); }, "Entry restored") }
+      ]
+    },
+    {
+      label: "Tools",
+      items: [
+        { label: "Password Generator", disabled: !can("vault:write"), action: () => setAddOpen(true) },
+        { label: "Integration Settings", action: () => setTab("manage") },
+        { label: "Policy Settings", action: () => setTab("policy") },
+        { label: "Health Endpoint", action: () => window.open("/healthz", "_blank", "noopener,noreferrer") }
+      ]
+    },
+    {
+      label: "Help",
+      items: [
+        { label: "About Sentinel Vault", action: () => notify("Sentinel Vault Enterprise Password Manager prototype") },
+        { label: "Deployment Readiness", action: () => notify("Use the deployment evidence workflow before production rollout") }
+      ]
+    }
+  ];
+
   return (
-    <main className={`window-shell ${locked ? "is-locked" : ""}`}>
+    <main className={`window-shell ${locked ? "is-locked" : ""}`} onClick={() => setActiveMenu(null)}>
       <section className="titlebar">
         <div><SentinelLogo size="small" />Sentinel.kdbx - Sentinel Vault Enterprise</div>
         <div className="window-controls"><span /><span /><span /></div>
       </section>
 
-      <section className="menubar">
-        {["File", "Edit", "View", "Entry", "Tools", "Help"].map((item) => <button key={item}>{item}</button>)}
-        <span className="session-label"><BadgeCheck size={15} />{data.user.name} · {data.user.role.replace("_", " ")}</span>
+      <section className="menubar" onClick={(event) => event.stopPropagation()}>
+        {menuSections.map((section) => (
+          <div className="menu-root" key={section.label}>
+            <button className={activeMenu === section.label ? "open" : ""} onClick={() => setActiveMenu(activeMenu === section.label ? null : section.label)}>{section.label}</button>
+            {activeMenu === section.label && (
+              <div className="menu-popover">
+                {section.items.map((item) => (
+                  <button key={item.label} disabled={item.disabled} onClick={() => runMenuCommand(item.action)}>{item.label}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+        <span className="session-label"><BadgeCheck size={15} />{data.user.name} - {data.user.role.replace("_", " ")}</span>
       </section>
 
       <section className="toolbar">
@@ -439,7 +517,7 @@ function App() {
 
       <section className="database-tabs">
         <button className="active"><SentinelLogo size="small" />Sentinel.kdbx</button>
-        <button><Archive size={15} />BreakGlass.kdbx</button>
+        <button onClick={() => { setSelectedGroup("risk"); setTab("entries"); }}><Archive size={15} />Recovery.kdbx</button>
       </section>
 
       <section className="workbench">
@@ -477,7 +555,7 @@ function App() {
                   <button className={`entry-row ${selectedSecret?.id === secret.id ? "selected" : ""}`} key={secret.id} onClick={() => setSelectedSecretId(secret.id)} role="row">
                     <span><Globe size={16} />{secret.name}<small>{secret.type.replace("_", " ")}</small></span>
                     <span>{secret.username}</span>
-                    <span>••••••••••••</span>
+                    <span>************</span>
                     <span>{secret.url}</span>
                     <span>{new Date(secret.deletedAt || secret.rotatedAt).toLocaleDateString()}</span>
                     <span><meter min={0} max={100} value={secret.strength} />{secret.strength}%</span>
@@ -496,7 +574,7 @@ function App() {
                 <section className="details-pane">
                   <div>
                     <h2>{selectedSecret.name}</h2>
-                    <p>{selectedVault?.name} · {selectedVault?.classification} · {selectedSecret.tags.join(", ") || "No tags"}</p>
+                    <p>{selectedVault?.name} - {selectedVault?.classification} - {selectedSecret.tags.join(", ") || "No tags"}</p>
                   </div>
                   <div className="detail-actions">
                     {viewingDeleted ? (
@@ -776,10 +854,10 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
           {data.tenants.map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.name}</option>)}
         </select></label>
         <label>Classification<select value={newVault.classification} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, classification: event.target.value })}>
-          <option value="OFFICIAL">OFFICIAL</option>
-          <option value="OFFICIAL-SENSITIVE">OFFICIAL-SENSITIVE</option>
-          <option value="SECRET">SECRET</option>
-          <option value="TOP SECRET">TOP SECRET</option>
+          <option value="INTERNAL">INTERNAL</option>
+          <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+          <option value="RESTRICTED">RESTRICTED</option>
+          <option value="HIGHLY RESTRICTED">HIGHLY RESTRICTED</option>
         </select></label>
         <label>Owner unit<input value={newVault.ownerUnit} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, ownerUnit: event.target.value })} /></label>
         <label>Members<input value={newVault.members} disabled={!canManage} onChange={(event) => onVaultChange({ ...newVault, members: event.target.value })} /></label>

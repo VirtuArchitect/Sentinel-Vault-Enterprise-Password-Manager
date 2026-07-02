@@ -13,8 +13,8 @@ test("auditors cannot update policy", () => {
 test("public users do not expose password hashes", () => {
   const user = publicUser({
     id: "u1",
-    name: "Commander Ada",
-    email: "ada@defence.local",
+    name: "Avery Stone",
+    email: "avery.stone@enterprise.example",
     role: "SECURITY_ADMIN",
     unit: "Strategic Systems",
     mfa: true,

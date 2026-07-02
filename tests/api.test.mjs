@@ -107,7 +107,7 @@ const startOidcFixture = async (jwks, options = {}) => {
           exp: now + 300,
           nbf: now - 5,
           nonce: issued.nonce,
-          email: "ada@defence.local",
+          email: "avery.stone@enterprise.example",
           groups: ["Sentinel Vault Admins"],
           amr: ["pwd", "mfa"]
         }, options.privateKey, options.kid);
@@ -227,7 +227,7 @@ test("cors allows configured origins and rejects unexpected origins", async () =
 
 test("auditor is blocked from policy updates", async () => {
   await withApi(async (baseUrl) => {
-    const iris = await login(baseUrl, "iris@defence.local");
+    const iris = await login(baseUrl, "iris.chen@enterprise.example");
     const policyResponse = await jsonFetch(`${baseUrl}/policies`, iris.token, {
       method: "PATCH",
       body: JSON.stringify({ sessionMinutes: 99 })
@@ -238,7 +238,7 @@ test("auditor is blocked from policy updates", async () => {
 
 test("console payload respects users and audit permissions", async () => {
   await withApi(async (baseUrl) => {
-    const morgan = await login(baseUrl, "morgan@defence.local");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
     const response = await jsonFetch(`${baseUrl}/console`, morgan.token);
     assert.equal(response.status, 200);
     const consoleData = await response.json();
@@ -298,7 +298,7 @@ test("federated login validates OIDC token claims and local provisioning", async
         sub: "ada-subject",
         exp: now + 300,
         nbf: now - 5,
-        email: "ada@defence.local",
+        email: "avery.stone@enterprise.example",
         groups: ["Sentinel Vault Admins"],
         amr: ["pwd", "mfa"]
       }, privateKey, jwk.kid);
@@ -306,7 +306,7 @@ test("federated login validates OIDC token claims and local provisioning", async
       const localLogin = await fetch(`${baseUrl}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "ada@defence.local", password: "Passw0rd!" })
+        body: JSON.stringify({ email: "avery.stone@enterprise.example", password: "Passw0rd!" })
       });
       assert.equal(localLogin.status, 403);
 
@@ -317,7 +317,7 @@ test("federated login validates OIDC token claims and local provisioning", async
       });
       assert.equal(federatedLogin.status, 200);
       const body = await federatedLogin.json();
-      assert.equal(body.user.email, "ada@defence.local");
+      assert.equal(body.user.email, "avery.stone@enterprise.example");
       assert.equal(body.user.role, "SECURITY_ADMIN");
 
       const missingMfa = signJwt({
@@ -325,7 +325,7 @@ test("federated login validates OIDC token claims and local provisioning", async
         aud: "sentinel-client",
         sub: "ada-subject",
         exp: now + 300,
-        email: "ada@defence.local",
+        email: "avery.stone@enterprise.example",
         groups: ["Sentinel Vault Admins"],
         amr: ["pwd"]
       }, privateKey, jwk.kid);
@@ -404,7 +404,7 @@ test("federated PKCE flow exchanges authorization code and rejects replay", asyn
       });
       assert.equal(callback.status, 200);
       const callbackBody = await callback.json();
-      assert.equal(callbackBody.user.email, "ada@defence.local");
+      assert.equal(callbackBody.user.email, "avery.stone@enterprise.example");
 
       const replay = await fetch(`${baseUrl}/login/federated/callback`, {
         method: "POST",
@@ -470,7 +470,7 @@ test("federated refresh tokens rotate once and block replay", async () => {
         sub: "ada-refresh-subject",
         exp: now + 300,
         nbf: now - 5,
-        email: "ada@defence.local",
+        email: "avery.stone@enterprise.example",
         groups: ["Sentinel Vault Admins"],
         amr: ["pwd", "mfa"]
       }, privateKey, jwk.kid);
@@ -527,7 +527,7 @@ test("federated refresh tokens rotate once and block replay", async () => {
 
 test("security admins can manage vaults and user status", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const createTenant = await jsonFetch(`${baseUrl}/tenants`, ada.token, {
       method: "POST",
       body: JSON.stringify({
@@ -586,7 +586,7 @@ test("security admins can manage vaults and user status", async () => {
     const blockedLogin = await fetch(`${baseUrl}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "morgan@defence.local", password: "Passw0rd!" })
+      body: JSON.stringify({ email: "morgan.vale@enterprise.example", password: "Passw0rd!" })
     });
     assert.equal(blockedLogin.status, 403);
 
@@ -600,7 +600,7 @@ test("security admins can manage vaults and user status", async () => {
 
 test("security admins can export and import safe administration metadata", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const exportResponse = await jsonFetch(`${baseUrl}/admin/export`, ada.token);
     assert.equal(exportResponse.status, 200);
     assert.match(exportResponse.headers.get("content-disposition"), /sentinel-admin-metadata/);
@@ -640,12 +640,12 @@ test("security admins can export and import safe administration metadata", async
 
 test("bulk secret import uses encrypted escrow and independent approval", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     await jsonFetch(`${baseUrl}/users/u3`, ada.token, {
       method: "PATCH",
       body: JSON.stringify({ role: "SECURITY_ADMIN" })
     });
-    const iris = await login(baseUrl, "iris@defence.local");
+    const iris = await login(baseUrl, "iris.chen@enterprise.example");
 
     const duplicate = await jsonFetch(`${baseUrl}/secret-imports`, ada.token, {
       method: "POST",
@@ -666,7 +666,7 @@ test("bulk secret import uses encrypted escrow and independent approval", async 
           name: "Imported Escrow Secret",
           username: "svc_imported",
           password: "ImportedEscrowSecret!2026",
-          url: "https://imported.defence.local",
+          url: "https://imported.enterprise.example",
           tags: ["import", "escrow"],
           risk: "medium"
         }]
@@ -708,7 +708,7 @@ test("bulk secret import uses encrypted escrow and independent approval", async 
 
 test("logout revokes the active session token", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const beforeLogout = await jsonFetch(`${baseUrl}/console`, ada.token);
     assert.equal(beforeLogout.status, 200);
 
@@ -722,8 +722,8 @@ test("logout revokes the active session token", async () => {
 
 test("security admins can review and revoke active sessions", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
-    const morgan = await login(baseUrl, "morgan@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
 
     const denied = await jsonFetch(`${baseUrl}/sessions`, morgan.token);
     assert.equal(denied.status, 403);
@@ -762,7 +762,7 @@ test("repeated failed logins temporarily lock the account", async () => {
   store.state.users.push({
     id: "u-lockout",
     name: "Lockout Test User",
-    email: "lockout@defence.local",
+    email: "lockout@enterprise.example",
     role: "VAULT_OPERATOR",
     unit: "Test",
     mfa: true,
@@ -774,7 +774,7 @@ test("repeated failed logins temporarily lock the account", async () => {
         const failed = await fetch(`${baseUrl}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: "lockout@defence.local", password: "wrong-password" })
+          body: JSON.stringify({ email: "lockout@enterprise.example", password: "wrong-password" })
         });
         assert.equal(failed.status, 401);
       }
@@ -782,7 +782,7 @@ test("repeated failed logins temporarily lock the account", async () => {
       const locked = await fetch(`${baseUrl}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "lockout@defence.local", password: "CorrectPassw0rd!" })
+        body: JSON.stringify({ email: "lockout@enterprise.example", password: "CorrectPassw0rd!" })
       });
       assert.equal(locked.status, 423);
       const body = await locked.json();
@@ -791,14 +791,14 @@ test("repeated failed logins temporarily lock the account", async () => {
   } finally {
     config.failedLoginLimit = previousLimit;
     config.loginLockoutMinutes = previousLockout;
-    store.state.loginFailures.delete("lockout@defence.local");
+    store.state.loginFailures.delete("lockout@enterprise.example");
     store.state.users = store.state.users.filter((user) => user.id !== "u-lockout");
   }
 });
 
 test("object-level authorization blocks cross-tenant secret operations", async () => {
   await withApi(async (baseUrl) => {
-    const morgan = await login(baseUrl, "morgan@defence.local");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
     const beforeRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
 
     const blockedReveal = await jsonFetch(`${baseUrl}/secrets/s3/reveal`, morgan.token, { method: "POST" });
@@ -844,7 +844,7 @@ test("object-level authorization blocks cross-tenant secret operations", async (
 
 test("policy validation rejects unsupported or unsafe values", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const unknown = await jsonFetch(`${baseUrl}/policies`, ada.token, {
       method: "PATCH",
       body: JSON.stringify({ arbitraryField: true })
@@ -861,7 +861,7 @@ test("policy validation rejects unsupported or unsafe values", async () => {
 
 test("secret edit, version restore, and delete workflows work", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const create = await jsonFetch(`${baseUrl}/secrets`, ada.token, {
       method: "POST",
       body: JSON.stringify({
@@ -912,8 +912,8 @@ test("secret edit, version restore, and delete workflows work", async () => {
 
 test("secret health report is auditor-only and reuse is blocked", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
-    const morgan = await login(baseUrl, "morgan@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
 
     const health = await jsonFetch(`${baseUrl}/reports/secret-health`, ada.token);
     assert.equal(health.status, 200);
@@ -938,7 +938,7 @@ test("secret health report is auditor-only and reuse is blocked", async () => {
 
 test("integration status is available to audit-capable users", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const response = await jsonFetch(`${baseUrl}/integrations/status`, ada.token);
     assert.equal(response.status, 200);
     const body = await response.json();
@@ -1036,16 +1036,16 @@ test("integration config updates and ITSM ticket validation are enforced", async
   const previousDevops = config.integrations.devopsApiEnabled;
   const previousAccessRequests = store.state.accessRequests.map((request) => ({ ...request, approvals: [...(request.approvals || [])] }));
   const itsmServer = await startItsmFixture({
-    "INC-12345": { state: "open", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
-    "INC-99999": { state: "closed", active: false, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
-    "INC-88888": { state: "awaiting_approval", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations" },
-    "CHG-12345": { state: "scheduled", active: true, requester: "morgan@defence.local", assignmentGroup: "Cyber Operations", changeWindow: { start: new Date(Date.now() + 3600000).toISOString(), end: new Date(Date.now() + 7200000).toISOString() } }
+    "INC-12345": { state: "open", active: true, requester: "morgan.vale@enterprise.example", assignmentGroup: "Cyber Operations" },
+    "INC-99999": { state: "closed", active: false, requester: "morgan.vale@enterprise.example", assignmentGroup: "Cyber Operations" },
+    "INC-88888": { state: "awaiting_approval", active: true, requester: "morgan.vale@enterprise.example", assignmentGroup: "Cyber Operations" },
+    "CHG-12345": { state: "scheduled", active: true, requester: "morgan.vale@enterprise.example", assignmentGroup: "Cyber Operations", changeWindow: { start: new Date(Date.now() + 3600000).toISOString(), end: new Date(Date.now() + 7200000).toISOString() } }
   });
   const itsmBaseUrl = `http://127.0.0.1:${itsmServer.address().port}`;
   try {
     await withApi(async (baseUrl) => {
-      const ada = await login(baseUrl, "ada@defence.local");
-      const morgan = await login(baseUrl, "morgan@defence.local");
+      const ada = await login(baseUrl, "avery.stone@enterprise.example");
+      const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
 
       const update = await jsonFetch(`${baseUrl}/integrations/config`, ada.token, {
         method: "PATCH",
@@ -1147,7 +1147,7 @@ test("integration config updates and ITSM ticket validation are enforced", async
 
 test("compliance report summarizes implemented controls", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const response = await jsonFetch(`${baseUrl}/reports/compliance`, ada.token);
     assert.equal(response.status, 200);
     const body = await response.json();
@@ -1176,7 +1176,7 @@ test("managed service tokens are scoped to allowed secrets", async () => {
   config.integrations.devopsApiEnabled = true;
   try {
     await withApi(async (baseUrl) => {
-      const ada = await login(baseUrl, "ada@defence.local");
+      const ada = await login(baseUrl, "avery.stone@enterprise.example");
       const create = await jsonFetch(`${baseUrl}/service-tokens`, ada.token, {
         method: "POST",
         body: JSON.stringify({ name: "CI pipeline", allowedSecrets: ["s1"], ttlDays: 7 })
@@ -1278,7 +1278,7 @@ test("legacy service token hashes migrate after successful scoped use", async ()
 
 test("storage status and backup endpoints are admin-only", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const status = await jsonFetch(`${baseUrl}/storage/status`, ada.token);
     assert.equal(status.status, 200);
     const body = await status.json();
@@ -1308,8 +1308,8 @@ test("storage status and backup endpoints are admin-only", async () => {
 
 test("offline cache export is encrypted, read-only, and scoped to the user", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
-    const morgan = await login(baseUrl, "morgan@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
 
     const exportResponse = await jsonFetch(`${baseUrl}/offline-cache/export`, ada.token, { method: "POST" });
     assert.equal(exportResponse.status, 200);
@@ -1378,7 +1378,7 @@ test("offline cache export is encrypted, read-only, and scoped to the user", asy
 
 test("new audit events are hash chained and verified", async () => {
   await withApi(async (baseUrl) => {
-    const ada = await login(baseUrl, "ada@defence.local");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
     const reveal = await jsonFetch(`${baseUrl}/secrets/s1/reveal`, ada.token, { method: "POST" });
     assert.equal(reveal.status, 200);
     const latest = store.state.audit[0];
@@ -1408,8 +1408,8 @@ test("new audit events are hash chained and verified", async () => {
 
 test("approved access request grants temporary reveal access", async () => {
   await withApi(async (baseUrl) => {
-    const morgan = await login(baseUrl, "morgan@defence.local");
-    const ada = await login(baseUrl, "ada@defence.local");
+    const morgan = await login(baseUrl, "morgan.vale@enterprise.example");
+    const ada = await login(baseUrl, "avery.stone@enterprise.example");
 
     const requestResponse = await jsonFetch(`${baseUrl}/access-requests`, morgan.token, {
       method: "POST",

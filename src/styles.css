@@ -1,6 +1,6 @@
 :root {
-  color: #111;
-  background: #d9dde3;
+  color: #17202a;
+  background: #d7dde6;
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -144,7 +144,7 @@ textarea { min-height: 86px; resize: vertical; }
   display: grid;
   grid-template-rows: 30px 30px 42px 31px 1fr 25px;
   overflow: hidden;
-  background: #e9edf2;
+  background: #eef2f6;
 }
 
 .titlebar {
@@ -152,7 +152,7 @@ textarea { min-height: 86px; resize: vertical; }
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
-  background: linear-gradient(#2d7fd0, #0863b4);
+  background: linear-gradient(90deg, #14365f, #1f6f8f 55%, #21745f);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -165,9 +165,10 @@ textarea { min-height: 86px; resize: vertical; }
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 6px;
-  background: #f8f9fb;
-  border-bottom: 1px solid #b8c0ca;
+  padding: 0 8px;
+  background: #fbfcfe;
+  border-bottom: 1px solid #c3ccd7;
+  box-shadow: 0 1px 0 rgba(255,255,255,.75) inset;
 }
 .menubar button, .database-tabs button, .view-tabs button {
   border: 1px solid transparent;
@@ -175,7 +176,31 @@ textarea { min-height: 86px; resize: vertical; }
   min-height: 24px;
   padding: 0 9px;
 }
-.menubar button:hover, .database-tabs button.active, .view-tabs button.active { border-color: #9db7d3; background: #e8f2ff; }
+.menubar button:hover, .menubar button.open, .database-tabs button.active, .view-tabs button.active { border-color: #9db7d3; background: #e8f2ff; }
+.menu-root { position: relative; }
+.menu-popover {
+  position: absolute;
+  top: 27px;
+  left: 0;
+  z-index: 15;
+  min-width: 190px;
+  padding: 5px;
+  border: 1px solid #9dabbb;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(23, 32, 42, .22);
+}
+.menu-popover button {
+  width: 100%;
+  min-height: 30px;
+  display: block;
+  text-align: left;
+  padding: 0 10px;
+  color: #1f2b37;
+}
+.menu-popover button:hover:not(:disabled) {
+  border-color: #b8d0ea;
+  background: #eef6ff;
+}
 .session-label { margin-left: auto; font-size: 12px; color: #304252; }
 
 .toolbar {
@@ -183,8 +208,8 @@ textarea { min-height: 86px; resize: vertical; }
   align-items: center;
   gap: 4px;
   padding: 5px 7px;
-  background: linear-gradient(#ffffff, #e5e9ee);
-  border-bottom: 1px solid #aeb8c3;
+  background: linear-gradient(#ffffff, #edf1f5);
+  border-bottom: 1px solid #b5c0cc;
 }
 .toolbar button {
   width: 31px;
@@ -194,7 +219,7 @@ textarea { min-height: 86px; resize: vertical; }
   border: 1px solid transparent;
   background: transparent;
 }
-.toolbar button:hover { border-color: #8ea8c6; background: #dcecff; }
+.toolbar button:hover { border-color: #7da4c9; background: #e5f2ff; }
 .divider { width: 1px; height: 25px; background: #aab4bf; margin: 0 4px; }
 .quick-search { margin-left: auto; display: flex; align-items: center; gap: 5px; min-width: min(330px, 38vw); }
 .quick-search input { width: 100%; min-height: 28px; }
@@ -204,8 +229,8 @@ textarea { min-height: 86px; resize: vertical; }
   align-items: end;
   gap: 2px;
   padding: 4px 6px 0;
-  background: #dce2ea;
-  border-bottom: 1px solid #aeb8c3;
+  background: #e1e7ef;
+  border-bottom: 1px solid #b5c0cc;
 }
 .database-tabs button {
   min-height: 27px;
@@ -213,7 +238,7 @@ textarea { min-height: 86px; resize: vertical; }
   border-bottom: 0;
   background: #ecf0f5;
 }
-.database-tabs button.active { background: #fff; }
+.database-tabs button.active { background: #fff; border-top-color: #1f6f8f; }
 
 .workbench {
   min-height: 0;
@@ -225,7 +250,7 @@ textarea { min-height: 86px; resize: vertical; }
   min-height: 0;
   overflow: auto;
   border-right: 1px solid #aeb8c3;
-  background: #f8fafc;
+  background: #f7f9fc;
   padding: 8px 6px;
 }
 .tree-button {
@@ -243,7 +268,7 @@ textarea { min-height: 86px; resize: vertical; }
 .tree-button svg { grid-row: span 2; color: #2f78b7; }
 .tree-button small { color: #5f6c78; }
 .tree-button.inset { padding-left: 22px; }
-.tree-button.active { border-color: #8db4d8; background: #dceeff; }
+.tree-button.active { border-color: #7eaed9; background: linear-gradient(90deg, #e3f2ff, #f4fbff); }
 .tree-footer { margin: 12px 8px 0; border-top: 1px solid #c5ccd5; padding-top: 10px; display: grid; color: #4a5562; font-size: 12px; }
 
 .entry-pane {
@@ -251,7 +276,7 @@ textarea { min-height: 86px; resize: vertical; }
   min-height: 0;
   display: grid;
   grid-template-rows: 33px minmax(0, 1fr) minmax(190px, auto);
-  background: #fff;
+  background: #ffffff;
 }
 .view-tabs {
   display: flex;
@@ -259,7 +284,7 @@ textarea { min-height: 86px; resize: vertical; }
   gap: 2px;
   padding: 4px 7px;
   border-bottom: 1px solid #b8c0ca;
-  background: #f3f6f9;
+  background: #f7f9fb;
 }
 .entry-table {
   min-height: 0;
@@ -277,7 +302,7 @@ textarea { min-height: 86px; resize: vertical; }
   top: 0;
   z-index: 1;
   min-height: 28px;
-  background: linear-gradient(#f9fafc, #e1e6ec);
+  background: linear-gradient(#fbfcfe, #e7edf4);
   border-bottom: 1px solid #b8c0ca;
   color: #2b3540;
   font-size: 12px;
@@ -293,7 +318,8 @@ textarea { min-height: 86px; resize: vertical; }
   text-align: left;
 }
 .entry-row:nth-child(odd) { background: #fbfcfd; }
-.entry-row.selected { background: #0a74d6; color: #fff; }
+.entry-row:hover { background: #eef6ff; }
+.entry-row.selected { background: #155fa4; color: #fff; }
 .entry-row span:first-child { display: flex; align-items: center; gap: 7px; }
 .entry-row span:first-child small { color: inherit; opacity: .72; text-transform: capitalize; }
 meter { width: 54px; height: 10px; margin-right: 7px; }
@@ -312,7 +338,7 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
 
 .details-pane {
   border-top: 1px solid #aeb8c3;
-  background: #f4f6f8;
+  background: linear-gradient(#f8fafc, #eef2f6);
   padding: 10px;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -325,7 +351,7 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
 .detail-actions button, .options-panel button {
   min-height: 30px;
   border: 1px solid #a4adb7;
-  background: linear-gradient(#fff, #e6e9ee);
+  background: linear-gradient(#fff, #e8edf3);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -436,7 +462,7 @@ meter { width: 54px; height: 10px; margin-right: 7px; }
   grid-template-columns: 1fr 1fr 130px;
   align-items: center;
   border-top: 1px solid #aeb8c3;
-  background: #f8f9fb;
+  background: #fbfcfe;
   font-size: 12px;
   color: #3f4b56;
 }

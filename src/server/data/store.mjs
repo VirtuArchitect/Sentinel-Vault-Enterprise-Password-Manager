@@ -470,7 +470,11 @@ export const store = {
     };
   },
   findUserByEmail(email) {
-    return state.users.find((user) => user.email.toLowerCase() === String(email || "").toLowerCase());
+    const normalizedEmail = String(email || "").toLowerCase();
+    return state.users.find((user) => (
+      user.email.toLowerCase() === normalizedEmail
+      || (user.aliases || []).some((alias) => alias.toLowerCase() === normalizedEmail)
+    ));
   },
   findUserById(id) {
     return state.users.find((user) => user.id === id);

@@ -45,7 +45,7 @@ const startFixture = async ({ closedTicket = false, state = "open", changeWindow
       res.end(JSON.stringify({
         state: closedTicket ? "closed" : state,
         active: !closedTicket,
-        requester: "ada@defence.local",
+        requester: "avery.stone@enterprise.example",
         assignmentGroup: "Security Operations",
         changeWindow
       }));

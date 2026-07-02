@@ -4,7 +4,7 @@ import { redactForLog } from "../src/server/logging/logger.mjs";
 
 test("log redaction masks sensitive keys recursively", () => {
   const output = redactForLog({
-    email: "ada@defence.local",
+    email: "avery.stone@enterprise.example",
     password: "Passw0rd!",
     nested: {
       serviceToken: "svc-token-value",
@@ -15,7 +15,7 @@ test("log redaction masks sensitive keys recursively", () => {
     secrets: [{ value: "hidden" }]
   });
 
-  assert.equal(output.email, "ada@defence.local");
+  assert.equal(output.email, "avery.stone@enterprise.example");
   assert.equal(output.password, "[REDACTED]");
   assert.equal(output.nested.serviceToken, "[REDACTED]");
   assert.equal(output.nested.headers.Authorization, "[REDACTED]");

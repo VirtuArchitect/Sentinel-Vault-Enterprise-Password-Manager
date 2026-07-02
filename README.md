@@ -1,6 +1,6 @@
 # Sentinel Vault Enterprise Password Manager
 
-Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager prototype with a web console and an Express API. It is designed as a defence-grade reference interface: group tree, entry table, database-style tabs, entry details, password generator, audit trail, RBAC, policy controls, and encrypted vault records.
+Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager prototype with a web console and an Express API. It is designed as an enterprise-grade reference interface: group tree, entry table, database-style tabs, entry details, password generator, audit trail, RBAC, policy controls, and encrypted vault records.
 
 <img width="1168" height="186" alt="image" src="https://github.com/user-attachments/assets/428f5d89-8840-444d-8aaf-47b40d64f131" />
 
@@ -51,9 +51,9 @@ Passw0rd!
 
 | User | Email | Role |
 | --- | --- | --- |
-| Commander Ada | `ada@defence.local` | Security Admin |
-| Morgan Vale | `morgan@defence.local` | Vault Operator |
-| Iris Chen | `iris@defence.local` | Auditor |
+| Avery Stone | `avery.stone@enterprise.example` | Security Admin |
+| Morgan Vale | `morgan.vale@enterprise.example` | Vault Operator |
+| Iris Chen | `iris.chen@enterprise.example` | Auditor |
 
 ## Requirements
 
@@ -400,4 +400,4 @@ INTEGRATION_OUTBOX_LIMIT=100
 
 ## Important Security Note
 
-This is a functional prototype and reference implementation, not a certified production password manager. A real defence deployment would still need hardened persistence, HSM/KMS-backed key management, SSO/MFA integration, formal threat modeling, secure backup and recovery, cryptographic review, rate limiting, logging hardening, supply-chain controls, and independent penetration testing.
+This is a functional prototype and reference implementation, not a certified production password manager. A real enterprise deployment would still need hardened persistence, HSM/KMS-backed key management, SSO/MFA integration, formal threat modeling, secure backup and recovery, cryptographic review, rate limiting, logging hardening, supply-chain controls, and independent penetration testing.

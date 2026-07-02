@@ -21,7 +21,7 @@ const signJwt = ({ issuer, privateKey, claims = {} }) => {
     iss: issuer,
     aud: clientId,
     sub: "subject-123",
-    email: "ada@defence.local",
+    email: "avery.stone@enterprise.example",
     exp: now + 300,
     groups: ["Sentinel Vault Admins"],
     amr: ["pwd", "mfa"],
