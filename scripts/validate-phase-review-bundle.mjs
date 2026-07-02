@@ -119,11 +119,18 @@ const waiverSummary = {
   expiredCount: phaseWaivers.waivers.filter((waiver) => waiver.expiresAt <= today).length
 };
 const evidenceKeySummary = {
+  decisionActionEvidenceKeyCount: phaseDecision.evidenceKeySummary.actionEvidenceKeyCount,
+  decisionGapEvidenceKeyCount: phaseDecision.evidenceKeySummary.gapEvidenceKeyCount,
+  decisionActionEvidenceKeys: phaseDecision.evidenceKeySummary.actionEvidenceKeys,
+  decisionGapEvidenceKeys: phaseDecision.evidenceKeySummary.gapEvidenceKeys,
+  signoffEvidenceKeyCount: phaseSignoffs.summary.evidenceKeyCount,
+  signoffEvidenceKeys: phaseSignoffs.summary.evidenceKeys,
   intakeEvidenceKeyCount: new Set(phaseIntake.intakeItems.flatMap((item) => item.evidenceKeys || [])).size,
   attachmentEvidenceKeyCount: new Set(phaseAttachments.attachments.flatMap((item) => item.evidenceKeys || [])).size,
   waivedEvidenceKeyCount: new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean)).size,
   waivedEvidenceKeys: [...new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean))].sort()
 };
+assert.deepEqual(evidenceKeySummary.decisionActionEvidenceKeys, evidenceKeySummary.signoffEvidenceKeys, "decision and signoff evidence keys do not match");
 
 assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
 assert.deepEqual(manifest.evidenceKeySummary, evidenceKeySummary, "manifest evidence key summary does not match review artifacts");
@@ -147,5 +154,7 @@ console.log(JSON.stringify({
   blockerCount: manifest.blockerCount,
   waiverCount: waiverSummary.waiverCount,
   approvedWaiverCount: waiverSummary.approvedCount,
+  decisionEvidenceKeyCount: evidenceKeySummary.decisionActionEvidenceKeyCount,
+  signoffEvidenceKeyCount: evidenceKeySummary.signoffEvidenceKeyCount,
   waivedEvidenceKeyCount: evidenceKeySummary.waivedEvidenceKeyCount
 }, null, 2));

@@ -195,9 +195,14 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(manifest.waiverSummary.waiverCount, 22);
     assert.equal(manifest.waiverSummary.proposedCount, 22);
     assert.equal(manifest.waiverSummary.approvedCount, 0);
+    assert.equal(manifest.evidenceKeySummary.decisionActionEvidenceKeyCount, 18);
+    assert.equal(manifest.evidenceKeySummary.decisionGapEvidenceKeyCount, 18);
+    assert.equal(manifest.evidenceKeySummary.signoffEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.intakeEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.attachmentEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+    assert.ok(manifest.evidenceKeySummary.decisionActionEvidenceKeys.includes("windowsSigning"));
+    assert.ok(manifest.evidenceKeySummary.signoffEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
     assert.equal(manifest.decision, "hold-phase-closure");
 
@@ -208,6 +213,8 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.artifactCount, 17);
     assert.equal(validation.waiverCount, 22);
+    assert.equal(validation.decisionEvidenceKeyCount, 18);
+    assert.equal(validation.signoffEvidenceKeyCount, 18);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
