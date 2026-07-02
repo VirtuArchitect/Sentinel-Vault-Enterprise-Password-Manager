@@ -284,6 +284,9 @@ if (closure) {
   if (review?.evidenceKeySummary) {
     assert.deepEqual(closure.review?.evidenceKeySummary, review.evidenceKeySummary, "closure evidence key summary does not match phase review");
   }
+  if (review?.commandCoverageSummary) {
+    assert.deepEqual(closure.review?.commandCoverageSummary, review.commandCoverageSummary, "closure command coverage summary does not match phase review");
+  }
   if (closure.review?.target !== target) {
     blockers.push({
       gate: "closure-target",
@@ -326,6 +329,10 @@ const report = {
 
 if (review?.evidenceKeySummary || closure?.review?.evidenceKeySummary) {
   report.evidenceKeySummary = closure?.review?.evidenceKeySummary || review?.evidenceKeySummary;
+}
+
+if (review?.commandCoverageSummary || closure?.review?.commandCoverageSummary) {
+  report.commandCoverageSummary = closure?.review?.commandCoverageSummary || review?.commandCoverageSummary;
 }
 
 const text = JSON.stringify(report, null, 2);

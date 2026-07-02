@@ -201,9 +201,13 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.ok(report.blockers.some((blocker) => blocker.gate === "phase-decision"));
       assert.equal(report.evidenceKeySummary.waivedEvidenceKeyCount, 18);
       assert.ok(report.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
+      assert.ok(report.commandCoverageSummary.signoffCommandScriptCount > 20);
+      assert.equal(report.commandCoverageSummary.signoffValidatorCommandCount, 13);
+      assert.ok(report.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
 
       const saved = JSON.parse(readFileSync(outputPath, "utf8"));
       assert.equal(saved.blockerCount, report.blockerCount);
+      assert.deepEqual(saved.commandCoverageSummary, report.commandCoverageSummary);
       return true;
     });
   } finally {
@@ -231,6 +235,8 @@ test("production release gate report validator accepts current blocked reports",
     assert.equal(validation.format, "sentinel-production-release-gate-report-validation-v1");
     assert.equal(validation.ready, false);
     assert.ok(validation.blockerCount > 0);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -302,6 +308,32 @@ test("production release gate rejects stale closure evidence key summaries", () 
     ]), (error) => {
       assert.equal(error.status, 1);
       assert.match(error.stderr.toString(), /closure evidence key summary/);
+      return true;
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production release gate rejects stale closure command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-release-gate-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReleaseGateWorkspace(dir);
+    const closurePath = path.join(dir, "phase-closure-archive-manifest.json");
+    const outputPath = path.join(dir, "production-release-gate.json");
+    const closure = JSON.parse(readFileSync(closurePath, "utf8"));
+    closure.review.commandCoverageSummary.signoffCommandScripts = [];
+    closure.review.commandCoverageSummary.signoffCommandScriptCount = 0;
+    closure.review.commandCoverageSummary.signoffValidatorCommandCount = 0;
+    writeFileSync(closurePath, JSON.stringify(closure, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-production-release-gate.mjs", [
+      "--dir", dir,
+      "--target", "production",
+      "--out", outputPath
+    ]), (error) => {
+      assert.equal(error.status, 1);
+      assert.match(error.stderr.toString(), /closure command coverage summary/);
       return true;
     });
   } finally {

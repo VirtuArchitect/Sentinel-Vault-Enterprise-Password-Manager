@@ -151,6 +151,7 @@ Implemented:
 - Phase closure and release archive evidence-key summary binding so final archives preserve waived deployment-bundle gate traceability.
 - Phase closure archive command-script coverage binding for final review manifests.
 - Production release-gate evidence-key summary output and closure/review consistency check for waived deployment-bundle gates.
+- Production release-gate command-script coverage output and closure/review consistency check.
 - Release-mode phase review and closure validation that rejects proposed, expired, placeholder, or control-free waivers before final archive approval.
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.

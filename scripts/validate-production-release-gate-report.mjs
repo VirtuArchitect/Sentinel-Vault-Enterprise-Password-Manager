@@ -74,5 +74,7 @@ console.log(JSON.stringify({
   ready: current.ready,
   blockerCount: current.blockerCount,
   warningCount: current.warningCount,
+  commandScriptCount: current.commandCoverageSummary?.signoffCommandScriptCount || 0,
+  validatorCommandCount: current.commandCoverageSummary?.signoffValidatorCommandCount || 0,
   validated: true
 }, null, 2));
