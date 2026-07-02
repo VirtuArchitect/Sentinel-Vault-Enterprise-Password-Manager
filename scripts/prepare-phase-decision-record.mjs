@@ -135,6 +135,18 @@ Readiness:
 - Gap command scripts: ${record.commandCoverageSummary.gapCommandScriptCount}
 - Validator commands: ${record.commandCoverageSummary.validatorCommandCount}
 
+## Command Coverage Summary
+
+- Action command scripts: ${record.commandCoverageSummary.actionCommandScriptCount}
+- Gap command scripts: ${record.commandCoverageSummary.gapCommandScriptCount}
+- Validator commands: ${record.commandCoverageSummary.validatorCommandCount}
+
+Action command scripts:
+${record.commandCoverageSummary.actionCommandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
+Gap command scripts:
+${record.commandCoverageSummary.gapCommandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 Required approvals:
 ${record.requiredApprovals.map((approval) => `- ${approval.ownerRole}: ${approval.status} (${approval.evidenceKeys.join(", ")})`).join("\n")}
 
@@ -154,5 +166,8 @@ console.log(JSON.stringify({
   decision,
   ready: record.ready,
   pendingActionCount: record.pendingActionCount,
-  blockerCount: record.blockerCount
+  blockerCount: record.blockerCount,
+  actionCommandScriptCount: record.commandCoverageSummary.actionCommandScriptCount,
+  gapCommandScriptCount: record.commandCoverageSummary.gapCommandScriptCount,
+  validatorCommandCount: record.commandCoverageSummary.validatorCommandCount
 }, null, 2));

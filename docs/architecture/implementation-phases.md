@@ -141,6 +141,7 @@ Implemented:
 - Phase gap matrix markdown command coverage validation for owner-facing blocker evidence maps.
 - Phase decision record generator and validator that convert the gate, actions, and gap matrix into an explicit phase closure go/no-go decision.
 - Phase decision record command-script coverage binding across action and gap artifacts.
+- Phase decision record markdown command coverage validation for owner-facing go/no-go decisions.
 - Phase signoff matrix generator and validator that group remaining owner actions by approval role for deployment review.
 - Phase signoff matrix command-script coverage binding for approval owner views.
 - Phase decision and signoff evidence-key propagation so go/no-go records and approval views remain traceable to deployment-bundle gates.

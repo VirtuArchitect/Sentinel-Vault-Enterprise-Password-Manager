@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const recordPath = path.resolve(args.get("--record") || "artifacts/deployment/pilot/phase-decision-record.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const phaseGatePath = args.get("--phase-gate") ? path.resolve(args.get("--phase-gate")) : null;
 const actionRegisterPath = args.get("--phase-actions") ? path.resolve(args.get("--phase-actions")) : null;
 const gapMatrixPath = args.get("--phase-gaps") ? path.resolve(args.get("--phase-gaps")) : null;
@@ -101,6 +102,22 @@ assert.deepEqual(record.commandCoverageSummary, {
   gapCommandScripts: gapMatrix.summary.commandScripts || []
 }, "command coverage summary mismatch");
 assert.deepEqual(record.commandCoverageSummary.actionCommandScripts, record.commandCoverageSummary.gapCommandScripts, "action and gap command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase decision record markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Action command scripts: ${record.commandCoverageSummary.actionCommandScriptCount}`), "markdown action command script count mismatch");
+  assert.ok(markdown.includes(`- Gap command scripts: ${record.commandCoverageSummary.gapCommandScriptCount}`), "markdown gap command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${record.commandCoverageSummary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of record.commandCoverageSummary.actionCommandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing action command script coverage: ${script}`);
+  }
+  for (const script of record.commandCoverageSummary.gapCommandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing gap command script coverage: ${script}`);
+  }
+}
+
 assert.deepEqual(record.ownerRoles, ownerRoles, "owner roles mismatch");
 assert.equal(record.requiredApprovals.length, ownerRoles.length, "required approval count mismatch");
 
@@ -130,5 +147,7 @@ console.log(JSON.stringify({
   blockerCount: record.blockerCount,
   evidenceKeyCount: record.evidenceKeySummary.actionEvidenceKeyCount,
   commandScriptCount: record.commandCoverageSummary.actionCommandScriptCount,
+  gapCommandScriptCount: record.commandCoverageSummary.gapCommandScriptCount,
+  validatorCommandCount: record.commandCoverageSummary.validatorCommandCount,
   validated: true
 }, null, 2));

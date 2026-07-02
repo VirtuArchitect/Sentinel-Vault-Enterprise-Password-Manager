@@ -105,10 +105,17 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.ok(record.evidenceKeySummary.actionEvidenceKeys.includes("windowsSigning"));
     assert.ok(record.pendingActions.some((action) => action.evidenceKeys.includes("windowsSigning")));
     assert.ok(record.requiredApprovals.some((approval) => approval.ownerRole === "Release owner"));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Decision Record/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Decision Record/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Action command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Gap command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-decision-record.mjs", [
       "--record", recordPath,
+      "--markdown", markdownPath,
       "--phase-gate", path.join(dir, "phase-gate-validation.json"),
       "--phase-actions", path.join(dir, "phase-action-register.json"),
       "--phase-gaps", path.join(dir, "phase-gap-matrix.json")
@@ -117,6 +124,37 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.gapCommandScriptCount, validation.commandScriptCount);
+    assert.equal(validation.validatorCommandCount, 13);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase decision record validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-decision-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createDecisionWorkspace(dir);
+    const recordPath = path.join(dir, "phase-decision-record.json");
+    const markdownPath = path.join(dir, "phase-decision-record.md");
+    runScript("scripts/prepare-phase-decision-record.mjs", [
+      "--dir", dir,
+      "--out", recordPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replaceAll(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-decision-record.mjs", [
+      "--record", recordPath,
+      "--markdown", markdownPath,
+      "--phase-gate", path.join(dir, "phase-gate-validation.json"),
+      "--phase-actions", path.join(dir, "phase-action-register.json"),
+      "--phase-gaps", path.join(dir, "phase-gap-matrix.json")
+    ]), /markdown missing action command script coverage|markdown missing gap command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
