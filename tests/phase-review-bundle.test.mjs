@@ -206,6 +206,9 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.ok(manifest.commandCoverageSummary.signoffCommandScriptCount > 20);
     assert.equal(manifest.commandCoverageSummary.signoffValidatorCommandCount, 13);
     assert.ok(manifest.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
+    assert.equal(manifest.commandCoverageSummary.waiverCommandScriptCount, manifest.commandCoverageSummary.signoffCommandScriptCount);
+    assert.equal(manifest.commandCoverageSummary.waiverValidatorCommandCount, 13);
+    assert.ok(manifest.commandCoverageSummary.waiverCommandScripts.includes("validate:windows-signing"));
     assert.ok(manifest.evidenceKeySummary.decisionActionEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.signoffEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
@@ -333,6 +336,29 @@ test("phase review bundle validator rejects stale command coverage summaries", (
     manifest.commandCoverageSummary.signoffCommandScripts = [];
     manifest.commandCoverageSummary.signoffCommandScriptCount = 0;
     manifest.commandCoverageSummary.signoffValidatorCommandCount = 0;
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]), /command coverage summary/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review bundle validator rejects stale waiver command coverage summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-waiver-command-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.commandCoverageSummary.waiverCommandScripts = [];
+    manifest.commandCoverageSummary.waiverCommandScriptCount = 0;
+    manifest.commandCoverageSummary.waiverValidatorCommandCount = 0;
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 
     assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [

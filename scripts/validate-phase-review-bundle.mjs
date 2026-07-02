@@ -140,11 +140,17 @@ const commandCoverageSummary = {
   decisionGapCommandScripts: phaseDecision.commandCoverageSummary.gapCommandScripts,
   signoffCommandScriptCount: phaseSignoffs.summary.commandScriptCount,
   signoffValidatorCommandCount: phaseSignoffs.summary.validatorCommandCount,
-  signoffCommandScripts: phaseSignoffs.summary.commandScripts
+  signoffCommandScripts: phaseSignoffs.summary.commandScripts,
+  waiverCommandScriptCount: phaseWaivers.summary.commandScriptCount,
+  waiverValidatorCommandCount: phaseWaivers.summary.validatorCommandCount,
+  waiverCommandScripts: phaseWaivers.summary.commandScripts
 };
 assert.deepEqual(commandCoverageSummary.decisionActionCommandScripts, commandCoverageSummary.signoffCommandScripts, "decision and signoff command scripts do not match");
 assert.equal(commandCoverageSummary.decisionActionCommandScriptCount, commandCoverageSummary.signoffCommandScriptCount, "decision and signoff command script counts do not match");
 assert.equal(commandCoverageSummary.decisionValidatorCommandCount, commandCoverageSummary.signoffValidatorCommandCount, "decision and signoff validator command counts do not match");
+assert.deepEqual(commandCoverageSummary.signoffCommandScripts, commandCoverageSummary.waiverCommandScripts, "signoff and waiver command scripts do not match");
+assert.equal(commandCoverageSummary.signoffCommandScriptCount, commandCoverageSummary.waiverCommandScriptCount, "signoff and waiver command script counts do not match");
+assert.equal(commandCoverageSummary.signoffValidatorCommandCount, commandCoverageSummary.waiverValidatorCommandCount, "signoff and waiver validator command counts do not match");
 
 assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
 assert.deepEqual(manifest.evidenceKeySummary, evidenceKeySummary, "manifest evidence key summary does not match review artifacts");
