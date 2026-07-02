@@ -52,6 +52,25 @@ const bundleEvidence = Object.entries(bundle.evidence || {}).map(([name, evidenc
 const findEvidence = (templatePath) => bundleEvidence.find((artifact) => (
   artifact.templatePath === normalize(templatePath) || artifact.basename === basename(templatePath)
 ));
+const requiredValidatorCommands = [
+  "pnpm plan:postgres",
+  "pnpm validate:storage-migration",
+  "pnpm validate:tenant-isolation",
+  "pnpm validate:connector-evidence",
+  "pnpm validate:siem-rotation",
+  "pnpm validate:windows-release",
+  "pnpm validate:windows-signing",
+  "pnpm validate:kms-hsm-sdk-approval",
+  "pnpm validate:kms-hsm-evidence",
+  "pnpm validate:browser-identity",
+  "pnpm validate:browser-rollout",
+  "pnpm validate:credential-provider-approval",
+  "pnpm validate:native-companion"
+];
+const allCommands = requests.requests.flatMap((request) => request.commands);
+const validatorCommandCount = requiredValidatorCommands.filter((command) => (
+  allCommands.some((candidate) => candidate.startsWith(command))
+)).length;
 
 const phases = requests.requests.map((request, index) => {
   const templateMappings = request.evidenceTemplates.map((templatePath) => {
@@ -77,6 +96,9 @@ const phases = requests.requests.map((request, index) => {
     evidenceKeys: request.evidenceKeys || [],
     requiredInputCount: request.requiredInputs.length,
     commandCount: request.commands.length,
+    commandScripts: request.commands
+      .map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1])
+      .filter(Boolean),
     acceptanceCriteriaCount: request.acceptanceCriteria.length,
     templateMappings,
     coveredByDeploymentBundle: templateMappings.some((mapping) => mapping.coverage === "deployment-bundle"),
@@ -97,6 +119,9 @@ const report = {
     phaseCount: phases.length,
     deploymentBundleEvidenceCount: bundleEvidence.length,
     evidenceKeyCount: new Set(phases.flatMap((phase) => phase.evidenceKeys)).size,
+    commandScriptCount: requests.summary?.commandScriptCount || new Set(phases.flatMap((phase) => phase.commandScripts || [])).size,
+    validatorCommandCount,
+    commandScripts: requests.summary?.commandScripts || [...new Set(phases.flatMap((phase) => phase.commandScripts || []))].sort(),
     deploymentBundleCoveredPhaseCount: phases.filter((phase) => phase.coveredByDeploymentBundle).length,
     missingArtifactCount: phases.reduce((total, phase) => total + phase.missingArtifactCount, 0),
     supportingArtifactCount: phases.reduce((total, phase) => total + phase.supportingArtifactCount, 0)
@@ -125,6 +150,7 @@ ${phase.templateMappings.map((mapping) => `- ${mapping.coverage}: \`${mapping.te
 Operator workload:
 - Required inputs: ${phase.requiredInputCount}
 - Commands: ${phase.commandCount}
+- Command scripts: ${phase.commandScripts.join(", ")}
 - Acceptance criteria: ${phase.acceptanceCriteriaCount}`).join("\n\n")}
 `;
 
@@ -139,5 +165,7 @@ console.log(JSON.stringify({
   markdownPath,
   phaseCount: report.summary.phaseCount,
   deploymentBundleCoveredPhaseCount: report.summary.deploymentBundleCoveredPhaseCount,
+  evidenceKeyCount: report.summary.evidenceKeyCount,
+  commandScriptCount: report.summary.commandScriptCount,
   missingArtifactCount: report.summary.missingArtifactCount
 }, null, 2));

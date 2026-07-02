@@ -43,6 +43,8 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     assert.equal(result.format, "sentinel-phase-gap-matrix-result-v1");
     assert.equal(result.phaseCount, 7);
     assert.equal(result.deploymentBundleCoveredPhaseCount, 7);
+    assert.equal(result.evidenceKeyCount, 18);
+    assert.ok(result.commandScriptCount > 20);
     assert.equal(result.missingArtifactCount, 0);
     assert.ok(existsSync(matrixPath));
     assert.ok(existsSync(markdownPath));
@@ -51,9 +53,13 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     assert.equal(matrix.format, "sentinel-phase-gap-matrix-v1");
     assert.equal(matrix.summary.phaseCount, 7);
     assert.equal(matrix.summary.evidenceKeyCount, 18);
+    assert.ok(matrix.summary.commandScriptCount > 20);
+    assert.equal(matrix.summary.validatorCommandCount, 13);
+    assert.ok(matrix.summary.commandScripts.includes("validate:windows-signing"));
     assert.equal(matrix.summary.deploymentBundleCoveredPhaseCount, 7);
     assert.ok(matrix.phases.some((phase) => phase.blockerType === "postgres-ha-approval"));
     assert.ok(matrix.phases.some((phase) => phase.evidenceKeys.includes("windowsSigning")));
+    assert.ok(matrix.phases.some((phase) => phase.commandScripts.includes("validate:windows-signing")));
     assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.evidenceKey === "windowsRelease")));
     assert.ok(matrix.phases.some((phase) => phase.templateMappings.some((mapping) => mapping.bundleEvidenceName === "windowsRelease")));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Gap Matrix/);
@@ -65,7 +71,34 @@ test("phase gap matrix maps remaining blockers to deployment evidence", () => {
     ]));
     assert.equal(validation.format, "sentinel-phase-gap-matrix-validation-v1");
     assert.equal(validation.evidenceKeyCount, 18);
+    assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validated, true);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase gap matrix validator rejects stale command scripts", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-gaps-commands-${process.pid}-${Date.now()}`);
+  try {
+    createGapWorkspace(dir);
+    const matrixPath = path.join(dir, "phase-gap-matrix.json");
+    runScript("scripts/prepare-phase-gap-matrix.mjs", [
+      "--dir", dir,
+      "--out", matrixPath,
+      "--markdown-out", path.join(dir, "phase-gap-matrix.md")
+    ]);
+    const matrix = JSON.parse(readFileSync(matrixPath, "utf8"));
+    matrix.summary.commandScripts = [];
+    matrix.summary.commandScriptCount = 0;
+    matrix.phases[0].commandScripts = ["changed:script"];
+    writeFileSync(matrixPath, JSON.stringify(matrix, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-gap-matrix.mjs", [
+      "--matrix", matrixPath,
+      "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+      "--external-requests", path.join(dir, "external-evidence-requests.json")
+    ]), /command script/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

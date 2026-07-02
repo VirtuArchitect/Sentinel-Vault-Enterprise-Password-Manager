@@ -36,6 +36,7 @@ assert.ok(matrix.status, "status is required");
 assert.ok(Array.isArray(matrix.phases), "phases must be an array");
 assert.equal(matrix.summary.phaseCount, matrix.phases.length, "summary phase count mismatch");
 assert.equal(matrix.summary.evidenceKeyCount, new Set(matrix.phases.flatMap((phase) => phase.evidenceKeys || [])).size, "summary evidence key count mismatch");
+assert.equal(matrix.summary.commandScriptCount, matrix.summary.commandScripts?.length || 0, "summary command script count mismatch");
 assert.equal(matrix.summary.missingArtifactCount, matrix.phases.reduce((total, phase) => total + phase.missingArtifactCount, 0), "summary missing artifact count mismatch");
 assert.equal(matrix.summary.supportingArtifactCount, matrix.phases.reduce((total, phase) => total + phase.supportingArtifactCount, 0), "summary supporting artifact count mismatch");
 assert.equal(matrix.summary.deploymentBundleCoveredPhaseCount, matrix.phases.filter((phase) => phase.coveredByDeploymentBundle).length, "summary deployment bundle coverage count mismatch");
@@ -43,6 +44,28 @@ assert.equal(matrix.summary.deploymentBundleCoveredPhaseCount, matrix.phases.fil
 const externalRequests = requestsPath ? readJson(requestsPath) : readJson(matrix.externalRequestsPath);
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(matrix.phases.length, externalRequests.requests.length, "phase gap matrix request count mismatch");
+const requiredValidatorCommands = [
+  "pnpm plan:postgres",
+  "pnpm validate:storage-migration",
+  "pnpm validate:tenant-isolation",
+  "pnpm validate:connector-evidence",
+  "pnpm validate:siem-rotation",
+  "pnpm validate:windows-release",
+  "pnpm validate:windows-signing",
+  "pnpm validate:kms-hsm-sdk-approval",
+  "pnpm validate:kms-hsm-evidence",
+  "pnpm validate:browser-identity",
+  "pnpm validate:browser-rollout",
+  "pnpm validate:credential-provider-approval",
+  "pnpm validate:native-companion"
+];
+const allCommands = externalRequests.requests.flatMap((request) => request.commands);
+const validatorCommandCount = requiredValidatorCommands.filter((command) => (
+  allCommands.some((candidate) => candidate.startsWith(command))
+)).length;
+assert.equal(matrix.summary.commandScriptCount, externalRequests.summary?.commandScriptCount || 0, "summary request command script count mismatch");
+assert.equal(matrix.summary.validatorCommandCount, validatorCommandCount, "summary validator command count mismatch");
+assert.deepEqual(matrix.summary.commandScripts, externalRequests.summary?.commandScripts || [], "summary command scripts mismatch");
 
 const bundle = bundlePath ? readJson(bundlePath) : readJson(matrix.bundlePath);
 assert.equal(bundle.format, "sentinel-deployment-evidence-bundle-v1");
@@ -62,6 +85,7 @@ matrix.phases.forEach((phase, index) => {
   assert.deepEqual(phase.evidenceKeys, request.evidenceKeys || [], `phase ${index + 1} evidence key mismatch`);
   assert.equal(phase.requiredInputCount, request.requiredInputs.length, `phase ${index + 1} required input count mismatch`);
   assert.equal(phase.commandCount, request.commands.length, `phase ${index + 1} command count mismatch`);
+  assert.deepEqual(phase.commandScripts, request.commands.map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1]).filter(Boolean), `phase ${index + 1} command scripts mismatch`);
   assert.equal(phase.acceptanceCriteriaCount, request.acceptanceCriteria.length, `phase ${index + 1} acceptance criteria count mismatch`);
   assert.equal(phase.templateMappings.length, request.evidenceTemplates.length, `phase ${index + 1} template mapping count mismatch`);
   assert.equal(phase.missingArtifactCount, phase.templateMappings.filter((mapping) => !mapping.exists).length, `phase ${index + 1} missing artifact count mismatch`);
@@ -95,6 +119,7 @@ console.log(JSON.stringify({
   matrixPath,
   phaseCount: matrix.phases.length,
   evidenceKeyCount: matrix.summary.evidenceKeyCount,
+  commandScriptCount: matrix.summary.commandScriptCount,
   deploymentBundleCoveredPhaseCount: matrix.summary.deploymentBundleCoveredPhaseCount,
   missingArtifactCount: matrix.summary.missingArtifactCount,
   validated: true
