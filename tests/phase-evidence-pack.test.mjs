@@ -30,6 +30,12 @@ const prepareEvidencePackInputs = (dir) => {
     "--bundle", workspace.bundlePath,
     "--out", path.join(dir, "deployment-evidence-status.json")
   ]);
+  runScript("scripts/report-deployment-redaction.mjs", [
+    "--bundle", workspace.bundlePath,
+    "--out", path.join(dir, "deployment-redaction-report.json"),
+    "--markdown-out", path.join(dir, "deployment-redaction-report.md"),
+    "--fail-on-findings"
+  ]);
   runScript("scripts/report-phase-completion-audit.mjs", [
     "--external-requests", path.join(dir, "external-evidence-requests.json"),
     "--out", path.join(dir, "phase-completion-audit.json"),
@@ -63,7 +69,7 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     ]));
 
     assert.equal(result.format, "sentinel-phase-evidence-pack-result-v1");
-    assert.equal(result.artifactCount, 10);
+    assert.equal(result.artifactCount, 12);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(manifestPath));
@@ -73,11 +79,14 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.equal(manifest.environment, "pilot");
     assert.equal(manifest.requestCount, 7);
     assert.equal(manifest.remainingExternallyCovered, true);
-    assert.equal(Object.keys(manifest.artifacts).length, 10);
+    assert.equal(Object.keys(manifest.artifacts).length, 12);
     assert.ok(manifest.artifacts.deploymentWorkspaceManifest);
+    assert.ok(manifest.artifacts.deploymentRedaction);
+    assert.ok(manifest.artifacts.deploymentRedactionMarkdown);
     assert.match(manifest.artifacts.phaseReadiness.sha256, /^[a-f0-9]{64}$/);
     assert.ok(manifest.artifacts.phaseHandoffChecklist.bytes > 0);
     assert.equal(manifest.deploymentEvidenceSummary.total, 28);
+    assert.equal(manifest.deploymentRedactionSummary.findingCount, 0);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -99,7 +108,7 @@ test("phase evidence pack validator accepts unchanged manifests", () => {
 
     assert.equal(validation.format, "sentinel-phase-evidence-pack-validation-v1");
     assert.equal(validation.validated, true);
-    assert.equal(validation.artifactCount, 10);
+    assert.equal(validation.artifactCount, 12);
     assert.equal(validation.ready, false);
   } finally {
     rmSync(dir, { recursive: true, force: true });

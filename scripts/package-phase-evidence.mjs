@@ -25,6 +25,8 @@ const artifactMap = {
   deploymentWorkspaceManifest: args.get("--workspace-manifest") || path.join(evidenceDir, "deployment-evidence-workspace-manifest.json"),
   deploymentBundle: args.get("--bundle") || path.join(evidenceDir, "deployment-evidence-bundle.json"),
   deploymentStatus: args.get("--deployment-status") || path.join(evidenceDir, "deployment-evidence-status.json"),
+  deploymentRedaction: args.get("--deployment-redaction") || path.join(evidenceDir, "deployment-redaction-report.json"),
+  deploymentRedactionMarkdown: args.get("--deployment-redaction-markdown") || path.join(evidenceDir, "deployment-redaction-report.md"),
   externalRequests: args.get("--external-requests") || path.join(evidenceDir, "external-evidence-requests.json"),
   externalRequestsMarkdown: args.get("--external-requests-markdown") || path.join(evidenceDir, "external-evidence-requests.md"),
   phaseCompletionAudit: args.get("--phase-completion") || path.join(evidenceDir, "phase-completion-audit.json"),
@@ -51,15 +53,18 @@ const readiness = JSON.parse(readFileSync(artifactMap.phaseReadiness, "utf8"));
 const externalRequests = JSON.parse(readFileSync(artifactMap.externalRequests, "utf8"));
 const workspaceManifest = JSON.parse(readFileSync(artifactMap.deploymentWorkspaceManifest, "utf8"));
 const deploymentStatus = JSON.parse(readFileSync(artifactMap.deploymentStatus, "utf8"));
+const deploymentRedaction = JSON.parse(readFileSync(artifactMap.deploymentRedaction, "utf8"));
 const phaseCompletion = JSON.parse(readFileSync(artifactMap.phaseCompletionAudit, "utf8"));
 
 assert.equal(readiness.format, "sentinel-phase-readiness-report-v1");
 assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(workspaceManifest.format, "sentinel-deployment-evidence-workspace-manifest-v1");
 assert.equal(deploymentStatus.format, "sentinel-deployment-evidence-status-v1");
+assert.equal(deploymentRedaction.format, "sentinel-deployment-redaction-report-v1");
 assert.equal(phaseCompletion.format, "sentinel-phase-completion-audit-v1");
 assert.equal(workspaceManifest.environment, readiness.bundle.environment, "workspace manifest environment does not match readiness report");
 assert.equal(workspaceManifest.status, readiness.bundle.status, "workspace manifest status does not match readiness report");
+assert.equal(path.resolve(deploymentRedaction.bundle), path.resolve(artifactMap.deploymentBundle), "deployment redaction bundle path does not match phase evidence bundle");
 
 const artifacts = Object.fromEntries(Object.entries(artifactMap).map(([name, filePath]) => [name, hashFile(filePath)]));
 
@@ -78,6 +83,7 @@ const manifest = {
   remainingItemCount: phaseCompletion.remainingItemCount,
   remainingExternallyCovered: phaseCompletion.externallyCovered,
   deploymentEvidenceSummary: deploymentStatus.summary,
+  deploymentRedactionSummary: deploymentRedaction.summary,
   artifacts
 };
 

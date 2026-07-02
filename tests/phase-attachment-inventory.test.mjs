@@ -30,6 +30,12 @@ const createInventoryWorkspace = (dir) => {
     "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
     "--out", path.join(dir, "deployment-evidence-status.json")
   ]);
+  runScript("scripts/report-deployment-redaction.mjs", [
+    "--bundle", path.join(dir, "deployment-evidence-bundle.json"),
+    "--out", path.join(dir, "deployment-redaction-report.json"),
+    "--markdown-out", path.join(dir, "deployment-redaction-report.md"),
+    "--fail-on-findings"
+  ]);
   runScript("scripts/report-phase-completion-audit.mjs", [
     "--external-requests", path.join(dir, "external-evidence-requests.json"),
     "--out", path.join(dir, "phase-completion-audit.json"),
