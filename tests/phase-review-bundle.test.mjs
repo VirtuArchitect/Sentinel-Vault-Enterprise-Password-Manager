@@ -195,6 +195,10 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(manifest.waiverSummary.waiverCount, 22);
     assert.equal(manifest.waiverSummary.proposedCount, 22);
     assert.equal(manifest.waiverSummary.approvedCount, 0);
+    assert.equal(manifest.evidenceKeySummary.intakeEvidenceKeyCount, 18);
+    assert.equal(manifest.evidenceKeySummary.attachmentEvidenceKeyCount, 18);
+    assert.equal(manifest.evidenceKeySummary.waivedEvidenceKeyCount, 18);
+    assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
     assert.equal(manifest.decision, "hold-phase-closure");
 
     const validation = JSON.parse(runScript("scripts/validate-phase-review-bundle.mjs", [
@@ -204,6 +208,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.artifactCount, 17);
     assert.equal(validation.waiverCount, 22);
+    assert.equal(validation.waivedEvidenceKeyCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -274,6 +279,28 @@ test("phase review bundle validator rejects changed gate reports", () => {
     assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
       "--manifest", manifestPath
     ]), /phaseGateValidationMarkdown .*changed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase review bundle validator rejects stale evidence key summaries", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-review-key-summary-${process.pid}-${Date.now()}`);
+  try {
+    createReviewWorkspace(dir);
+    const manifestPath = path.join(dir, "phase-review-bundle-manifest.json");
+    runScript("scripts/package-phase-review-bundle.mjs", [
+      "--dir", dir,
+      "--out", manifestPath
+    ]);
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.evidenceKeySummary.waivedEvidenceKeys = [];
+    manifest.evidenceKeySummary.waivedEvidenceKeyCount = 0;
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-review-bundle.mjs", [
+      "--manifest", manifestPath
+    ]), /evidence key summary/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

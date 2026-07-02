@@ -118,8 +118,15 @@ const waiverSummary = {
   approvedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "approved").length,
   expiredCount: phaseWaivers.waivers.filter((waiver) => waiver.expiresAt <= today).length
 };
+const evidenceKeySummary = {
+  intakeEvidenceKeyCount: new Set(phaseIntake.intakeItems.flatMap((item) => item.evidenceKeys || [])).size,
+  attachmentEvidenceKeyCount: new Set(phaseAttachments.attachments.flatMap((item) => item.evidenceKeys || [])).size,
+  waivedEvidenceKeyCount: new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean)).size,
+  waivedEvidenceKeys: [...new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean))].sort()
+};
 
 assert.deepEqual(manifest.waiverSummary, waiverSummary, "manifest waiver summary does not match waiver register");
+assert.deepEqual(manifest.evidenceKeySummary, evidenceKeySummary, "manifest evidence key summary does not match review artifacts");
 
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
@@ -139,5 +146,6 @@ console.log(JSON.stringify({
   validated: true,
   blockerCount: manifest.blockerCount,
   waiverCount: waiverSummary.waiverCount,
-  approvedWaiverCount: waiverSummary.approvedCount
+  approvedWaiverCount: waiverSummary.approvedCount,
+  waivedEvidenceKeyCount: evidenceKeySummary.waivedEvidenceKeyCount
 }, null, 2));

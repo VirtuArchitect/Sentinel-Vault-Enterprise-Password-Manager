@@ -96,6 +96,12 @@ const waiverSummary = {
   approvedCount: phaseWaivers.waivers.filter((waiver) => waiver.status === "approved").length,
   expiredCount: phaseWaivers.waivers.filter((waiver) => waiver.expiresAt <= today).length
 };
+const evidenceKeySummary = {
+  intakeEvidenceKeyCount: new Set(phaseIntake.intakeItems.flatMap((item) => item.evidenceKeys || [])).size,
+  attachmentEvidenceKeyCount: new Set(phaseAttachments.attachments.flatMap((item) => item.evidenceKeys || [])).size,
+  waivedEvidenceKeyCount: new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean)).size,
+  waivedEvidenceKeys: [...new Set(phaseWaivers.waivers.map((waiver) => waiver.evidenceKey).filter(Boolean))].sort()
+};
 
 if (requireApprovedWaivers) {
   for (const [index, waiver] of phaseWaivers.waivers.entries()) {
@@ -125,6 +131,7 @@ const manifest = {
     requireApprovedWaivers
   },
   waiverSummary,
+  evidenceKeySummary,
   artifacts
 };
 
@@ -139,5 +146,6 @@ console.log(JSON.stringify({
   validated: manifest.validated,
   blockerCount: manifest.blockerCount,
   waiverCount: manifest.waiverSummary.waiverCount,
-  approvedWaiverCount: manifest.waiverSummary.approvedCount
+  approvedWaiverCount: manifest.waiverSummary.approvedCount,
+  waivedEvidenceKeyCount: manifest.evidenceKeySummary.waivedEvidenceKeyCount
 }, null, 2));

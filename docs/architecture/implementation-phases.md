@@ -136,6 +136,7 @@ Implemented:
 - Phase evidence intake and attachment inventory evidence-key propagation so owner files remain traceable to deployment-bundle gates.
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.
+- Phase review bundle evidence-key summary that surfaces waived deployment-bundle gates and rejects stale review manifests.
 - Release-mode phase review and closure validation that rejects proposed, expired, placeholder, or control-free waivers before final archive approval.
 - Final phase review bundle manifest and validator that hash the phase evidence pack and phase gate validation reports for release review.
 - Phase closure archive manifest and validator that bind the final review bundle to the current Git commit, branch, remote, and source tree state.
