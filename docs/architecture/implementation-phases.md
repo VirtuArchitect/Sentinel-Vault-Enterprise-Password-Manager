@@ -8,7 +8,7 @@ Status: Implemented
 
 - Branded login and console UI.
 - Browser favicon and Windows package icon asset.
-- `scripts/start-demo.ps1` with `pnpm` and `npx pnpm@11.7.0` fallback.
+- `scripts/start-demo.ps1` with `pnpm` and `npx pnpm@11.8.0` fallback.
 - README quick start and troubleshooting for `pnpm`, Corepack, Node.js, and port `5173`.
 - Repeatable smoke tests in `docs/testing/smoke-tests.md`.
 

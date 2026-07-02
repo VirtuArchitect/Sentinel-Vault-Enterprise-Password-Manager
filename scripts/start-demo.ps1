@@ -23,8 +23,8 @@ function Resolve-PnpmCommand {
   if ($npx) {
     return @{
       Command = $npx.Source
-      Prefix = @("pnpm@11.7.0")
-      Label = "npx pnpm@11.7.0"
+      Prefix = @("pnpm@11.8.0")
+      Label = "npx pnpm@11.8.0"
     }
   }
 

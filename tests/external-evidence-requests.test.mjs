@@ -139,3 +139,25 @@ test("external evidence request validator rejects evidence keys missing from bun
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("external evidence request validator rejects evidence keys mapped to the wrong template", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-template-invalid-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+    const report = JSON.parse(readFileSync(jsonPath, "utf8"));
+    const request = report.requests.find((candidate) => candidate.evidenceKeys.includes("windowsSigning"));
+    request.evidenceTemplates = request.evidenceTemplates.filter((template) => template !== "docs/templates/windows-signing-execution-evidence.json");
+    writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /must reference bundle template path/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

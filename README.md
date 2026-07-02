@@ -81,21 +81,21 @@ pnpm dev
 If `pnpm` is not recognized, use the no-global-install fallback:
 
 ```powershell
-npx pnpm@11.7.0 install
-npx pnpm@11.7.0 dev
+npx pnpm@11.8.0 install
+npx pnpm@11.8.0 dev
 ```
 
 Or enable pnpm permanently from an elevated PowerShell:
 
 ```powershell
 corepack enable
-corepack prepare pnpm@11.7.0 --activate
+corepack prepare pnpm@11.8.0 --activate
 pnpm --version
 ```
 
 ### Demo Troubleshooting
 
-- `pnpm` is not recognized: run `.\scripts\start-demo.ps1` or use the `npx pnpm@11.7.0 ...` fallback.
+- `pnpm` is not recognized: run `.\scripts\start-demo.ps1` or use the `npx pnpm@11.8.0 ...` fallback.
 - `corepack enable` returns `EPERM`: reopen PowerShell as Administrator, or skip Corepack and use the `npx` fallback.
 - Port `5173` is already in use: open [http://127.0.0.1:5173](http://127.0.0.1:5173) to check whether the demo is already running, or stop the process using that port.
 - Browser shows a blank page: hard refresh with `Ctrl+F5`, then restart the demo script if needed.

@@ -102,6 +102,11 @@ for (const [index, request] of report.requests.entries()) {
 
   for (const evidenceKey of request.evidenceKeys) {
     assert.ok(bundleEvidenceKeys.has(evidenceKey), `evidence key is not present in deployment bundle template: ${evidenceKey}`);
+    const expectedTemplate = bundleTemplate.evidence[evidenceKey];
+    assert.ok(
+      request.evidenceTemplates.includes(expectedTemplate),
+      `evidence key ${evidenceKey} must reference bundle template path: ${expectedTemplate}`
+    );
     requestedEvidenceKeys.add(evidenceKey);
   }
 

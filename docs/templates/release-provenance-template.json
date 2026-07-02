@@ -13,7 +13,7 @@
     "description": "Defence-grade enterprise password manager web console prototype.",
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.7.0",
+      "version": "^11.8.0",
       "onFail": "download"
     }
   },
