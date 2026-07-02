@@ -93,10 +93,14 @@ test("phase gate validator accepts generated blocked-but-covered evidence packs"
     assert.equal(report.failedChecks.length, 0);
     assert.ok(report.blockerCount > 0);
     assert.ok(report.remainingItemCount > 0);
+    assert.equal(report.externalRequestSummary.evidenceKeyCount, 18);
+    assert.ok(report.externalRequestSummary.commandScriptCount > 20);
+    assert.equal(report.externalRequestSummary.validatorCommandCount, 13);
     assert.ok(existsSync(outputPath));
     assert.ok(existsSync(markdownPath));
     assert.equal(JSON.parse(readFileSync(outputPath, "utf8")).format, "sentinel-phase-gate-validation-v1");
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Gate Validation/);
+    assert.match(readFileSync(markdownPath, "utf8"), /Command scripts:/);
     assert.match(readFileSync(markdownPath, "utf8"), /workspace: passed/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -141,6 +145,8 @@ test("phase gate report validator accepts current reports", () => {
     assert.equal(result.format, "sentinel-phase-gate-report-validation-v1");
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
+    assert.equal(result.evidenceKeyCount, 18);
+    assert.ok(result.commandScriptCount > 20);
     assert.equal(result.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -160,6 +166,8 @@ test("phase gate report validator rejects stale reports and not-ready release mo
     const report = JSON.parse(readFileSync(reportPath, "utf8"));
     report.ready = true;
     report.blockerCount = 0;
+    report.externalRequestSummary.commandScripts = [];
+    report.externalRequestSummary.commandScriptCount = 0;
     writeFileSync(reportPath, JSON.stringify(report, null, 2));
 
     assert.throws(() => runScript("scripts/validate-phase-gate-report.mjs", [

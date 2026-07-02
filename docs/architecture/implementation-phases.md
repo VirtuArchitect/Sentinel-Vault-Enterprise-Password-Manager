@@ -130,6 +130,7 @@ Implemented:
 - Phase evidence pack validator that recomputes artifact hashes and checks manifest metadata against readiness and deployment status reports.
 - Phase evidence pack external request command-script and evidence-key summary binding.
 - Composite phase gate validator that validates the workspace, external request pack, completion audit, handoff checklist, phase evidence manifest, and readiness blocker summary in one command.
+- Phase gate validation report external request command-script and evidence-key summary binding.
 - Phase gate validation report validator and production release-gate check for stale or not-ready gate artifacts.
 - Phase action register generator and validator that turn the validated gate and external evidence requests into owner-specific action records with deployment-bundle evidence-key traceability.
 - Phase gap matrix generator and validator that map every remaining blocker to deployment-bundle evidence keys and supporting artifacts.

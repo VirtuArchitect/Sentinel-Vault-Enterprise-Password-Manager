@@ -58,5 +58,8 @@ console.log(JSON.stringify({
   blockerCount: current.blockerCount,
   remainingPhaseCount: current.remainingPhaseCount,
   remainingItemCount: current.remainingItemCount,
+  evidenceKeyCount: current.externalRequestSummary?.evidenceKeyCount || 0,
+  commandScriptCount: current.externalRequestSummary?.commandScriptCount || 0,
+  validatorCommandCount: current.externalRequestSummary?.validatorCommandCount || 0,
   validated: true
 }, null, 2));

@@ -117,6 +117,7 @@ const report = {
   warningCount,
   remainingPhaseCount: completionAudit.remainingPhaseCount,
   remainingItemCount: completionAudit.remainingItemCount,
+  externalRequestSummary: phaseEvidence.externalRequestSummary,
   failedChecks,
   validated: failedChecks.length === 0
 };
@@ -130,6 +131,9 @@ Blockers: ${blockerCount}
 Warnings: ${warningCount}
 Remaining phases: ${completionAudit.remainingPhaseCount}
 Remaining items: ${completionAudit.remainingItemCount}
+Evidence keys: ${report.externalRequestSummary?.evidenceKeyCount || 0}
+Command scripts: ${report.externalRequestSummary?.commandScriptCount || 0}
+Validator commands: ${report.externalRequestSummary?.validatorCommandCount || 0}
 
 ## Checks
 
