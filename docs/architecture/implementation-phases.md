@@ -147,6 +147,7 @@ Implemented:
 - Phase attachment inventory generator and validator that hash attached intake evidence, report missing files, and flag redaction findings before closure review.
 - Phase attachment inventory command-script coverage binding to evidence intake commands.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.
+- Phase waiver register command-script coverage binding to attachment inventory commands.
 - Phase review bundle evidence-key summary that surfaces waived deployment-bundle gates and rejects stale review manifests.
 - Phase review bundle evidence-key summary binding for decision and signoff artifacts.
 - Phase review bundle command-script coverage binding for decision and signoff artifacts.

@@ -53,6 +53,7 @@ for (const attachment of inventory.attachments) {
         blockerType: attachment.blockerType,
         evidenceKey: file.evidenceKey || null,
         evidenceKeys: attachment.evidenceKeys || [],
+        commandScripts: attachment.commandScripts || [],
         waiverType: "missing-evidence",
         targetPath: file.targetPath
       });
@@ -66,6 +67,7 @@ for (const attachment of inventory.attachments) {
         blockerType: attachment.blockerType,
         evidenceKey: file.evidenceKey || null,
         evidenceKeys: attachment.evidenceKeys || [],
+        commandScripts: attachment.commandScripts || [],
         waiverType: "redaction-finding",
         targetPath: file.targetPath,
         finding
@@ -81,6 +83,9 @@ assert.equal(register.summary.approvedCount, register.waivers.filter((waiver) =>
 assert.equal(register.summary.rejectedCount, register.waivers.filter((waiver) => waiver.status === "rejected").length, "summary rejected count mismatch");
 assert.equal(register.summary.missingEvidenceCount, register.waivers.filter((waiver) => waiver.waiverType === "missing-evidence").length, "summary missing evidence count mismatch");
 assert.equal(register.summary.redactionFindingCount, register.waivers.filter((waiver) => waiver.waiverType === "redaction-finding").length, "summary redaction finding count mismatch");
+assert.equal(register.summary.commandScriptCount, inventory.summary.commandScriptCount || 0, "summary command script count mismatch");
+assert.equal(register.summary.validatorCommandCount, inventory.summary.validatorCommandCount || 0, "summary validator command count mismatch");
+assert.deepEqual(register.summary.commandScripts, inventory.summary.commandScripts || [], "summary command scripts mismatch");
 
 register.waivers.forEach((waiver, index) => {
   const expected = expectedWaivers[index];
@@ -91,6 +96,7 @@ register.waivers.forEach((waiver, index) => {
   assert.equal(waiver.blockerType, expected.blockerType, `waiver ${index + 1} blocker mismatch`);
   assert.equal(waiver.evidenceKey, expected.evidenceKey, `waiver ${index + 1} evidence key mismatch`);
   assert.deepEqual(waiver.evidenceKeys, expected.evidenceKeys, `waiver ${index + 1} evidence keys mismatch`);
+  assert.deepEqual(waiver.commandScripts, expected.commandScripts, `waiver ${index + 1} command scripts mismatch`);
   assert.equal(waiver.waiverType, expected.waiverType, `waiver ${index + 1} type mismatch`);
   assert.equal(waiver.targetPath, expected.targetPath, `waiver ${index + 1} target mismatch`);
   assert.ok(["proposed", "approved", "rejected"].includes(waiver.status), `waiver ${index + 1} status invalid`);
@@ -112,5 +118,7 @@ console.log(JSON.stringify({
   waiverCount: register.summary.waiverCount,
   proposedCount: register.summary.proposedCount,
   approvedCount: register.summary.approvedCount,
+  commandScriptCount: register.summary.commandScriptCount,
+  validatorCommandCount: register.summary.validatorCommandCount,
   validated: true
 }, null, 2));

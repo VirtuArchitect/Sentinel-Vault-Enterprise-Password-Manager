@@ -46,6 +46,7 @@ for (const attachment of inventory.attachments) {
         blockerType: attachment.blockerType,
         evidenceKey: file.evidenceKey || null,
         evidenceKeys: attachment.evidenceKeys || [],
+        commandScripts: attachment.commandScripts || [],
         waiverType: "missing-evidence",
         status: "proposed",
         targetPath: file.targetPath,
@@ -66,6 +67,7 @@ for (const attachment of inventory.attachments) {
         blockerType: attachment.blockerType,
         evidenceKey: file.evidenceKey || null,
         evidenceKeys: attachment.evidenceKeys || [],
+        commandScripts: attachment.commandScripts || [],
         waiverType: "redaction-finding",
         status: "proposed",
         targetPath: file.targetPath,
@@ -94,7 +96,10 @@ const register = {
     approvedCount: waivers.filter((waiver) => waiver.status === "approved").length,
     rejectedCount: waivers.filter((waiver) => waiver.status === "rejected").length,
     missingEvidenceCount: waivers.filter((waiver) => waiver.waiverType === "missing-evidence").length,
-    redactionFindingCount: waivers.filter((waiver) => waiver.waiverType === "redaction-finding").length
+    redactionFindingCount: waivers.filter((waiver) => waiver.waiverType === "redaction-finding").length,
+    commandScriptCount: inventory.summary.commandScriptCount || 0,
+    validatorCommandCount: inventory.summary.validatorCommandCount || 0,
+    commandScripts: inventory.summary.commandScripts || []
   },
   waivers
 };
@@ -111,6 +116,8 @@ Summary:
 - Proposed: ${register.summary.proposedCount}
 - Missing evidence: ${register.summary.missingEvidenceCount}
 - Redaction findings: ${register.summary.redactionFindingCount}
+- Command scripts: ${register.summary.commandScriptCount}
+- Validator commands: ${register.summary.validatorCommandCount}
 
 ${waivers.length > 0 ? waivers.map((waiver) => `## ${waiver.id}: ${waiver.phase} - ${waiver.waiverType}
 
@@ -118,6 +125,7 @@ Owner role: ${waiver.ownerRole}
 Status: ${waiver.status}
 Target: \`${waiver.targetPath}\`
 Evidence key: ${waiver.evidenceKey ? `\`${waiver.evidenceKey}\`` : "supporting artifact"}
+Command scripts: ${waiver.commandScripts.join(", ")}
 Reason: ${waiver.reason}
 Approval reference: ${waiver.approvalReference}
 Expires: ${waiver.expiresAt}`).join("\n\n") : "No waivers are required for the current attachment inventory."}
@@ -133,5 +141,7 @@ console.log(JSON.stringify({
   outputPath,
   markdownPath,
   waiverCount: register.summary.waiverCount,
-  proposedCount: register.summary.proposedCount
+  proposedCount: register.summary.proposedCount,
+  commandScriptCount: register.summary.commandScriptCount,
+  validatorCommandCount: register.summary.validatorCommandCount
 }, null, 2));

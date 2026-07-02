@@ -108,13 +108,19 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     assert.equal(result.format, "sentinel-phase-waiver-register-result-v1");
     assert.equal(result.waiverCount, 22);
     assert.equal(result.proposedCount, 22);
+    assert.ok(result.commandScriptCount > 20);
+    assert.equal(result.validatorCommandCount, 13);
 
     const register = JSON.parse(readFileSync(registerPath, "utf8"));
     assert.equal(register.format, "sentinel-phase-waiver-register-v1");
     assert.equal(register.summary.missingEvidenceCount, 22);
+    assert.ok(register.summary.commandScriptCount > 20);
+    assert.equal(register.summary.validatorCommandCount, 13);
+    assert.ok(register.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(register.waivers.every((waiver) => waiver.status === "proposed"));
     assert.ok(register.waivers.some((waiver) => waiver.evidenceKey === "windowsSigning"));
     assert.ok(register.waivers.some((waiver) => waiver.evidenceKeys.includes("windowsRelease")));
+    assert.ok(register.waivers.some((waiver) => waiver.commandScripts.includes("validate:windows-signing")));
     assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Waiver Register/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-waiver-register.mjs", [
@@ -124,6 +130,8 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     ]));
     assert.equal(validation.format, "sentinel-phase-waiver-register-validation-v1");
     assert.equal(validation.validated, true);
+    assert.ok(validation.commandScriptCount > 20);
+    assert.equal(validation.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -205,6 +213,33 @@ test("phase waiver register validator rejects stale evidence key mappings", () =
       "--attachments", path.join(dir, "phase-attachment-inventory.json"),
       "--phase-decision", path.join(dir, "phase-decision-record.json")
     ]), /evidence key mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase waiver register validator rejects stale command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-waivers-command-stale-${process.pid}-${Date.now()}`);
+  try {
+    createWaiverWorkspace(dir);
+    const registerPath = path.join(dir, "phase-waiver-register.json");
+    runScript("scripts/prepare-phase-waiver-register.mjs", [
+      "--dir", dir,
+      "--out", registerPath,
+      "--markdown-out", path.join(dir, "phase-waiver-register.md")
+    ]);
+    const register = JSON.parse(readFileSync(registerPath, "utf8"));
+    register.summary.commandScripts = [];
+    register.summary.commandScriptCount = 0;
+    register.summary.validatorCommandCount = 0;
+    register.waivers[0].commandScripts = ["changed:command"];
+    writeFileSync(registerPath, JSON.stringify(register, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-phase-waiver-register.mjs", [
+      "--register", registerPath,
+      "--attachments", path.join(dir, "phase-attachment-inventory.json"),
+      "--phase-decision", path.join(dir, "phase-decision-record.json")
+    ]), /command script|validator command/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
