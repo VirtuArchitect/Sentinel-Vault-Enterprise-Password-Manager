@@ -119,6 +119,13 @@ Summary:
 - Command scripts: ${register.summary.commandScriptCount}
 - Validator commands: ${register.summary.validatorCommandCount}
 
+## Command Coverage Summary
+
+- Command scripts: ${register.summary.commandScriptCount}
+- Validator commands: ${register.summary.validatorCommandCount}
+
+${register.summary.commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
+
 ${waivers.length > 0 ? waivers.map((waiver) => `## ${waiver.id}: ${waiver.phase} - ${waiver.waiverType}
 
 Owner role: ${waiver.ownerRole}

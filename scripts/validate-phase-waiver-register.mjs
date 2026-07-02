@@ -18,6 +18,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 }
 
 const registerPath = path.resolve(args.get("--register") || "artifacts/deployment/pilot/phase-waiver-register.json");
+const markdownPath = args.get("--markdown") ? path.resolve(args.get("--markdown")) : null;
 const inventoryPath = args.get("--attachments") ? path.resolve(args.get("--attachments")) : null;
 const decisionPath = args.get("--phase-decision") ? path.resolve(args.get("--phase-decision")) : null;
 const requireApproved = args.get("--require-approved") === true || args.get("--require-approved") === "true";
@@ -86,6 +87,17 @@ assert.equal(register.summary.redactionFindingCount, register.waivers.filter((wa
 assert.equal(register.summary.commandScriptCount, inventory.summary.commandScriptCount || 0, "summary command script count mismatch");
 assert.equal(register.summary.validatorCommandCount, inventory.summary.validatorCommandCount || 0, "summary validator command count mismatch");
 assert.deepEqual(register.summary.commandScripts, inventory.summary.commandScripts || [], "summary command scripts mismatch");
+
+if (markdownPath) {
+  assert.ok(existsSync(markdownPath), `Phase waiver register markdown not found: ${markdownPath}`);
+  const markdown = readFileSync(markdownPath, "utf8");
+  assert.ok(markdown.includes("## Command Coverage Summary"), "markdown must include command coverage summary");
+  assert.ok(markdown.includes(`- Command scripts: ${register.summary.commandScriptCount}`), "markdown command script count mismatch");
+  assert.ok(markdown.includes(`- Validator commands: ${register.summary.validatorCommandCount}`), "markdown validator command count mismatch");
+  for (const script of register.summary.commandScripts) {
+    assert.ok(markdown.includes(`- \`pnpm ${script}\``), `markdown missing command script coverage: ${script}`);
+  }
+}
 
 register.waivers.forEach((waiver, index) => {
   const expected = expectedWaivers[index];

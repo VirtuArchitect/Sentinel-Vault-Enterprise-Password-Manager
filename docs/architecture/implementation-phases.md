@@ -155,6 +155,7 @@ Implemented:
 - Phase attachment inventory markdown command coverage validation for attached evidence review.
 - Phase waiver register generator and validator that turn missing or redaction-flagged evidence into explicit proposed exceptions with evidence-key traceability, approval, expiry, and compensating-control fields.
 - Phase waiver register command-script coverage binding to attachment inventory commands.
+- Phase waiver register markdown command coverage validation for owner exception review.
 - Phase review bundle evidence-key summary that surfaces waived deployment-bundle gates and rejects stale review manifests.
 - Phase review bundle evidence-key summary binding for decision and signoff artifacts.
 - Phase review bundle command-script coverage binding for decision and signoff artifacts.

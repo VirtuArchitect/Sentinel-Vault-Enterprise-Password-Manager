@@ -282,7 +282,7 @@ pnpm validate:phase-intake -- --intake ".\artifacts\deployment\pilot\phase-evide
 pnpm prepare:phase-attachments -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-attachment-inventory.json" --markdown-out ".\artifacts\deployment\pilot\phase-attachment-inventory.md"
 pnpm validate:phase-attachments -- --inventory ".\artifacts\deployment\pilot\phase-attachment-inventory.json" --markdown ".\artifacts\deployment\pilot\phase-attachment-inventory.md" --intake ".\artifacts\deployment\pilot\phase-evidence-intake.json"
 pnpm prepare:phase-waivers -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-waiver-register.json" --markdown-out ".\artifacts\deployment\pilot\phase-waiver-register.md"
-pnpm validate:phase-waivers -- --register ".\artifacts\deployment\pilot\phase-waiver-register.json" --attachments ".\artifacts\deployment\pilot\phase-attachment-inventory.json" --phase-decision ".\artifacts\deployment\pilot\phase-decision-record.json"
+pnpm validate:phase-waivers -- --register ".\artifacts\deployment\pilot\phase-waiver-register.json" --markdown ".\artifacts\deployment\pilot\phase-waiver-register.md" --attachments ".\artifacts\deployment\pilot\phase-attachment-inventory.json" --phase-decision ".\artifacts\deployment\pilot\phase-decision-record.json"
 pnpm package:phase-review -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm validate:phase-review -- --manifest ".\artifacts\deployment\pilot\phase-review-bundle-manifest.json"
 pnpm package:phase-closure -- --dir ".\artifacts\deployment\pilot" --out ".\artifacts\deployment\pilot\phase-closure-archive-manifest.json"

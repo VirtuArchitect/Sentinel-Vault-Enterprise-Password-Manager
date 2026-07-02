@@ -121,10 +121,16 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     assert.ok(register.waivers.some((waiver) => waiver.evidenceKey === "windowsSigning"));
     assert.ok(register.waivers.some((waiver) => waiver.evidenceKeys.includes("windowsRelease")));
     assert.ok(register.waivers.some((waiver) => waiver.commandScripts.includes("validate:windows-signing")));
-    assert.match(readFileSync(markdownPath, "utf8"), /Sentinel Vault Phase Waiver Register/);
+    const markdown = readFileSync(markdownPath, "utf8");
+    assert.match(markdown, /Sentinel Vault Phase Waiver Register/);
+    assert.match(markdown, /Command Coverage Summary/);
+    assert.match(markdown, /- Command scripts: [2-9][0-9]/);
+    assert.match(markdown, /- Validator commands: 13/);
+    assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-waiver-register.mjs", [
       "--register", registerPath,
+      "--markdown", markdownPath,
       "--attachments", path.join(dir, "phase-attachment-inventory.json"),
       "--phase-decision", path.join(dir, "phase-decision-record.json")
     ]));
@@ -213,6 +219,34 @@ test("phase waiver register validator rejects stale evidence key mappings", () =
       "--attachments", path.join(dir, "phase-attachment-inventory.json"),
       "--phase-decision", path.join(dir, "phase-decision-record.json")
     ]), /evidence key mismatch/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase waiver register validator rejects stale markdown command coverage", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-waivers-markdown-${process.pid}-${Date.now()}`);
+  try {
+    createWaiverWorkspace(dir);
+    const registerPath = path.join(dir, "phase-waiver-register.json");
+    const markdownPath = path.join(dir, "phase-waiver-register.md");
+    runScript("scripts/prepare-phase-waiver-register.mjs", [
+      "--dir", dir,
+      "--out", registerPath,
+      "--markdown-out", markdownPath
+    ]);
+    const markdown = readFileSync(markdownPath, "utf8").replace(
+      "- `pnpm validate:windows-signing`",
+      "- `pnpm changed:command`"
+    );
+    writeFileSync(markdownPath, markdown);
+
+    assert.throws(() => runScript("scripts/validate-phase-waiver-register.mjs", [
+      "--register", registerPath,
+      "--markdown", markdownPath,
+      "--attachments", path.join(dir, "phase-attachment-inventory.json"),
+      "--phase-decision", path.join(dir, "phase-decision-record.json")
+    ]), /markdown missing command script coverage/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
