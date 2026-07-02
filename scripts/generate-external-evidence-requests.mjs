@@ -252,6 +252,12 @@ const requests = [
   }
 ];
 
+const commandScripts = [...new Set(requests.flatMap((request) => (
+  request.commands
+    .map((command) => command.match(/^pnpm\s+([^\s]+)/)?.[1])
+    .filter(Boolean)
+)))].sort();
+
 const report = {
   format: "sentinel-external-evidence-requests-v1",
   environment,
@@ -260,7 +266,9 @@ const report = {
   summary: {
     total: requests.length,
     phases: [...new Set(requests.map((request) => request.phase))],
-    blockerTypes: [...new Set(requests.map((request) => request.blockerType))]
+    blockerTypes: [...new Set(requests.map((request) => request.blockerType))],
+    commandScriptCount: commandScripts.length,
+    commandScripts
   },
   requests
 };
@@ -272,6 +280,9 @@ Owner: ${owner}
 Generated: ${report.generatedAt}
 
 These requests cover the remaining phase work that cannot be completed from repository code alone. Attach the completed evidence to the deployment evidence bundle before marking a deployment pilot or production ready, then run \`pnpm validate:deployment-evidence -- <deployment-evidence-bundle.json>\`.
+
+Command scripts:
+${commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
 
 ${requests.map((request, index) => `## ${index + 1}. ${request.phase}: ${request.title}
 

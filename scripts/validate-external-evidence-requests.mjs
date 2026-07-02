@@ -20,6 +20,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
 const rootDir = path.resolve(import.meta.dirname, "..");
 const requestPath = path.resolve(args.get("--requests") || cliArgs.find((arg) => !arg.startsWith("--")) || "artifacts/deployment/replace-with-environment/external-evidence-requests.json");
 const bundleTemplatePath = path.resolve(args.get("--bundle-template") || "docs/templates/deployment-evidence-bundle.json");
+const packageJsonPath = path.resolve(args.get("--package-json") || "package.json");
 const strict = args.has("--strict");
 const placeholder = /replace-with|YYYY-MM-DD|TODO|TBD/i;
 
@@ -58,11 +59,15 @@ const resolveTemplate = (templatePath) => path.resolve(rootDir, templatePath);
 
 assert.ok(existsSync(requestPath), `External evidence request pack not found: ${requestPath}`);
 assert.ok(existsSync(bundleTemplatePath), `Deployment evidence bundle template not found: ${bundleTemplatePath}`);
+assert.ok(existsSync(packageJsonPath), `package.json not found: ${packageJsonPath}`);
 const report = JSON.parse(readFileSync(requestPath, "utf8"));
 const bundleTemplate = JSON.parse(readFileSync(bundleTemplatePath, "utf8"));
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 assert.equal(bundleTemplate.format, "sentinel-deployment-evidence-bundle-v1");
 assert.ok(bundleTemplate.evidence && typeof bundleTemplate.evidence === "object", "deployment evidence bundle template must include evidence map");
+assert.ok(packageJson.scripts && typeof packageJson.scripts === "object", "package.json must include scripts");
 const bundleEvidenceKeys = new Set(Object.keys(bundleTemplate.evidence));
+const packageScripts = new Set(Object.keys(packageJson.scripts));
 
 assert.equal(report.format, "sentinel-external-evidence-requests-v1");
 assert.ok(report.environment && typeof report.environment === "string", "environment is required");
@@ -77,6 +82,7 @@ if (strict) {
 
 const requestKeys = new Set();
 const allCommands = [];
+const commandScripts = new Set();
 const templatePaths = new Set();
 const requestedEvidenceKeys = new Set();
 
@@ -111,6 +117,13 @@ for (const [index, request] of report.requests.entries()) {
   }
 
   allCommands.push(...request.commands);
+  for (const command of request.commands) {
+    const match = command.match(/^pnpm\s+([^\s]+)/);
+    assert.ok(match, `request command must start with a pnpm script: ${command}`);
+    const scriptName = match[1];
+    assert.ok(packageScripts.has(scriptName), `request command references missing package script: ${scriptName}`);
+    commandScripts.add(scriptName);
+  }
 }
 
 for (const [requestKey, blockerType] of requiredRequests.entries()) {
@@ -121,6 +134,10 @@ for (const [requestKey, blockerType] of requiredRequests.entries()) {
 for (const command of requiredValidatorCommands) {
   assert.ok(allCommands.some((candidate) => candidate.startsWith(command)), `missing validator command: ${command}`);
 }
+
+const expectedCommandScripts = [...commandScripts].sort();
+assert.equal(report.summary.commandScriptCount, expectedCommandScripts.length, "summary command script count mismatch");
+assert.deepEqual(report.summary.commandScripts, expectedCommandScripts, "summary command scripts mismatch");
 
 assert.ok(templatePaths.has("docs/templates/windows-release-evidence.json"), "Windows release evidence template is required");
 assert.ok(templatePaths.has("docs/templates/windows-signing-execution-evidence.json"), "Windows signing execution evidence template is required");
@@ -140,6 +157,7 @@ const result = {
   requestCount: report.requests.length,
   templateCount: templatePaths.size,
   evidenceKeyCount: requestedEvidenceKeys.size,
+  commandScriptCount: expectedCommandScripts.length,
   validatorCommandCount: requiredValidatorCommands.length,
   validated: true
 };

@@ -50,6 +50,9 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.equal(report.owner, "platform-security");
     assert.equal(report.summary.total, 7);
     assert.deepEqual(report.summary.phases, ["Phase 2", "Phase 4", "Phase 5", "Phase 6", "Phase 7", "Phase 8"]);
+    assert.ok(report.summary.commandScriptCount > 20);
+    assert.ok(report.summary.commandScripts.includes("validate:windows-signing"));
+    assert.ok(report.summary.commandScripts.includes("release:kms-hsm-sdk-approval"));
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
     assert.ok(report.requests.some((request) => request.evidenceTemplates.includes("docs/templates/windows-signing-execution-evidence.json")));
@@ -67,6 +70,7 @@ test("external evidence request generator writes remaining phase request pack", 
     const markdown = readFileSync(markdownPath, "utf8");
     assert.match(markdown, /Production browser extension rollout evidence/);
     assert.match(markdown, /Provider SDK-backed KMS\/HSM approval/);
+    assert.match(markdown, /Command scripts:/);
     assert.match(markdown, /pnpm validate:deployment-evidence/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -92,6 +96,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.equal(result.requestCount, 7);
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
+    assert.ok(result.commandScriptCount > 20);
     assert.equal(result.validatorCommandCount, 13);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -114,6 +119,30 @@ test("external evidence request validator rejects incomplete request packs", () 
     writeFileSync(jsonPath, JSON.stringify(report, null, 2));
 
     assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /requests must include at least 7 item/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("external evidence request validator rejects missing package scripts", () => {
+  const dir = path.join(tmpdir(), `sentinel-external-evidence-command-invalid-${process.pid}-${Date.now()}`);
+  const jsonPath = path.join(dir, "requests.json");
+  const markdownPath = path.join(dir, "requests.md");
+  try {
+    runRequests([
+      "--environment", "pilot",
+      "--owner", "platform-security",
+      "--out", jsonPath,
+      "--markdown-out", markdownPath
+    ]);
+    const report = JSON.parse(readFileSync(jsonPath, "utf8"));
+    report.requests[0].commands.push("pnpm missing:script -- <evidence.json>");
+    report.summary.commandScripts.push("missing:script");
+    report.summary.commandScripts.sort();
+    report.summary.commandScriptCount = report.summary.commandScripts.length;
+    writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+    assert.throws(() => runValidator(["--requests", jsonPath, "--strict"]), /missing package script/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

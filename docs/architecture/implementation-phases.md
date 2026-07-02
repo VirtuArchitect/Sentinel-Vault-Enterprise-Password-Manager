@@ -116,6 +116,7 @@ Implemented:
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
 - External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.
 - External evidence request evidence-key mapping and validator drift check against the deployment evidence bundle template.
+- External evidence request command-script summary and validator drift check against `package.json` scripts.
 - Combined Phase 2-8 completion audit and readiness reporter that composes roadmap, deployment evidence status, and strict external evidence request validation.
 - Phase readiness report validator and production release-gate check for stale or not-ready readiness artifacts.
 - Phase completion audit validator that rejects stale roadmap counts, uncovered remaining work, and request-pack drift.
