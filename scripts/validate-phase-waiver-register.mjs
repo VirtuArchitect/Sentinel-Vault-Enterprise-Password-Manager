@@ -51,6 +51,8 @@ for (const attachment of inventory.attachments) {
         title: attachment.title,
         ownerRole: attachment.ownerRole,
         blockerType: attachment.blockerType,
+        evidenceKey: file.evidenceKey || null,
+        evidenceKeys: attachment.evidenceKeys || [],
         waiverType: "missing-evidence",
         targetPath: file.targetPath
       });
@@ -62,6 +64,8 @@ for (const attachment of inventory.attachments) {
         title: attachment.title,
         ownerRole: attachment.ownerRole,
         blockerType: attachment.blockerType,
+        evidenceKey: file.evidenceKey || null,
+        evidenceKeys: attachment.evidenceKeys || [],
         waiverType: "redaction-finding",
         targetPath: file.targetPath,
         finding
@@ -85,6 +89,8 @@ register.waivers.forEach((waiver, index) => {
   assert.equal(waiver.title, expected.title, `waiver ${index + 1} title mismatch`);
   assert.equal(waiver.ownerRole, expected.ownerRole, `waiver ${index + 1} owner mismatch`);
   assert.equal(waiver.blockerType, expected.blockerType, `waiver ${index + 1} blocker mismatch`);
+  assert.equal(waiver.evidenceKey, expected.evidenceKey, `waiver ${index + 1} evidence key mismatch`);
+  assert.deepEqual(waiver.evidenceKeys, expected.evidenceKeys, `waiver ${index + 1} evidence keys mismatch`);
   assert.equal(waiver.waiverType, expected.waiverType, `waiver ${index + 1} type mismatch`);
   assert.equal(waiver.targetPath, expected.targetPath, `waiver ${index + 1} target mismatch`);
   assert.ok(["proposed", "approved", "rejected"].includes(waiver.status), `waiver ${index + 1} status invalid`);

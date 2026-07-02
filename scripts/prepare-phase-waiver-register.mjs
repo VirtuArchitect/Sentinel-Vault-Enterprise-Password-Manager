@@ -44,6 +44,8 @@ for (const attachment of inventory.attachments) {
         title: attachment.title,
         ownerRole: attachment.ownerRole,
         blockerType: attachment.blockerType,
+        evidenceKey: file.evidenceKey || null,
+        evidenceKeys: attachment.evidenceKeys || [],
         waiverType: "missing-evidence",
         status: "proposed",
         targetPath: file.targetPath,
@@ -62,6 +64,8 @@ for (const attachment of inventory.attachments) {
         title: attachment.title,
         ownerRole: attachment.ownerRole,
         blockerType: attachment.blockerType,
+        evidenceKey: file.evidenceKey || null,
+        evidenceKeys: attachment.evidenceKeys || [],
         waiverType: "redaction-finding",
         status: "proposed",
         targetPath: file.targetPath,
@@ -113,6 +117,7 @@ ${waivers.length > 0 ? waivers.map((waiver) => `## ${waiver.id}: ${waiver.phase}
 Owner role: ${waiver.ownerRole}
 Status: ${waiver.status}
 Target: \`${waiver.targetPath}\`
+Evidence key: ${waiver.evidenceKey ? `\`${waiver.evidenceKey}\`` : "supporting artifact"}
 Reason: ${waiver.reason}
 Approval reference: ${waiver.approvalReference}
 Expires: ${waiver.expiresAt}`).join("\n\n") : "No waivers are required for the current attachment inventory."}
