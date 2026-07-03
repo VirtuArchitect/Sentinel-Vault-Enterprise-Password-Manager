@@ -28,6 +28,7 @@
     "validate:browser-identity": "node scripts/validate-browser-extension-identity-evidence.mjs",
     "release:browser-rollout": "node scripts/generate-browser-rollout-evidence.mjs",
     "render:browser-policy": "node scripts/render-browser-policy.mjs",
+    "validate:browser-policy": "node scripts/validate-browser-policy.mjs",
     "validate:browser-rollout": "node scripts/validate-browser-rollout-evidence.mjs",
     "validate:native-companion": "node scripts/validate-native-companion-evidence.mjs",
     "validate:kms-hsm-evidence": "node scripts/validate-kms-hsm-evidence.mjs",

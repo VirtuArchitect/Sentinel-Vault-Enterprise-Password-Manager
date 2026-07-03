@@ -69,6 +69,7 @@ const requiredValidatorCommands = [
   "pnpm validate:extension-package",
   "pnpm validate:browser-identity",
   "pnpm validate:browser-rollout",
+  "pnpm validate:browser-policy",
   "pnpm validate:credential-provider-approval",
   "pnpm validate:native-artifacts",
   "pnpm validate:native-companion"

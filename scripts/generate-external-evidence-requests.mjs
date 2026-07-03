@@ -220,13 +220,14 @@ const requests = [
       "pnpm release:browser-identity -- --status production --artifact <sentinel-vault-autofill.zip> --report <browser-extension-identity-report.json> --out <browser-extension-identity-evidence.json>",
       "pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>",
       "pnpm release:browser-rollout -- --artifact <sentinel-vault-autofill.zip> --extension-id <production-extension-id> --out <browser-rollout-evidence.json>",
-      "pnpm render:browser-policy -- --evidence <browser-rollout-evidence.json> --out <browser-policy.json>",
-      "pnpm validate:browser-rollout -- <browser-rollout-evidence.json>"
+      "pnpm validate:browser-rollout -- <browser-rollout-evidence.json>",
+      "pnpm render:browser-policy -- --evidence <browser-rollout-evidence.json> --out-dir <browser-policy-dir>",
+      "pnpm validate:browser-policy -- --policy-dir <browser-policy-dir> --require-chrome --require-edge --out <browser-policy-validation.json>"
     ],
     acceptanceCriteria: [
       "Extension package validation evidence records the reviewed artifact hash, required files, Manifest V3 status, and permission boundaries",
       "Evidence uses production extension IDs instead of placeholders",
-      "Enterprise policy only enables the reviewed extension and approved native host",
+      "Rendered enterprise policy validation proves only the reviewed extension ID is force-installed with approved runtime hosts and blocked permissions",
       "Rollback instructions and store/private-channel review outcomes are recorded"
     ]
   },

@@ -226,6 +226,14 @@ Generate planned browser extension rollout evidence from the package:
 
 ```powershell
 pnpm release:browser-rollout -- --artifact ".\artifacts\browser\sentinel-vault-autofill.zip"
+pnpm validate:browser-rollout ".\artifacts\browser\browser-extension-rollout-evidence.json"
+```
+
+After replacing the rollout evidence with production Chrome/Edge extension IDs, render and validate enterprise policy files:
+
+```powershell
+pnpm render:browser-policy -- --evidence ".\artifacts\browser\browser-extension-rollout-evidence.json" --out-dir ".\artifacts\browser\policy"
+pnpm validate:browser-policy -- --policy-dir ".\artifacts\browser\policy" --out ".\artifacts\browser\browser-policy-validation.json"
 ```
 
 Prepare a bulk secret import payload and redacted evidence from a CSV export:

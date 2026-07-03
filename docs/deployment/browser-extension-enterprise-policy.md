@@ -43,9 +43,10 @@ Render Chrome and Edge enterprise policies from a completed rollout evidence fil
 
 ```powershell
 pnpm render:browser-policy -- --evidence ".\evidence\browser-extension-production.json" --out-dir ".\artifacts\browser\policy"
+pnpm validate:browser-policy -- --policy-dir ".\artifacts\browser\policy" --require-chrome --require-edge --out ".\artifacts\browser\browser-policy-validation.json"
 ```
 
-The renderer refuses placeholder extension IDs and writes deployable `chrome-policy.json` and `edge-policy.json` files for enabled browsers.
+The renderer refuses placeholder extension IDs and writes deployable `chrome-policy.json` and `edge-policy.json` files for enabled browsers. The validator then checks the rendered force-install policy, production-format extension IDs, approved update URLs, runtime host allowlist, blocked permissions, and required browser coverage before policy handoff.
 
 ## Store Review Checklist
 

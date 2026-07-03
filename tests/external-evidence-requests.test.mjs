@@ -73,6 +73,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:extension-package -- --package <sentinel-vault-autofill.zip> --out <browser-extension-package-validation.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:browser-policy -- --policy-dir <browser-policy-dir> --require-chrome --require-edge --out <browser-policy-validation.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:credential-provider-approval -- <credential-provider-approval-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:native-artifacts -- --artifact <signed-credential-provider-artifact> --require-signature --out <native-artifact-validation.json>")));
     assert.ok(report.requests.every((request) => request.acceptanceCriteria.length >= 3));
@@ -108,7 +109,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 19);
+    assert.equal(result.validatorCommandCount, 20);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
