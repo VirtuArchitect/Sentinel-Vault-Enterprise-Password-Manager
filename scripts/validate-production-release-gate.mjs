@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { productionEvidenceRequirements } from "./production-evidence-requirements.mjs";
 
 const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
 const args = new Map();
@@ -45,22 +46,6 @@ const paths = {
   phaseWaivers: path.resolve(args.get("--phase-waivers") || path.join(evidenceDir, "phase-waiver-register.json")),
   phaseReview: path.resolve(args.get("--phase-review") || path.join(evidenceDir, "phase-review-bundle-manifest.json")),
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
-};
-
-const productionEvidenceRequirements = {
-  connector: "certified",
-  itsmWorkNotes: "production",
-  siemReceiverRotation: "certified",
-  windowsSigning: "signed",
-  browserIdentity: "production",
-  browserRollout: "production",
-  nativeCompanion: "production",
-  credentialProviderApproval: "approved",
-  kmsHsm: "active",
-  kmsHsmSdkApproval: "approved",
-  sourceMigration: "production",
-  tenantIsolation: "production",
-  postgresHa: "approved"
 };
 
 assert.ok(allowedTargets.has(target), "--target must be pilot or production");

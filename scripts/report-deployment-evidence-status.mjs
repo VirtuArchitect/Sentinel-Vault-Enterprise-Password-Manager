@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { productionEvidenceRequirements } from "./production-evidence-requirements.mjs";
 
 const args = new Map();
 const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
@@ -46,22 +47,6 @@ const validators = {
 const artifactFormats = {
   storageMigration: "sentinel-storage-migration-evidence-v1",
   releaseProvenance: "sentinel-release-provenance-v1"
-};
-
-const productionEvidenceRequirements = {
-  connector: "certified",
-  itsmWorkNotes: "production",
-  siemReceiverRotation: "certified",
-  windowsSigning: "signed",
-  browserIdentity: "production",
-  browserRollout: "production",
-  nativeCompanion: "production",
-  credentialProviderApproval: "approved",
-  kmsHsm: "active",
-  kmsHsmSdkApproval: "approved",
-  sourceMigration: "production",
-  tenantIsolation: "production",
-  postgresHa: "approved"
 };
 
 const resolveEvidencePath = (candidate) => {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { productionEvidenceRequirementEntries } from "./production-evidence-requirements.mjs";
 
 const bundlePath = process.argv.slice(2).filter((arg) => arg !== "--")[0] || "docs/templates/deployment-evidence-bundle.json";
 const rootDir = path.resolve(import.meta.dirname, "..");
@@ -37,22 +38,6 @@ const validators = {
   releaseAttestation: ["scripts/validate-release-attestation-evidence.mjs"],
   sast: ["scripts/validate-sast-evidence.mjs"],
   logRedaction: ["scripts/validate-log-redaction-evidence.mjs"]
-};
-
-const productionEvidenceRequirements = {
-  connector: "certified",
-  itsmWorkNotes: "production",
-  siemReceiverRotation: "certified",
-  windowsSigning: "signed",
-  browserIdentity: "production",
-  browserRollout: "production",
-  nativeCompanion: "production",
-  credentialProviderApproval: "approved",
-  kmsHsm: "active",
-  kmsHsmSdkApproval: "approved",
-  sourceMigration: "production",
-  tenantIsolation: "production",
-  postgresHa: "approved"
 };
 
 const artifactFormats = {
@@ -113,7 +98,7 @@ if (deployedStatuses.has(bundle.status)) {
 }
 
 if (bundle.status === "production") {
-  for (const [name, requiredStatus] of Object.entries(productionEvidenceRequirements)) {
+  for (const [name, requiredStatus] of productionEvidenceRequirementEntries) {
     assert.equal(results[name].status, requiredStatus, `${name} evidence status must be ${requiredStatus} for production bundles`);
     if (results[name].environment !== undefined) {
       assert.equal(results[name].environment, bundle.environment, `${name} evidence environment must match the production bundle environment`);

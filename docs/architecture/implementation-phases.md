@@ -120,6 +120,7 @@ Implemented:
 - Deployment evidence status reporter includes strict production expected-status and environment-alignment mismatches from the final bundle gate.
 - Deployment evidence status report validator and production release-gate check for stale or not-ready deployment evidence status.
 - Production release gate blocker details include deployment evidence status mismatch counts and representative expected-status issues.
+- Shared production evidence status requirements module with drift coverage across bundle, status, and release-gate checks.
 - Deployment evidence redaction reporter, validator, and release-gate check that scan every bundle evidence file for private keys, service tokens, provider tokens, generic secret assignments, stale reports, and not-ready evidence.
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
 - External evidence request validator for strict operator handoff checks across remaining Phase 2-8 gates.
