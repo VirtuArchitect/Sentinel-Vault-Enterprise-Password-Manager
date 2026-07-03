@@ -32,6 +32,12 @@ The package is created at:
 artifacts/windows/SentinelVault-Windows.zip
 ```
 
+Validate the zip with Windows-native extraction and a local production startup smoke test:
+
+```powershell
+pnpm validate:windows-package
+```
+
 The zip also includes `assets/sentinel-vault-app-icon.svg` for installer shortcuts, MSI/WiX authoring, or IIS site branding.
 
 The zip includes the Windows companion helper at:

@@ -201,6 +201,7 @@ Build a Windows deployment zip:
 
 ```powershell
 pnpm package:windows
+pnpm validate:windows-package
 ```
 
 The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. See `deployments/windows/README.md`.

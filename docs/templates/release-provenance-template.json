@@ -10,7 +10,7 @@
   "package": {
     "name": "sentinel-vault-console",
     "version": "1.0.0",
-    "description": "Defence-grade enterprise password manager web console prototype.",
+    "description": "Enterprise-grade password manager web console prototype.",
     "packageManager": {
       "name": "pnpm",
       "version": "^11.8.0",

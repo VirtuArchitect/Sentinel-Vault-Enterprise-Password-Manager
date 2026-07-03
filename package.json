@@ -1,7 +1,7 @@
 {
   "name": "sentinel-vault-console",
   "version": "1.0.0",
-  "description": "Defence-grade enterprise password manager web console prototype.",
+  "description": "Enterprise-grade password manager web console prototype.",
   "main": "server.mjs",
   "scripts": {
     "dev": "node server.mjs",
@@ -98,6 +98,7 @@
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
     "validate:windows-signing": "node scripts/validate-windows-signing-execution-evidence.mjs",
+    "validate:windows-package": "powershell -ExecutionPolicy Bypass -File scripts/validate-windows-package.ps1",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",
     "validate:pentest-scope": "node scripts/validate-pentest-scope-evidence.mjs",
     "release:audit-worm": "node scripts/generate-audit-worm-evidence.mjs",

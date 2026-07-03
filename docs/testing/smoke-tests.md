@@ -22,7 +22,7 @@ cd "<repo root>"
 Open [http://127.0.0.1:5173](http://127.0.0.1:5173), then sign in:
 
 ```text
-User name: ada@defence.local
+User name: avery.stone@enterprise.example
 Master key: Passw0rd!
 ```
 
@@ -47,12 +47,14 @@ Steps:
 
 ```powershell
 pnpm package:windows
-tar.exe -tf artifacts\windows\SentinelVault-Windows.zip | Select-String -Pattern "sentinel-vault-app-icon|favicon|install.ps1"
+pnpm validate:windows-package
 ```
 
 Expected result:
 
 - `artifacts/windows/SentinelVault-Windows.zip` exists.
+- The zip extracts with Windows-native tooling.
 - The zip contains `assets/sentinel-vault-app-icon.svg`.
 - The zip contains `app/dist/favicon.svg`.
 - The zip contains `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
+- The extracted production app passes `/healthz`.

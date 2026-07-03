@@ -61,5 +61,5 @@ if (!$SkipInstall -or !(Test-Path (Join-Path $root "node_modules"))) {
 $env:HOST = $HostName
 $env:PORT = [string]$Port
 Write-Host "Starting Sentinel Vault demo console at http://$HostName`:$Port"
-Write-Host "Demo user: ada@defence.local / Passw0rd!"
+Write-Host "Demo user: avery.stone@enterprise.example / Passw0rd!"
 Invoke-Pnpm -Tool $tool -Arguments @("dev")
