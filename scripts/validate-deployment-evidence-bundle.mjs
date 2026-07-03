@@ -42,7 +42,8 @@ const validators = {
 const productionEvidenceRequirements = {
   connector: "certified",
   itsmWorkNotes: "production",
-  siemReceiverRotation: "certified"
+  siemReceiverRotation: "certified",
+  windowsSigning: "signed"
 };
 
 const artifactFormats = {

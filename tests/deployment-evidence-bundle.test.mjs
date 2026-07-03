@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -133,6 +134,49 @@ const writeProductionPhaseFiveEvidence = (dir, environment = "prod-east") => {
   writeFileSync(itsmPath, JSON.stringify(itsm, null, 2));
 };
 
+const writeSignedWindowsEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const artifactPath = path.join(evidenceDir, "SentinelVault.Setup.exe");
+  writeFileSync(artifactPath, "signed installer fixture");
+  const artifactSha256 = crypto.createHash("sha256").update(readFileSync(artifactPath)).digest("hex");
+
+  const windowsSigningPath = path.join(evidenceDir, "windows-signing-execution-evidence.json");
+  const windowsSigning = JSON.parse(readFileSync(windowsSigningPath, "utf8"));
+  windowsSigning.status = "signed";
+  windowsSigning.environment = environment;
+  windowsSigning.releaseVersion = "1.0.0";
+  windowsSigning.signedAt = "2026-07-01T10:00:00Z";
+  windowsSigning.releaseHost.hostnameHash = "b".repeat(64);
+  windowsSigning.releaseHost.osBuild = "Windows Server 2025";
+  windowsSigning.releaseHost.runnerIdentity = "release-runner";
+  windowsSigning.releaseHost.approvedHost = "passed";
+  windowsSigning.certificate.subject = "CN=Sentinel Vault";
+  windowsSigning.certificate.thumbprint = "a".repeat(40);
+  windowsSigning.certificate.issuer = "CN=Enterprise Code Signing CA";
+  windowsSigning.certificate.validFrom = "2026-01-01";
+  windowsSigning.certificate.validTo = "2027-01-01";
+  windowsSigning.certificate.timestampAuthority = "https://timestamp.example.com";
+  windowsSigning.artifacts = [{
+    type: "exe",
+    path: artifactPath,
+    sha256: artifactSha256,
+    signatureStatus: "passed",
+    timestampStatus: "passed",
+    authenticodeStatus: "valid"
+  }];
+  for (const name of Object.keys(windowsSigning.checks)) {
+    windowsSigning.checks[name] = "passed";
+  }
+  windowsSigning.approvals.releaseOwner = "release-owner";
+  windowsSigning.approvals.securityReviewer = "security-review";
+  windowsSigning.approvals.operationsOwner = "platform-operations";
+  windowsSigning.approvals.changeTicket = "CHG-2026-0701";
+  windowsSigning.redaction.containsPfxPassword = false;
+  windowsSigning.redaction.containsPrivateKeyMaterial = false;
+  windowsSigning.redaction.containsSigningToken = false;
+  writeFileSync(windowsSigningPath, JSON.stringify(windowsSigning, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -243,7 +287,24 @@ test("production evidence bundle requires production-ready Phase 5 evidence", ()
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5 evidence", () => {
+test("production evidence bundle requires signed Windows release evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-signing-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /windowsSigning evidence status must be signed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5 and signing evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -253,12 +314,14 @@ test("production evidence bundle accepts aligned Phase 5 evidence", () => {
       generatedAt: "2026-07-01T10:00:00Z"
     });
     writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
     assert.equal(validation.results.connector.status, "certified");
     assert.equal(validation.results.itsmWorkNotes.status, "production");
     assert.equal(validation.results.siemReceiverRotation.status, "certified");
+    assert.equal(validation.results.windowsSigning.status, "signed");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

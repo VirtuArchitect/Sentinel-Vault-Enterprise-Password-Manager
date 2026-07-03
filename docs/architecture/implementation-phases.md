@@ -225,6 +225,7 @@ Implemented:
 - Windows install hardening evidence generator for local install layout checks, runtime-secret review, log redaction review, and supplied installer drill results.
 - Windows signing execution evidence template, generator, validator, and deployment-bundle gate for MSI/MSIX signing on an approved certificate-backed release host.
 - Windows signing report validator for release-host report inputs, artifact hashes, signature/timestamp checks, approval metadata, and signing-secret redaction before execution evidence generation.
+- Production deployment-bundle enforcement that Windows signing execution evidence is signed and environment-aligned.
 - Windows ZIP package extraction and runtime smoke validator for VM-ready package checks before handoff.
 - Windows package validation report output for release evidence attachment and VM handoff records.
 
