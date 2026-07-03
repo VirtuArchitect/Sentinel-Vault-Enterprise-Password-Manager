@@ -125,6 +125,7 @@
     "release:tls-iis": "node scripts/generate-tls-iis-evidence.mjs",
     "validate:tls-iis": "node scripts/validate-tls-iis-evidence.mjs",
     "preflight:connectors": "node scripts/preflight-enterprise-connectors.mjs",
+    "validate:connector-preflight": "node scripts/validate-connector-preflight.mjs",
     "preflight:devops-token": "node scripts/preflight-devops-token-response.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm validate:extensions && pnpm build",
     "package:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-package.ps1",

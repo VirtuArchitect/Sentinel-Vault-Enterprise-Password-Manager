@@ -136,3 +136,23 @@ Expected result:
 - Required fields `name`, `username`, and `password` are present.
 - Redaction settings do not allow password or OTP values in evidence.
 - When `--source` is supplied, every source CSV column is mapped or explicitly ignored.
+
+## Connector Preflight Evidence
+
+Name: Connector live preflight evidence validates before certification
+
+Purpose: Prove SIEM and ITSM preflight evidence can be independently checked before connector certification evidence is generated.
+
+Steps:
+
+```powershell
+pnpm validate:connector-preflight -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
+```
+
+Expected result:
+
+- The preflight evidence has format `sentinel-enterprise-connector-live-preflight-v1`.
+- All preflight checks are boolean and passing.
+- SIEM evidence, when present, is signed and accepted by the receiver.
+- ITSM evidence, when present, proves an active allowed-state ticket inside the change window.
+- Redacted output does not include connector secrets.

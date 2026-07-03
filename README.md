@@ -146,6 +146,7 @@ pnpm release:source-migration -- --status planned --out ".\artifacts\import\sour
 pnpm validate:source-migration -- docs/templates/source-migration-evidence.json
 pnpm release:browser-identity -- --status planned --out ".\artifacts\browser\browser-extension-identity-evidence.json"
 pnpm validate:browser-identity -- docs/templates/browser-extension-identity-evidence.json
+pnpm validate:connector-preflight -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
 pnpm release:connector-evidence -- --preflight ".\artifacts\integrations\connector-live-preflight.json"
 pnpm validate:connector-evidence -- docs/templates/connector-certification-evidence.json
 pnpm release:itsm-worknotes -- --status planned --out ".\artifacts\integrations\itsm-worknote-evidence.json"

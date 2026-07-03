@@ -109,6 +109,7 @@ const requests = [
     ],
     commands: [
       "pnpm preflight:connectors -- --siem-url <receiver-url> --ticket-ref <approved-ticket>",
+      "pnpm validate:connector-preflight -- --preflight <connector-live-preflight.json> --require-siem --require-itsm",
       "pnpm release:connector-evidence -- --preflight <connector-live-preflight.json> --out <connector-certification-evidence.json>",
       "pnpm release:itsm-worknotes -- --status production --report <itsm-worknote-samples.json> --ticket-ref <approved-ticket> --out <itsm-worknote-evidence.json>",
       "pnpm validate:itsm-worknotes -- <itsm-worknote-evidence.json>",
@@ -117,6 +118,7 @@ const requests = [
       "pnpm validate:siem-rotation -- <siem-receiver-rotation-evidence.json>"
     ],
     acceptanceCriteria: [
+      "Connector live preflight validation independently verifies signed SIEM delivery, replay evidence, active ITSM ticket state, change-window status, and redaction",
       "Receiver verifies HMAC signature, key ID, nonce, timestamp, and replay rejection",
       "ITSM ticket lookup confirms an active approved state inside the permitted window",
       "Work-note evidence is redacted and tied to approved incident, change, or request references"

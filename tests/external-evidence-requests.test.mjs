@@ -54,12 +54,14 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(report.summary.commandScripts.includes("validate:postgres-schema"));
     assert.ok(report.summary.commandScripts.includes("validate:source-map"));
+    assert.ok(report.summary.commandScripts.includes("validate:connector-preflight"));
     assert.ok(report.summary.commandScripts.includes("validate:extension-package"));
     assert.ok(report.summary.commandScripts.includes("validate:native-artifacts"));
     assert.ok(report.summary.commandScripts.includes("release:kms-hsm-sdk-approval"));
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:postgres-schema -- --out <postgres-schema-validation.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:source-map -- --mapping <column-map.json> --source <source-export.csv> --out <source-column-map-validation.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:connector-preflight -- --preflight <connector-live-preflight.json> --require-siem --require-itsm")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
     assert.ok(report.requests.some((request) => request.evidenceTemplates.includes("docs/templates/windows-signing-execution-evidence.json")));
     assert.ok(report.requests.some((request) => request.evidenceKeys.includes("windowsSigning")));
@@ -106,7 +108,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 18);
+    assert.equal(result.validatorCommandCount, 19);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

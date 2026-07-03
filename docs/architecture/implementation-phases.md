@@ -186,6 +186,7 @@ Implemented:
 - Production release archive command-script coverage binding across closure and release-gate reports.
 - Production release archive markdown command coverage summary binding from closure evidence.
 - Live SIEM/ITSM connector preflight evidence generator for signed delivery and ticket validation checks.
+- Connector live preflight validator for signed SIEM delivery, replay evidence, active ITSM ticket checks, change-window status, and redacted output.
 
 Remaining:
 - Completed production live receiver, SIEM rotation, and ITSM work-note evidence files for each deployment environment.

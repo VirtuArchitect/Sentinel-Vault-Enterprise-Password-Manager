@@ -32,6 +32,7 @@ Generate live non-production receiver evidence with:
 
 ```powershell
 pnpm preflight:connectors -- --siem-url "https://siem.example/webhook" --siem-secret "replace-with-secret" --itsm-url "https://itsm.example" --ticket-ref "INC-12345" --itsm-allowed-states "open,approved,scheduled"
+pnpm validate:connector-preflight -- --preflight ".\artifacts\integrations\connector-live-preflight.json" --require-siem --require-itsm
 ```
 
 The preflight sends a synthetic signed SIEM delivery, checks receiver acceptance/replay evidence, validates an ITSM ticket lookup, and writes redacted evidence to `artifacts/integrations/connector-live-preflight.json`.

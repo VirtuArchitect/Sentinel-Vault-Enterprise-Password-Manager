@@ -51,6 +51,7 @@ const requiredValidatorCommands = [
   "pnpm validate:storage-migration",
   "pnpm validate:source-map",
   "pnpm validate:tenant-isolation",
+  "pnpm validate:connector-preflight",
   "pnpm validate:connector-evidence",
   "pnpm validate:siem-rotation",
   "pnpm validate:windows-package",
