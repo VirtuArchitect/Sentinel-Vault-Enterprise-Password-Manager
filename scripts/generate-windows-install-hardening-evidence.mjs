@@ -23,6 +23,7 @@ const dataDir = args.get("--data-dir") || path.join(installPath, "data");
 const logsDir = args.get("--logs-dir") || path.join(installPath, "logs");
 const rollbackDir = args.get("--rollback-dir") || "C:\\Program Files\\Sentinel Vault Rollbacks";
 const iisFrontend = args.get("--iis-frontend") === "true";
+const targetPreflightPath = args.get("--target-preflight-report") || "";
 
 assert.ok(allowedStatuses.has(deploymentStatus), "status must be planned, pilot, production, or retired");
 assert.ok(allowedStorageProviders.has(storageProvider), "storage-provider must be json, sqlite, or postgres");
@@ -74,6 +75,9 @@ const containsPlaintextSecretMarker = (dir) => {
 };
 
 const env = readEnv(sentinelEnvPath);
+const targetPreflight = targetPreflightPath && existsSync(targetPreflightPath)
+  ? JSON.parse(readFileSync(targetPreflightPath, "utf8"))
+  : null;
 const configuredHost = args.get("--node-host") || env.HOST || env.HOSTNAME || "127.0.0.1";
 const configuredPort = Number(args.get("--node-port") || env.PORT || 5173);
 const vaultRootKey = env.VAULT_ROOT_KEY || "";
@@ -92,6 +96,15 @@ const evidence = {
     port: configuredPort,
     iisFrontend,
     tlsTermination: args.get("--tls-termination") || (iisFrontend ? "replace-with-iis-tls-termination" : "not-applicable")
+  },
+  targetPreflight: {
+    reportPath: targetPreflightPath || "replace-with-windows-target-preflight-report",
+    format: targetPreflight?.format || "sentinel-windows-target-preflight-v1",
+    result: argResult("--target-preflight-result", targetPreflight ? (targetPreflight.ready ? "passed" : "failed") : "planned", allowedResults),
+    ready: Boolean(targetPreflight?.ready),
+    failedCount: Number(targetPreflight?.failedCount || 0),
+    warningCount: Number(targetPreflight?.warningCount || 0),
+    checkedAt: args.get("--target-preflight-checked-at") || (targetPreflight?.generatedAt ? String(targetPreflight.generatedAt).slice(0, 10) : (deploymentStatus === "planned" ? "YYYY-MM-DD" : today()))
   },
   serviceIdentity: {
     supervisor: args.get("--supervisor") || "scheduled-task",

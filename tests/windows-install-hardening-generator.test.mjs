@@ -61,6 +61,8 @@ test("windows install hardening generator records local install facts", () => {
     assert.equal(evidence.environment, "lab");
     assert.equal(evidence.nodeBinding.host, "127.0.0.1");
     assert.equal(evidence.nodeBinding.port, 5173);
+    assert.equal(evidence.targetPreflight.result, "planned");
+    assert.equal(evidence.targetPreflight.format, "sentinel-windows-target-preflight-v1");
     assert.equal(evidence.runtimeSecrets.vaultRootKeyNotDemo, "passed");
     assert.equal(evidence.runtimeSecrets.plaintextSecretsAbsentFromLogs, "passed");
     assert.equal(evidence.installerChecks.cleanInstall, "not-run");
@@ -99,12 +101,22 @@ test("windows install hardening generator can create validated completed evidenc
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-hardening-generator-prod-"));
   try {
     const evidencePath = path.join(dir, "windows-hardening.json");
+    const preflightPath = path.join(dir, "windows-target-preflight.json");
+    writeFileSync(preflightPath, JSON.stringify({
+      format: "sentinel-windows-target-preflight-v1",
+      generatedAt: "2026-07-01T08:00:00.000Z",
+      ready: true,
+      failedCount: 0,
+      warningCount: 0,
+      checks: []
+    }, null, 2));
     runGenerator([
       "--status", "production",
       "--environment", "prod",
       "--install-host", "sentinel-prod-01",
       "--install-path", "C:\\Program Files\\Sentinel Vault",
       "--review-date", "2026-07-01",
+      "--target-preflight-report", preflightPath,
       "--least-privilege-review", "passed",
       "--install-dir-restricted", "passed",
       "--sentinel-env-restricted", "passed",

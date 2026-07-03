@@ -262,11 +262,15 @@ The installer restricts `sentinel.env` to Administrators and SYSTEM because it c
 Record Windows install hardening evidence with:
 
 ```powershell
-pnpm release:windows-hardening -- --install-path "C:\Program Files\Sentinel Vault" --sentinel-env "C:\Program Files\Sentinel Vault\sentinel.env"
-pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evidence.json
+pnpm release:windows-hardening -- `
+  --install-path "C:\Program Files\Sentinel Vault" `
+  --sentinel-env "C:\Program Files\Sentinel Vault\sentinel.env" `
+  --target-preflight-report ".\windows-target-preflight.json" `
+  --out ".\artifacts\windows\windows-install-hardening-evidence.json"
+pnpm validate:windows-hardening -- ".\artifacts\windows\windows-install-hardening-evidence.json"
 ```
 
-Pilot and production evidence must show restricted filesystem ACLs, non-interactive service identity, localhost Node binding, non-demo runtime secrets, clean install, upgrade backup, rollback, uninstall, and health-check results. If IIS is enabled, the evidence must also include TLS termination and reverse-proxy validation.
+Pilot and production evidence must show a passing target preflight report, restricted filesystem ACLs, non-interactive service identity, localhost Node binding, non-demo runtime secrets, clean install, upgrade backup, rollback, uninstall, and health-check results. If IIS is enabled, the evidence must also include TLS termination and reverse-proxy validation.
 
 ## Upgrade and Rollback
 

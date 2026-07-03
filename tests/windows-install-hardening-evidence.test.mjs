@@ -31,6 +31,15 @@ const productionEvidence = () => {
     iisFrontend: true,
     tlsTermination: "IIS site certificate CN=sentinel.example.test"
   };
+  evidence.targetPreflight = {
+    reportPath: "C:\\SentinelEvidence\\windows-target-preflight.json",
+    format: "sentinel-windows-target-preflight-v1",
+    result: "passed",
+    ready: true,
+    failedCount: 0,
+    warningCount: 0,
+    checkedAt: "2026-07-01"
+  };
   evidence.serviceIdentity.leastPrivilegeReview = "passed";
   evidence.filesystemAcls = Object.fromEntries(Object.keys(evidence.filesystemAcls).map((name) => [name, "passed"]));
   evidence.runtimeSecrets = Object.fromEntries(Object.keys(evidence.runtimeSecrets).map((name) => [name, "passed"]));
@@ -46,6 +55,22 @@ const productionEvidence = () => {
 
 test("windows install hardening evidence template validates in planned mode", () => {
   assert.match(runValidator(path.join(rootDir, "docs", "templates", "windows-install-hardening-evidence.json")), /validated/);
+});
+
+test("production windows install hardening evidence rejects failed target preflight", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-hardening-preflight-fail-"));
+  try {
+    const evidence = productionEvidence();
+    evidence.targetPreflight.result = "failed";
+    evidence.targetPreflight.ready = false;
+    evidence.targetPreflight.failedCount = 1;
+    const evidencePath = path.join(dir, "windows-install-hardening.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /targetPreflight\.result must pass/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("production windows install hardening evidence validates completed controls", () => {

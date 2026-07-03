@@ -235,6 +235,7 @@ Implemented:
 - Windows ZIP package extraction and runtime smoke validator for VM-ready package checks before handoff.
 - Windows package validation report output for release evidence attachment and VM handoff records.
 - Windows target preflight script for VM operators to verify package layout, Node.js version, administrator elevation, ports, SQLite runtime, and optional IIS prerequisites before installation.
+- Windows install-hardening evidence binding for target preflight reports so deployed evidence cannot pass with failed VM readiness checks.
 
 Remaining:
 

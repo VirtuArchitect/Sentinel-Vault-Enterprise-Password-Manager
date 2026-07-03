@@ -12,6 +12,15 @@
     "iisFrontend": false,
     "tlsTermination": "not-applicable"
   },
+  "targetPreflight": {
+    "reportPath": "replace-with-windows-target-preflight-report",
+    "format": "sentinel-windows-target-preflight-v1",
+    "result": "planned",
+    "ready": false,
+    "failedCount": 0,
+    "warningCount": 0,
+    "checkedAt": "YYYY-MM-DD"
+  },
   "serviceIdentity": {
     "supervisor": "scheduled-task",
     "runAs": "SYSTEM",
