@@ -110,14 +110,14 @@ test("phase attachment inventory reports missing and attached intake files", () 
     assert.equal(result.missingFileCount, 21);
     assert.equal(result.redactionFindingCount, 0);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 21);
+    assert.equal(result.validatorCommandCount, 22);
     assert.ok(existsSync(inventoryPath));
     assert.ok(existsSync(markdownPath));
 
     const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
     assert.equal(inventory.format, "sentinel-phase-attachment-inventory-v1");
     assert.ok(inventory.summary.commandScriptCount > 20);
-    assert.equal(inventory.summary.validatorCommandCount, 21);
+    assert.equal(inventory.summary.validatorCommandCount, 22);
     assert.ok(inventory.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(inventory.attachments.some((item) => item.attachedFileCount === 1));
     assert.ok(inventory.attachments.some((item) => item.evidenceKeys.includes("windowsSigning")));
@@ -127,7 +127,7 @@ test("phase attachment inventory reports missing and attached intake files", () 
     assert.match(markdown, /Sentinel Vault Phase Attachment Inventory/);
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 21/);
+    assert.match(markdown, /- Validator commands: 22/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-attachment-inventory.mjs", [
@@ -138,7 +138,7 @@ test("phase attachment inventory reports missing and attached intake files", () 
     assert.equal(validation.format, "sentinel-phase-attachment-inventory-validation-v1");
     assert.equal(validation.validated, true);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 21);
+    assert.equal(validation.validatorCommandCount, 22);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -145,7 +145,7 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 21);
+    assert.equal(result.validatorCommandCount, 22);
     assert.ok(existsSync(archivePath));
 
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
@@ -155,10 +155,10 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(archive.closure.evidenceKeySummary.waivedEvidenceKeyCount, 18);
     assert.ok(archive.closure.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
     assert.ok(archive.closure.commandCoverageSummary.signoffCommandScriptCount > 20);
-    assert.equal(archive.closure.commandCoverageSummary.signoffValidatorCommandCount, 21);
+    assert.equal(archive.closure.commandCoverageSummary.signoffValidatorCommandCount, 22);
     assert.ok(archive.closure.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
     assert.equal(archive.closure.markdownCoverageSummary.artifactCount, 7);
-    assert.equal(archive.closure.markdownCoverageSummary.validatorCommandCount, 21);
+    assert.equal(archive.closure.markdownCoverageSummary.validatorCommandCount, 22);
     assert.deepEqual(archive.releaseGate.commandCoverageSummary, archive.closure.commandCoverageSummary);
 
     const validation = JSON.parse(runScript("scripts/validate-production-release-archive.mjs", [
@@ -171,7 +171,7 @@ test("production release archive binds closure archive and release gate report",
     assert.equal(validation.requireClean, false);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 21);
+    assert.equal(validation.validatorCommandCount, 22);
     assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
     assert.equal(validation.closureValidated, true);
     assert.equal(validation.releaseGateValidated, true);

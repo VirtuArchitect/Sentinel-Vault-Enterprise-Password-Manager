@@ -12,6 +12,7 @@ const rootDir = path.resolve(import.meta.dirname, "..");
 const execFileAsync = promisify(execFile);
 const clientId = "sentinel-client";
 const keyId = "preflight-key";
+const fetchForbiddenPorts = new Set([10080]);
 
 const base64urlJson = (value) => Buffer.from(JSON.stringify(value), "utf8").toString("base64url");
 const signJwt = ({ issuer, privateKey, claims = {} }) => {
@@ -32,7 +33,7 @@ const signJwt = ({ issuer, privateKey, claims = {} }) => {
   return `${signingInput}.${signature}`;
 };
 
-const startFixture = async () => {
+const startFixture = async (attempt = 0) => {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
   const jwk = publicKey.export({ format: "jwk" });
   jwk.kid = keyId;
@@ -61,6 +62,11 @@ const startFixture = async () => {
   });
   server.listen(0, "127.0.0.1");
   await new Promise((resolve) => server.once("listening", resolve));
+  if (fetchForbiddenPorts.has(server.address().port)) {
+    await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+    assert.ok(attempt < 5, "fixture could not allocate a fetch-allowed local port");
+    return startFixture(attempt + 1);
+  }
   return { server, privateKey };
 };
 

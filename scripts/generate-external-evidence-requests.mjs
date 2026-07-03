@@ -70,8 +70,9 @@ const requests = [
     ],
     commands: [
       "pnpm validate:source-map -- --mapping <column-map.json> --source <source-export.csv> --out <source-column-map-validation.json>",
-      "pnpm convert:source-export -- --source <source-export.csv> --format mapped-csv --mapping <column-map.json> --vault-id <target-vault-id> --out <normalized-import.json> --evidence <migration-evidence.json>",
-      "pnpm release:source-migration -- --status pilot --source-system <source-system> --column-map <column-map.json> --source-adapter-evidence <migration-evidence.json> --normalized-import <normalized-import.json> --storage-migration-evidence <storage-migration-evidence.json> --tenant-isolation-evidence <tenant-isolation-evidence.json> --out <source-migration-evidence.json>",
+      "pnpm convert:source-export -- --source <source-export.csv> --format mapped-csv --mapping <column-map.json> --vault-id <target-vault-id> --out <normalized-import.csv> --evidence <migration-evidence.json>",
+      "pnpm validate:normalized-import -- --csv <normalized-import.csv> --adapter-evidence <migration-evidence.json> --out <normalized-import-validation.json>",
+      "pnpm release:source-migration -- --status pilot --source-system <source-system> --column-map <column-map.json> --source-adapter-evidence <migration-evidence.json> --normalized-import <normalized-import.csv> --storage-migration-evidence <storage-migration-evidence.json> --tenant-isolation-evidence <tenant-isolation-evidence.json> --out <source-migration-evidence.json>",
       "pnpm validate:source-migration -- <source-migration-evidence.json>",
       "pnpm inspect:storage -- --state <deployment-state.json> --out <storage-readiness.json>",
       "pnpm release:tenant-isolation -- --report <tenant-isolation-tests.json> --out <tenant-isolation-evidence.json>",
@@ -80,6 +81,7 @@ const requests = [
     ],
     acceptanceCriteria: [
       "Column-map validation proves every proprietary source column is mapped or explicitly ignored before conversion",
+      "Normalized import validation matches adapter evidence row counts and stores only redacted password fingerprints",
       "No source-system credentials, plaintext secrets, or customer-only fields appear in evidence",
       "Every proprietary source column is mapped, intentionally ignored, or escalated",
       "Tenant isolation evidence includes passing cross-tenant negative authorization checks"

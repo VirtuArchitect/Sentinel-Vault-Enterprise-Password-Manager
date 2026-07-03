@@ -50,6 +50,7 @@ const requiredValidatorCommands = [
   "pnpm validate:postgres-schema",
   "pnpm validate:storage-migration",
   "pnpm validate:source-map",
+  "pnpm validate:normalized-import",
   "pnpm validate:tenant-isolation",
   "pnpm validate:connector-preflight",
   "pnpm validate:connector-evidence",

@@ -41,6 +41,7 @@
     "preflight:identity": "node scripts/preflight-identity-provider.mjs",
     "validate:restore-drill": "node scripts/validate-encrypted-backup-restore.mjs",
     "validate:source-map": "node scripts/validate-source-column-map.mjs",
+    "validate:normalized-import": "node scripts/validate-normalized-import.mjs",
     "convert:source-export": "node scripts/convert-source-export.mjs",
     "prepare:bulk-import": "node scripts/prepare-bulk-secret-import.mjs",
     "release:source-migration": "node scripts/generate-source-migration-evidence.mjs",
