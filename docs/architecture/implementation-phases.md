@@ -298,6 +298,7 @@ Implemented:
 - Guarded native autotype proof of concept in the Windows companion.
 - Credential-provider proof-of-concept boundary and formal autotype security review.
 - Browser extension packaging script, enterprise policy templates, and store review checklist.
+- Browser extension package validator for packaged ZIP hash, Manifest V3 checks, required files, permissions, host boundaries, and JSON handoff evidence.
 - Browser extension enterprise rollout evidence template and validator.
 - Browser extension rollout evidence generator for packaged artifact SHA-256, manifest version, and planned enterprise rollout metadata.
 - Browser extension identity evidence template, generator, validator, and deployment-bundle gate for production Chrome/Edge extension IDs, private-channel review, enterprise policy assignment, rollback ownership, and redaction checks.

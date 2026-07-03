@@ -46,6 +46,7 @@ const requiredValidatorCommands = [
   "pnpm validate:windows-signing",
   "pnpm validate:kms-hsm-sdk-approval",
   "pnpm validate:kms-hsm-evidence",
+  "pnpm validate:extension-package",
   "pnpm validate:browser-identity",
   "pnpm validate:browser-rollout",
   "pnpm validate:credential-provider-approval",

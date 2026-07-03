@@ -4,6 +4,7 @@ Sentinel Vault Autofill is packaged from `extensions/browser` with:
 
 ```powershell
 pnpm package:extension
+pnpm validate:extension-package -- --out ".\artifacts\browser\browser-extension-package-validation.json"
 ```
 
 The package is written to:
@@ -26,6 +27,7 @@ Replace `replace-with-extension-id` with the enterprise extension ID assigned by
 - Block unrelated permissions such as history, bookmarks, and downloads.
 - Publish updates through the enterprise browser management channel.
 - Validate the extension package hash before release.
+- Attach `artifacts/browser/browser-extension-package-validation.json` to store or private-channel review evidence.
 - Confirm the local console is distributed with TLS or localhost-only access.
 
 Record rollout evidence with:

@@ -210,6 +210,7 @@ Build the browser autofill extension package:
 
 ```powershell
 pnpm package:extension
+pnpm validate:extension-package -- --out ".\artifacts\browser\browser-extension-package-validation.json"
 ```
 
 Generate planned browser extension rollout evidence from the package:

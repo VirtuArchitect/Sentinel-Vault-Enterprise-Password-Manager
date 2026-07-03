@@ -59,3 +59,24 @@ Expected result:
 - The zip contains `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
 - The extracted production app passes `/healthz`.
 - `artifacts/windows/windows-package-validation.json` records the package validation result for release evidence.
+
+## Browser Extension Package
+
+Name: Browser autofill extension package validates for enterprise review
+
+Purpose: Prove the extension package includes only the reviewed files, uses Manifest V3, and keeps host permissions scoped to the local Sentinel Vault console.
+
+Steps:
+
+```powershell
+pnpm package:extension
+pnpm validate:extension-package -- --out ".\artifacts\browser\browser-extension-package-validation.json"
+```
+
+Expected result:
+
+- `artifacts/browser/sentinel-vault-autofill.zip` exists.
+- The package extracts with the required extension files.
+- The manifest uses Manifest V3.
+- The package does not request wildcard web host permissions.
+- `artifacts/browser/browser-extension-package-validation.json` records the package hash, required file count, permissions, and host permissions for rollout evidence.

@@ -52,6 +52,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.deepEqual(report.summary.phases, ["Phase 2", "Phase 4", "Phase 5", "Phase 6", "Phase 7", "Phase 8"]);
     assert.ok(report.summary.commandScriptCount > 20);
     assert.ok(report.summary.commandScripts.includes("validate:windows-signing"));
+    assert.ok(report.summary.commandScripts.includes("validate:extension-package"));
     assert.ok(report.summary.commandScripts.includes("release:kms-hsm-sdk-approval"));
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
@@ -64,6 +65,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:extension-package -- --package <sentinel-vault-autofill.zip> --out <browser-extension-package-validation.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:credential-provider-approval -- <credential-provider-approval-evidence.json>")));
     assert.ok(report.requests.every((request) => request.acceptanceCriteria.length >= 3));
 
@@ -98,7 +100,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 14);
+    assert.equal(result.validatorCommandCount, 15);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
