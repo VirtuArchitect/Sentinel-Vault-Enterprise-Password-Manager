@@ -71,6 +71,12 @@ cd "C:\Users\john\OneDrive\09 Profile\Documents\GitHub\Sentinel-Vault-Enterprise
 
 Open the demo console at [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
+To archive old local demo data and recreate the current enterprise-neutral seed state, stop the running demo and start it with:
+
+```powershell
+.\scripts\start-demo.ps1 -ResetState
+```
+
 Manual pnpm start:
 
 ```powershell
@@ -99,6 +105,7 @@ pnpm --version
 - `corepack enable` returns `EPERM`: reopen PowerShell as Administrator, or skip Corepack and use the `npx` fallback.
 - Port `5173` is already in use: open [http://127.0.0.1:5173](http://127.0.0.1:5173) to check whether the demo is already running, or stop the process using that port.
 - Browser shows a blank page: hard refresh with `Ctrl+F5`, then restart the demo script if needed.
+- Browser shows old sample entries or old demo users: stop the running demo, run `.\scripts\start-demo.ps1 -ResetState`, then sign in again. The old ignored local state is moved under `data\reset-backups`.
 - Node.js is missing: install Node.js 20+ and reopen PowerShell so `node`, `npm`, and `npx` are on `PATH`.
 
 ## Build

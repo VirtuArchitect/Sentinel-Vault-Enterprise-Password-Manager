@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Clipboard,
   Database,
+  Download,
   Edit3,
   Eye,
   FileDown,
@@ -190,6 +191,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [addSecret, setAddSecret] = useState<AddSecret>(blankSecret());
@@ -287,6 +289,26 @@ function App() {
   const generatePassword = () => {
     const password = generateCredentialPassword(generator);
     setAddSecret((current) => ({ ...current, password, repeat: password }));
+  };
+
+  const exportConsoleSnapshot = () => {
+    const snapshot = {
+      exportedAt: new Date().toISOString(),
+      tenantCount: data?.tenants.length || 0,
+      vaultCount: data?.vaults.length || 0,
+      entryCount: data?.secrets.length || 0,
+      pendingRequests: data?.metrics.pendingRequests || 0,
+      highRiskEntries: data?.metrics.highRisk || 0,
+      auditEvents: data?.audit.length || 0
+    };
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sentinel-vault-console-snapshot-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    notify("Console snapshot exported");
   };
 
   if (booting) return <SplashState title="Opening enterprise vault" message="Checking the saved session and loading the encrypted console state." />;
@@ -416,12 +438,16 @@ function App() {
     setActiveMenu(null);
   };
 
+  const toggleMenu = (label: string) => {
+    setActiveMenu((current) => current === label ? null : label);
+  };
+
   const menuSections = [
     {
       label: "File",
       items: [
         { label: "New Entry", disabled: !can("vault:write"), action: () => setAddOpen(true) },
-        { label: "Save Snapshot", action: () => notify("Vault state is saved automatically after every change") },
+        { label: "Export Console Snapshot", action: exportConsoleSnapshot },
         { label: "Lock Workspace", action: () => setLocked(true) },
         { label: "Sign Out", action: signOut }
       ]
@@ -437,7 +463,10 @@ function App() {
     {
       label: "View",
       items: [
-        { label: "Entries", action: () => setTab("entries") },
+        { label: "Entries", action: () => { setSelectedGroup("all"); setTab("entries"); } },
+        { label: "Shared Entries", action: () => { setSelectedGroup("shared"); setTab("entries"); } },
+        { label: "High Risk Entries", action: () => { setSelectedGroup("risk"); setTab("entries"); } },
+        { label: "Deleted Items", action: () => { setSelectedGroup("deleted"); setTab("entries"); } },
         { label: "Access Requests", action: () => setTab("access") },
         { label: "Audit Trail", action: () => setTab("audit") },
         { label: "Users", action: () => setTab("users") },
@@ -457,7 +486,7 @@ function App() {
     {
       label: "Tools",
       items: [
-        { label: "Password Generator", disabled: !can("vault:write"), action: () => setAddOpen(true) },
+        { label: "Password Generator", disabled: !can("vault:write"), action: () => { const password = generateCredentialPassword(generator); setAddSecret((current) => ({ ...current, password, repeat: password })); setAddOpen(true); } },
         { label: "Integration Settings", action: () => setTab("manage") },
         { label: "Policy Settings", action: () => setTab("policy") },
         { label: "Health Endpoint", action: () => window.open("/healthz", "_blank", "noopener,noreferrer") }
@@ -466,7 +495,7 @@ function App() {
     {
       label: "Help",
       items: [
-        { label: "About Sentinel Vault", action: () => notify("Sentinel Vault Enterprise Password Manager prototype") },
+        { label: "About Sentinel Vault", action: () => setAboutOpen(true) },
         { label: "Deployment Readiness", action: () => notify("Use the deployment evidence workflow before production rollout") }
       ]
     }
@@ -482,11 +511,23 @@ function App() {
       <section className="menubar" onClick={(event) => event.stopPropagation()}>
         {menuSections.map((section) => (
           <div className="menu-root" key={section.label}>
-            <button className={activeMenu === section.label ? "open" : ""} onClick={() => setActiveMenu(activeMenu === section.label ? null : section.label)}>{section.label}</button>
+            <button
+              type="button"
+              className={activeMenu === section.label ? "open" : ""}
+              aria-haspopup="menu"
+              aria-expanded={activeMenu === section.label}
+              onClick={() => toggleMenu(section.label)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setActiveMenu(null);
+                if (event.key === "ArrowDown") setActiveMenu(section.label);
+              }}
+            >
+              {section.label}
+            </button>
             {activeMenu === section.label && (
-              <div className="menu-popover">
+              <div className="menu-popover" role="menu">
                 {section.items.map((item) => (
-                  <button key={item.label} disabled={item.disabled} onClick={() => runMenuCommand(item.action)}>{item.label}</button>
+                  <button key={item.label} type="button" role="menuitem" disabled={item.disabled} onClick={() => runMenuCommand(item.action)}>{item.label}</button>
                 ))}
               </div>
             )}
@@ -496,8 +537,8 @@ function App() {
       </section>
 
       <section className="toolbar">
-        <button title="New database"><Database size={18} /></button>
-        <button title="Save database"><Save size={18} /></button>
+        <button title="Console summary" onClick={() => setTab("manage")}><Database size={18} /></button>
+        <button title="Export console snapshot" onClick={exportConsoleSnapshot}><Download size={18} /></button>
         <button title="Add entry" disabled={!can("vault:write")} onClick={() => setAddOpen(true)}><FilePlus2 size={18} /></button>
         <button title="Edit selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && startEditSecret(selectedSecret)}><Edit3 size={18} /></button>
         <button title="Delete selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items")}><Trash2 size={18} /></button>
@@ -725,6 +766,30 @@ function App() {
             <p>Visible for {reveal.expiresIn} seconds under active audit.</p>
             <code>{reveal.password}</code>
             <button className="secondary" onClick={() => navigator.clipboard.writeText(reveal.password)}><Clipboard size={16} />Copy Password</button>
+          </dialog>
+        </div>
+      )}
+
+      {aboutOpen && (
+        <div className="modal-backdrop" onClick={() => setAboutOpen(false)}>
+          <dialog open className="about-dialog" onClick={(event) => event.stopPropagation()}>
+            <header>
+              <SentinelLogo size="large" />
+              <div>
+                <h2>Sentinel Vault</h2>
+                <p>Enterprise Password Manager</p>
+              </div>
+            </header>
+            <dl>
+              <div><dt>Workspace</dt><dd>Sentinel.kdbx</dd></div>
+              <div><dt>Signed-in identity</dt><dd>{data.user.name}</dd></div>
+              <div><dt>Role</dt><dd>{data.user.role.replace("_", " ")}</dd></div>
+              <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
+              <div><dt>Audit integrity</dt><dd>{data.auditIntegrity.verified ? "Verified" : "Attention required"}</dd></div>
+            </dl>
+            <footer>
+              <button className="primary" onClick={() => setAboutOpen(false)}>Close</button>
+            </footer>
           </dialog>
         </div>
       )}

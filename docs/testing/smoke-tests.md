@@ -19,6 +19,12 @@ cd "<repo root>"
 .\scripts\start-demo.ps1
 ```
 
+If a previous local run shows old sample data, stop the running demo and archive/reset the ignored local state first:
+
+```powershell
+.\scripts\start-demo.ps1 -ResetState
+```
+
 Open [http://127.0.0.1:5173](http://127.0.0.1:5173), then sign in:
 
 ```text
