@@ -1,6 +1,7 @@
 param(
   [string]$PackagePath = "artifacts\windows\SentinelVault-Windows.zip",
   [string]$ExtractDir = "",
+  [string]$Out = "",
   [int]$Port = 0,
   [switch]$SkipRuntimeSmoke,
   [switch]$KeepExtracted
@@ -131,7 +132,7 @@ try {
     }
   }
 
-  @{
+  $result = @{
     format = "sentinel-windows-package-validation-v1"
     packagePath = (Resolve-Path -LiteralPath $resolvedPackage).Path
     extractedTo = $resolvedExtractDir
@@ -139,7 +140,19 @@ try {
     healthUrl = if ($SkipRuntimeSmoke) { $null } else { $healthUrl }
     requiredFileCount = $requiredPaths.Count
     validated = $true
-  } | ConvertTo-Json -Depth 5
+  }
+
+  $json = $result | ConvertTo-Json -Depth 5
+  if (![string]::IsNullOrWhiteSpace($Out)) {
+    $resolvedOut = if ([System.IO.Path]::IsPathRooted($Out)) { $Out } else { Join-Path $root $Out }
+    $outParent = Split-Path -Parent $resolvedOut
+    if (![string]::IsNullOrWhiteSpace($outParent)) {
+      New-Item -ItemType Directory -Path $outParent -Force | Out-Null
+    }
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($resolvedOut, $json, $utf8NoBom)
+  }
+  $json
 } finally {
   if (!$KeepExtracted -and (Test-Path -LiteralPath $resolvedExtractDir)) {
     Remove-Item -LiteralPath $resolvedExtractDir -Recurse -Force

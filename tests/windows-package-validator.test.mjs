@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -78,17 +78,22 @@ test("windows package validator extracts and smoke tests a package", { skip: !is
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-package-validator-"));
   try {
     const zipPath = writeFixturePackage(dir);
+    const reportPath = path.join(dir, "windows-package-validation.json");
     const output = runPowerShell([
       "-File",
       "scripts/validate-windows-package.ps1",
       "-PackagePath",
-      zipPath
+      zipPath,
+      "-Out",
+      reportPath
     ]);
     const result = JSON.parse(output);
+    const savedResult = JSON.parse(readFileSync(reportPath, "utf8"));
     assert.equal(result.format, "sentinel-windows-package-validation-v1");
     assert.equal(result.runtimeSmoke, "passed");
     assert.equal(result.validated, true);
     assert.equal(result.requiredFileCount, 14);
+    assert.deepEqual(savedResult, result);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -35,8 +35,10 @@ artifacts/windows/SentinelVault-Windows.zip
 Validate the zip with Windows-native extraction and a local production startup smoke test:
 
 ```powershell
-pnpm validate:windows-package
+pnpm validate:windows-package -- -Out ".\artifacts\windows\windows-package-validation.json"
 ```
+
+The report is written to `artifacts/windows/windows-package-validation.json` and records the package path, extraction directory, required file count, runtime smoke status, and health check URL.
 
 The zip also includes `assets/sentinel-vault-app-icon.svg` for installer shortcuts, MSI/WiX authoring, or IIS site branding.
 

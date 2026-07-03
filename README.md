@@ -201,10 +201,10 @@ Build a Windows deployment zip:
 
 ```powershell
 pnpm package:windows
-pnpm validate:windows-package
+pnpm validate:windows-package -- -Out ".\artifacts\windows\windows-package-validation.json"
 ```
 
-The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. See `deployments/windows/README.md`.
+The package includes installer scripts for running Sentinel Vault on Windows Server and optionally configuring IIS as the web front end. The validation command extracts the zip with Windows-native tooling, starts the packaged app, checks `/healthz`, and writes a JSON evidence report. See `deployments/windows/README.md`.
 
 Build the browser autofill extension package:
 

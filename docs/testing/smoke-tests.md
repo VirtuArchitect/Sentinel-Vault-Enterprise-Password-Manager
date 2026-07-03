@@ -47,7 +47,7 @@ Steps:
 
 ```powershell
 pnpm package:windows
-pnpm validate:windows-package
+pnpm validate:windows-package -- -Out ".\artifacts\windows\windows-package-validation.json"
 ```
 
 Expected result:
@@ -58,3 +58,4 @@ Expected result:
 - The zip contains `app/dist/favicon.svg`.
 - The zip contains `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
 - The extracted production app passes `/healthz`.
+- `artifacts/windows/windows-package-validation.json` records the package validation result for release evidence.
