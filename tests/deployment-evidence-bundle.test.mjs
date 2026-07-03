@@ -305,6 +305,73 @@ const writeProductionNativeEvidence = (dir, environment = "prod-east") => {
   writeFileSync(approvalPath, JSON.stringify(approval, null, 2));
 };
 
+const writeActiveKmsHsmEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const preflightPath = path.join(evidenceDir, "kms-hsm-preflight.json");
+  const providerEvidencePath = path.join(evidenceDir, "kms-hsm-provider-evidence.json");
+  writeFileSync(preflightPath, JSON.stringify({ format: "sentinel-kms-hsm-preflight-v1" }, null, 2));
+
+  const provider = JSON.parse(readFileSync(providerEvidencePath, "utf8"));
+  provider.status = "active";
+  provider.provider = "external-kms";
+  provider.providerName = "Enterprise KMS";
+  provider.environment = environment;
+  provider.keyId = "kms-key-prod-001";
+  provider.keyVersion = "v1";
+  provider.endpoint = "https://kms.example.com";
+  provider.region = "us-east";
+  provider.serviceIdentity = "sentinel-vault-prod";
+  provider.policyHash = "f".repeat(64);
+  provider.rotation.createdAt = "2026-07-01T10:00:00Z";
+  provider.rotation.activatedAt = "2026-07-01T11:00:00Z";
+  provider.rotation.previousKeyId = "kms-key-prev-001";
+  provider.rotation.previousKeyRetireAfter = "2026-08-01";
+  for (const name of Object.keys(provider.checks)) {
+    provider.checks[name] = "passed";
+  }
+  provider.approvals.securityOwner = "security-owner";
+  provider.approvals.platformOwner = "platform-owner";
+  provider.approvals.changeTicket = "CHG-2026-0701";
+  writeFileSync(providerEvidencePath, JSON.stringify(provider, null, 2));
+
+  const sdkPath = path.join(evidenceDir, "kms-hsm-sdk-approval-evidence.json");
+  const sdk = JSON.parse(readFileSync(sdkPath, "utf8"));
+  sdk.status = "approved";
+  sdk.environment = environment;
+  sdk.provider = "external-kms";
+  sdk.sdk.packageName = "@enterprise/kms-client";
+  sdk.sdk.packageVersion = "1.0.0";
+  sdk.sdk.license = "Commercial";
+  sdk.sdk.registry = "internal-registry";
+  sdk.sdk.packageSha256 = "1".repeat(64);
+  sdk.sdk.approvalReference = "SEC-2026-0701";
+  sdk.sdk.maintenanceStatus = "passed";
+  sdk.sdk.supplyChainReview = "passed";
+  sdk.sdk.securityReview = "passed";
+  sdk.targetEnvironment.providerTenant = "tenant-prod";
+  sdk.targetEnvironment.region = "us-east";
+  sdk.targetEnvironment.keyId = provider.keyId;
+  sdk.targetEnvironment.serviceIdentity = provider.serviceIdentity;
+  sdk.targetEnvironment.networkIsolation = "passed";
+  sdk.targetEnvironment.auditSinkConfigured = "passed";
+  sdk.targetEnvironment.breakGlassProcedure = "passed";
+  sdk.operationProof.preflightPath = preflightPath;
+  sdk.operationProof.providerEvidencePath = providerEvidencePath;
+  sdk.operationProof.signOrUnwrapOperation = "passed";
+  sdk.operationProof.keyExportBlocked = "passed";
+  sdk.operationProof.auditEventCaptured = "passed";
+  sdk.operationProof.rollbackTested = "passed";
+  sdk.approvals.securityArchitectureOwner = "security-architecture";
+  sdk.approvals.platformOwner = "platform-owner";
+  sdk.approvals.releaseOwner = "release-owner";
+  sdk.approvals.changeTicket = "CHG-2026-0701";
+  sdk.redaction.containsCredentials = false;
+  sdk.redaction.containsKeyMaterial = false;
+  sdk.redaction.containsProviderTokens = false;
+  sdk.redaction.containsConnectionStrings = false;
+  writeFileSync(sdkPath, JSON.stringify(sdk, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -469,7 +536,27 @@ test("production evidence bundle requires approved native credential-provider ev
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5, signing, browser, and native evidence", () => {
+test("production evidence bundle requires active KMS/HSM evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-kms-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
+    writeProductionBrowserEvidence(dir);
+    writeProductionNativeEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /kmsHsm evidence status must be active/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5, signing, browser, native, and KMS evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -482,6 +569,7 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, and 
     writeSignedWindowsEvidence(dir);
     writeProductionBrowserEvidence(dir);
     writeProductionNativeEvidence(dir);
+    writeActiveKmsHsmEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
@@ -493,6 +581,8 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, and 
     assert.equal(validation.results.windowsSigning.status, "signed");
     assert.equal(validation.results.nativeCompanion.status, "production");
     assert.equal(validation.results.credentialProviderApproval.status, "approved");
+    assert.equal(validation.results.kmsHsm.status, "active");
+    assert.equal(validation.results.kmsHsmSdkApproval.status, "approved");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

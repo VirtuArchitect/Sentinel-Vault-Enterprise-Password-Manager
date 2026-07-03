@@ -47,7 +47,9 @@ const productionEvidenceRequirements = {
   browserIdentity: "production",
   browserRollout: "production",
   nativeCompanion: "production",
-  credentialProviderApproval: "approved"
+  credentialProviderApproval: "approved",
+  kmsHsm: "active",
+  kmsHsmSdkApproval: "approved"
 };
 
 const artifactFormats = {
