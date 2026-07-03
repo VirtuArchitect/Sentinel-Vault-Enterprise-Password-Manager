@@ -47,6 +47,22 @@ const paths = {
   phaseClosure: path.resolve(args.get("--phase-closure") || path.join(evidenceDir, "phase-closure-archive-manifest.json"))
 };
 
+const productionEvidenceRequirements = {
+  connector: "certified",
+  itsmWorkNotes: "production",
+  siemReceiverRotation: "certified",
+  windowsSigning: "signed",
+  browserIdentity: "production",
+  browserRollout: "production",
+  nativeCompanion: "production",
+  credentialProviderApproval: "approved",
+  kmsHsm: "active",
+  kmsHsmSdkApproval: "approved",
+  sourceMigration: "production",
+  tenantIsolation: "production",
+  postgresHa: "approved"
+};
+
 assert.ok(allowedTargets.has(target), "--target must be pilot or production");
 
 const runJson = (script, scriptArgs) => {
@@ -223,6 +239,7 @@ for (const [name, check] of Object.entries(checks)) {
 }
 
 const bundle = readJsonIfPresent(paths.bundle);
+const deploymentStatus = readJsonIfPresent(paths.deploymentStatus);
 const review = readJsonIfPresent(paths.phaseReview);
 const closure = readJsonIfPresent(paths.phaseClosure);
 const readiness = checks.phaseReadiness.result;
@@ -246,6 +263,38 @@ if (readiness) {
       blockerCount: readiness.blockers?.length || 0
     });
   }
+}
+
+const targetStatusIssues = target === "production" && deploymentStatus?.items
+  ? deploymentStatus.items.flatMap((item) => {
+    const expectedStatus = productionEvidenceRequirements[item.name];
+    if (!expectedStatus || item.releaseStatus === expectedStatus) return [];
+    return [{
+      evidence: item.name,
+      releaseStatus: item.releaseStatus,
+      expectedStatus,
+      issue: `${item.name} evidence status must be ${expectedStatus} for production releases`
+    }];
+  })
+  : [];
+
+if ((deploymentStatus?.summary?.withStatusMismatches || 0) > 0 || targetStatusIssues.length > 0) {
+  const reportStatusIssues = deploymentStatus.items
+    ?.filter((item) => item.statusIssue)
+    .map((item) => ({
+      evidence: item.name,
+      releaseStatus: item.releaseStatus,
+      expectedStatus: item.expectedStatus,
+      issue: item.statusIssue
+    })) || [];
+  const issues = reportStatusIssues.length > 0 ? reportStatusIssues : targetStatusIssues;
+  blockers.push({
+    gate: "deployment-status-production-requirements",
+    severity: "blocking",
+    message: "Deployment evidence status report has production status mismatches",
+    mismatchCount: Math.max(deploymentStatus?.summary?.withStatusMismatches || 0, targetStatusIssues.length),
+    issues: issues.slice(0, 8)
+  });
 }
 
 if (checks.deploymentRedaction.result && !checks.deploymentRedaction.result.readyForRelease) {

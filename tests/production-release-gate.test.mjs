@@ -178,6 +178,11 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.equal(report.checks.deploymentWorkspace.ok, true);
       assert.equal(report.checks.deploymentStatus.ok, false);
       assert.ok(report.blockers.some((blocker) => blocker.gate === "deploymentStatus"));
+      const statusMismatchBlocker = report.blockers.find((blocker) => blocker.gate === "deployment-status-production-requirements");
+      assert.ok(statusMismatchBlocker);
+      assert.ok(statusMismatchBlocker.mismatchCount > 0);
+      assert.ok(statusMismatchBlocker.issues.some((issue) => issue.evidence === "postgresHa" && issue.expectedStatus === "approved"));
+      assert.ok(statusMismatchBlocker.issues.some((issue) => issue.evidence === "browserRollout" && issue.expectedStatus === "production"));
       assert.equal(report.checks.deploymentRedaction.ok, true);
       assert.equal(report.checks.externalEvidence.ok, true);
       assert.equal(report.checks.phaseReadiness.ok, false);
