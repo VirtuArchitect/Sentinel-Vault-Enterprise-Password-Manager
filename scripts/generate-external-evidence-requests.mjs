@@ -141,6 +141,8 @@ const requests = [
       "releaseAttestation"
     ],
     commands: [
+      "pnpm package:windows",
+      "pnpm validate:windows-package -- -Out <windows-package-validation.json>",
       "pnpm package:windows:msi",
       "pnpm package:windows:msix",
       "pnpm sign:windows -- -ArtifactPath <artifact-path> -CertificateThumbprint <thumbprint>",
@@ -151,6 +153,7 @@ const requests = [
       "pnpm validate:windows-release -- <windows-release-evidence.json>"
     ],
     acceptanceCriteria: [
+      "Windows zip validation evidence proves native extraction, required package files, and packaged `/healthz` smoke before signing handoff",
       "All distributable Windows artifacts are signed and signature verification passes",
       "Release evidence records certificate identity, release host metadata, source commit, and artifact hashes",
       "Rollback and uninstall evidence is attached before pilot or production distribution"

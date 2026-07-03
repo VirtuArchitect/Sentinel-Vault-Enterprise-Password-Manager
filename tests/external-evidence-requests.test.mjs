@@ -98,7 +98,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 13);
+    assert.equal(result.validatorCommandCount, 14);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

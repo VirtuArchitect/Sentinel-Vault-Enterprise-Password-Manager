@@ -202,7 +202,7 @@ test("production release gate rejects placeholder phase workspaces", () => {
       assert.equal(report.evidenceKeySummary.waivedEvidenceKeyCount, 18);
       assert.ok(report.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
       assert.ok(report.commandCoverageSummary.signoffCommandScriptCount > 20);
-      assert.equal(report.commandCoverageSummary.signoffValidatorCommandCount, 13);
+      assert.equal(report.commandCoverageSummary.signoffValidatorCommandCount, 14);
       assert.ok(report.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
 
       const saved = JSON.parse(readFileSync(outputPath, "utf8"));
@@ -236,7 +236,7 @@ test("production release gate report validator accepts current blocked reports",
     assert.equal(validation.ready, false);
     assert.ok(validation.blockerCount > 0);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 13);
+    assert.equal(validation.validatorCommandCount, 14);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
