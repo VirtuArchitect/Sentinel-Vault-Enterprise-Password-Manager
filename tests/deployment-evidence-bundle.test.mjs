@@ -482,6 +482,49 @@ const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
   ]);
 };
 
+const writeApprovedPostgresEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const postgresPath = path.join(evidenceDir, "postgres-ha-approval-evidence.json");
+  const migrationPlanPath = path.join(evidenceDir, "postgres-migration-plan.json");
+  const storageEvidencePath = path.join(evidenceDir, "storage-migration-evidence.json");
+  writeFileSync(migrationPlanPath, JSON.stringify({
+    format: "sentinel-postgres-migration-plan-v1",
+    environment,
+    generatedAt: "2026-07-01T10:00:00Z"
+  }, null, 2));
+
+  const postgres = JSON.parse(readFileSync(postgresPath, "utf8"));
+  postgres.status = "approved";
+  postgres.environment = environment;
+  postgres.reviewedAt = "2026-07-01T10:00:00Z";
+  postgres.dependencyApproval.packageName = "pg";
+  postgres.dependencyApproval.packageVersion = "8.16.3";
+  postgres.dependencyApproval.license = "MIT";
+  postgres.dependencyApproval.supplyChainReview = "approved";
+  postgres.dependencyApproval.securityReview = "approved";
+  postgres.dependencyApproval.approvalReference = "DATA-2026-0701";
+  postgres.targetEnvironment.clusterName = "sentinel-prod-postgres";
+  postgres.targetEnvironment.haMode = "multi-zone";
+  postgres.targetEnvironment.networkIsolation = "approved";
+  postgres.targetEnvironment.tlsRequired = "approved";
+  postgres.targetEnvironment.leastPrivilegeRole = "approved";
+  postgres.targetEnvironment.backupPolicy = "approved";
+  postgres.targetEnvironment.restoreDrill = "approved";
+  postgres.targetEnvironment.monitoringAlerts = "approved";
+  postgres.cutover.migrationPlanPath = migrationPlanPath;
+  postgres.cutover.storageMigrationEvidencePath = storageEvidencePath;
+  postgres.cutover.rollbackPlan = "approved";
+  postgres.cutover.maintenanceWindow = "2026-07-01T22:00:00Z/2026-07-01T23:00:00Z";
+  postgres.cutover.ownerApproval = "approved";
+  postgres.approvals.platformDataOwner = "platform-data-owner";
+  postgres.approvals.securityReviewer = "security-review";
+  postgres.approvals.operationsOwner = "platform-operations";
+  postgres.redaction.containsCredentials = "false";
+  postgres.redaction.containsConnectionStrings = "false";
+  postgres.redaction.containsCustomerData = "false";
+  writeFileSync(postgresPath, JSON.stringify(postgres, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -687,7 +730,29 @@ test("production evidence bundle requires production migration and tenant eviden
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5, signing, browser, native, KMS, and migration evidence", () => {
+test("production evidence bundle requires approved Postgres HA evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-postgres-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
+    writeProductionBrowserEvidence(dir);
+    writeProductionNativeEvidence(dir);
+    writeActiveKmsHsmEvidence(dir);
+    writeProductionMigrationEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /postgresHa evidence status must be approved/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 2, 4, 5, 6, 7, and 8 evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -702,6 +767,7 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, nati
     writeProductionNativeEvidence(dir);
     writeActiveKmsHsmEvidence(dir);
     writeProductionMigrationEvidence(dir);
+    writeApprovedPostgresEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
@@ -717,6 +783,7 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, nati
     assert.equal(validation.results.kmsHsmSdkApproval.status, "approved");
     assert.equal(validation.results.sourceMigration.status, "production");
     assert.equal(validation.results.tenantIsolation.status, "production");
+    assert.equal(validation.results.postgresHa.status, "approved");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

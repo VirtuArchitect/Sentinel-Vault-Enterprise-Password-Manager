@@ -51,7 +51,8 @@ const productionEvidenceRequirements = {
   kmsHsm: "active",
   kmsHsmSdkApproval: "approved",
   sourceMigration: "production",
-  tenantIsolation: "production"
+  tenantIsolation: "production",
+  postgresHa: "approved"
 };
 
 const artifactFormats = {

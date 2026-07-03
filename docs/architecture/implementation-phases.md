@@ -30,6 +30,7 @@ Status: SQLite runtime implemented, Postgres implementation pending dependency a
 - Postgres target schema and `pnpm plan:postgres` migration-planning evidence are available without adding a runtime database dependency.
 - Dependency-free Postgres schema validator for target schema hash, JSONB mirror table coverage, generated columns, indexes, migration table, and transaction wrapper checks.
 - Postgres HA approval evidence template, generator, validator, and deployment-bundle gate for dependency, environment, cutover, rollback, and redaction approvals.
+- Production deployment-bundle enforcement that Postgres HA approval evidence is approved and environment-aligned.
 - Postgres should follow for HA deployments.
 - See `storage-roadmap.md`.
 
