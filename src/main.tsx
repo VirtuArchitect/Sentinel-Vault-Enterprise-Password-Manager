@@ -433,12 +433,22 @@ function App() {
     }, decision === "approve" ? "Temporary access approved" : "Temporary access denied");
   };
 
-  const runMenuCommand = (command: () => void) => {
+  const showView = (nextTab: typeof tab, message: string, nextGroup = selectedGroup) => {
+    setSelectedGroup(nextGroup);
+    setTab(nextTab);
+    notify(message);
+  };
+
+  const runMenuCommand = (command: () => void, event?: React.MouseEvent) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     command();
     setActiveMenu(null);
   };
 
-  const toggleMenu = (label: string) => {
+  const toggleMenu = (label: string, event?: React.MouseEvent) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setActiveMenu((current) => current === label ? null : label);
   };
 
@@ -463,15 +473,15 @@ function App() {
     {
       label: "View",
       items: [
-        { label: "Entries", action: () => { setSelectedGroup("all"); setTab("entries"); } },
-        { label: "Shared Entries", action: () => { setSelectedGroup("shared"); setTab("entries"); } },
-        { label: "High Risk Entries", action: () => { setSelectedGroup("risk"); setTab("entries"); } },
-        { label: "Deleted Items", action: () => { setSelectedGroup("deleted"); setTab("entries"); } },
-        { label: "Access Requests", action: () => setTab("access") },
-        { label: "Audit Trail", action: () => setTab("audit") },
-        { label: "Users", action: () => setTab("users") },
-        { label: "Policy Options", action: () => setTab("policy") },
-        { label: "Management", action: () => setTab("manage") }
+        { label: "All Entries", action: () => showView("entries", "Showing all enterprise entries", "all") },
+        { label: "Shared Entries", action: () => showView("entries", "Showing shared enterprise entries", "shared") },
+        { label: "High Risk Entries", action: () => showView("entries", "Showing high-risk entries", "risk") },
+        { label: "Deleted Items", action: () => showView("entries", "Showing recoverable deleted entries", "deleted") },
+        { label: "Access Requests", action: () => showView("access", "Showing access request queue") },
+        { label: "Audit Trail", action: () => showView("audit", "Showing enterprise audit trail") },
+        { label: "Users", action: () => showView("users", "Showing user administration") },
+        { label: "Policy Options", action: () => showView("policy", "Showing policy options") },
+        { label: "Management", action: () => showView("manage", "Showing management console") }
       ]
     },
     {
@@ -487,8 +497,8 @@ function App() {
       label: "Tools",
       items: [
         { label: "Password Generator", disabled: !can("vault:write"), action: () => { const password = generateCredentialPassword(generator); setAddSecret((current) => ({ ...current, password, repeat: password })); setAddOpen(true); } },
-        { label: "Integration Settings", action: () => setTab("manage") },
-        { label: "Policy Settings", action: () => setTab("policy") },
+        { label: "Integration Settings", action: () => showView("manage", "Showing integration settings") },
+        { label: "Policy Settings", action: () => showView("policy", "Showing policy settings") },
         { label: "Health Endpoint", action: () => window.open("/healthz", "_blank", "noopener,noreferrer") }
       ]
     },
@@ -504,11 +514,11 @@ function App() {
   return (
     <main className={`window-shell ${locked ? "is-locked" : ""}`} onClick={() => setActiveMenu(null)}>
       <section className="titlebar">
-        <div><SentinelLogo size="small" />Sentinel.kdbx - Sentinel Vault Enterprise</div>
+        <div><SentinelLogo size="small" />Sentinel Vault Enterprise Console</div>
         <div className="window-controls"><span /><span /><span /></div>
       </section>
 
-      <section className="menubar" onClick={(event) => event.stopPropagation()}>
+      <section className="menubar" onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
         {menuSections.map((section) => (
           <div className="menu-root" key={section.label}>
             <button
@@ -516,7 +526,7 @@ function App() {
               className={activeMenu === section.label ? "open" : ""}
               aria-haspopup="menu"
               aria-expanded={activeMenu === section.label}
-              onClick={() => toggleMenu(section.label)}
+              onClick={(event) => toggleMenu(section.label, event)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") setActiveMenu(null);
                 if (event.key === "ArrowDown") setActiveMenu(section.label);
@@ -527,7 +537,7 @@ function App() {
             {activeMenu === section.label && (
               <div className="menu-popover" role="menu">
                 {section.items.map((item) => (
-                  <button key={item.label} type="button" role="menuitem" disabled={item.disabled} onClick={() => runMenuCommand(item.action)}>{item.label}</button>
+                  <button key={item.label} type="button" role="menuitem" disabled={item.disabled} onClick={(event) => runMenuCommand(item.action, event)}>{item.label}</button>
                 ))}
               </div>
             )}
@@ -557,8 +567,8 @@ function App() {
       </section>
 
       <section className="database-tabs">
-        <button className="active"><SentinelLogo size="small" />Sentinel.kdbx</button>
-        <button onClick={() => { setSelectedGroup("risk"); setTab("entries"); }}><Archive size={15} />Recovery.kdbx</button>
+        <button className="active"><SentinelLogo size="small" />Enterprise Vault</button>
+        <button onClick={() => { setSelectedGroup("risk"); setTab("entries"); notify("Showing recovery review queue"); }}><Archive size={15} />Recovery Review</button>
       </section>
 
       <section className="workbench">
@@ -673,7 +683,7 @@ function App() {
           <div>
             <LockKeyhole size={42} />
             <h2>Workspace Locked</h2>
-            <p>Sentinel.kdbx is locked. Unlock to continue the active session.</p>
+            <p>The enterprise vault workspace is locked. Unlock to continue the active session.</p>
             <button className="primary" onClick={() => setLocked(false)}>Unlock Workspace</button>
           </div>
         </div>
@@ -781,7 +791,7 @@ function App() {
               </div>
             </header>
             <dl>
-              <div><dt>Workspace</dt><dd>Sentinel.kdbx</dd></div>
+              <div><dt>Workspace</dt><dd>Enterprise Vault</dd></div>
               <div><dt>Signed-in identity</dt><dd>{data.user.name}</dd></div>
               <div><dt>Role</dt><dd>{data.user.role.replace("_", " ")}</dd></div>
               <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
@@ -944,14 +954,14 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
 
 function PolicyPanel({ policies, canWrite, onChange }: { policies: Policies; canWrite: boolean; onChange: (patch: Partial<Policies>) => void }) {
   return (
-    <div className="options-panel">
+    <div className="options-panel policy-panel">
       <h2><Settings size={18} />Options</h2>
       <label><input type="checkbox" checked={policies.mfaRequired} disabled={!canWrite} onChange={() => onChange({ mfaRequired: !policies.mfaRequired })} />Require MFA for every unlock</label>
       <label><input type="checkbox" checked={policies.justInTimeAccess} disabled={!canWrite} onChange={() => onChange({ justInTimeAccess: !policies.justInTimeAccess })} />Use just-in-time access grants</label>
-      <label>Automatically clear clipboard after<input type="number" disabled={!canWrite} value={policies.clipboardTtl} onChange={(event) => onChange({ clipboardTtl: Number(event.target.value) })} />seconds</label>
-      <label>Lock workspace after<input type="number" disabled={!canWrite} value={policies.sessionMinutes} onChange={(event) => onChange({ sessionMinutes: Number(event.target.value) })} />minutes idle</label>
-      <label>Default rotation interval<input type="number" disabled={!canWrite} value={policies.rotationDays} onChange={(event) => onChange({ rotationDays: Number(event.target.value) })} />days</label>
-      <label>Minimum generated password length<input type="number" disabled={!canWrite} value={policies.minimumLength} onChange={(event) => onChange({ minimumLength: Number(event.target.value) })} /></label>
+      <label className="policy-row"><span>Automatically clear clipboard after</span><input type="number" disabled={!canWrite} value={policies.clipboardTtl} onChange={(event) => onChange({ clipboardTtl: Number(event.target.value) })} /><span>seconds</span></label>
+      <label className="policy-row"><span>Lock workspace after</span><input type="number" disabled={!canWrite} value={policies.sessionMinutes} onChange={(event) => onChange({ sessionMinutes: Number(event.target.value) })} /><span>minutes idle</span></label>
+      <label className="policy-row"><span>Default rotation interval</span><input type="number" disabled={!canWrite} value={policies.rotationDays} onChange={(event) => onChange({ rotationDays: Number(event.target.value) })} /><span>days</span></label>
+      <label className="policy-row"><span>Minimum generated password length</span><input type="number" disabled={!canWrite} value={policies.minimumLength} onChange={(event) => onChange({ minimumLength: Number(event.target.value) })} /><span /></label>
       <button><FileDown size={16} />Export policy evidence</button>
     </div>
   );

@@ -3,7 +3,7 @@ import { config } from "../config.mjs";
 import { store } from "../data/store.mjs";
 
 const providerNames = {
-  local: "Local demo identity",
+  local: "Local enterprise identity",
   oidc: "OpenID Connect",
   entra: "Microsoft Entra ID"
 };
