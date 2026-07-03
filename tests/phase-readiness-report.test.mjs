@@ -54,7 +54,7 @@ test("phase readiness report combines deployment and external evidence blockers"
     assert.equal(report.externalRequests.requestCount, 7);
     assert.equal(report.externalRequests.evidenceKeyCount, 18);
     assert.ok(report.externalRequests.commandScriptCount > 20);
-    assert.equal(report.externalRequests.validatorCommandCount, 20);
+    assert.equal(report.externalRequests.validatorCommandCount, 21);
     assert.equal(report.deploymentEvidence.validated, true);
     assert.equal(report.ready, false);
     assert.ok(report.blockers.some((blocker) => blocker.gate === "deployment-evidence-status"));

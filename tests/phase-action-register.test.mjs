@@ -78,7 +78,7 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(result.format, "sentinel-phase-action-register-result-v1");
     assert.equal(result.actionCount, 7);
     assert.equal(result.ready, false);
-    assert.equal(result.validatorCommandCount, 20);
+    assert.equal(result.validatorCommandCount, 21);
     assert.ok(existsSync(registerPath));
     assert.ok(existsSync(markdownPath));
 
@@ -87,7 +87,7 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(register.actions.length, 7);
     assert.equal(register.summary.evidenceKeyCount, 18);
     assert.ok(register.summary.commandScriptCount > 20);
-    assert.equal(register.summary.validatorCommandCount, 20);
+    assert.equal(register.summary.validatorCommandCount, 21);
     assert.ok(register.summary.commandScripts.includes("validate:windows-signing"));
     assert.equal(register.gate.externalRequestSummary.evidenceKeyCount, 18);
     assert.equal(register.actions[0].id, "ACT-01");
@@ -97,7 +97,7 @@ test("phase action register creates owner action records from the phase gate", (
     assert.match(markdown, /Sentinel Vault Phase Action Register/);
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 20/);
+    assert.match(markdown, /- Validator commands: 21/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-action-register.mjs", [
@@ -109,7 +109,7 @@ test("phase action register creates owner action records from the phase gate", (
     assert.equal(validation.format, "sentinel-phase-action-register-validation-v1");
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 20);
+    assert.equal(validation.validatorCommandCount, 21);
     assert.equal(validation.validated, true);
   } finally {
     rmSync(dir, { recursive: true, force: true });

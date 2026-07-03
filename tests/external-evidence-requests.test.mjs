@@ -70,6 +70,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.every((request) => request.evidenceKeys.length >= 2));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:native-companion -- <native-companion-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:windows-signing-report -- --report <signing-report.json> --strict --out <windows-signing-report-validation.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:kms-hsm-sdk-approval -- <kms-hsm-sdk-approval-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:extension-package -- --package <sentinel-vault-autofill.zip> --out <browser-extension-package-validation.json>")));
@@ -109,7 +110,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 20);
+    assert.equal(result.validatorCommandCount, 21);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

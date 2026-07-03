@@ -56,6 +56,7 @@ const requiredValidatorCommands = [
   "pnpm validate:siem-rotation",
   "pnpm validate:windows-package",
   "pnpm validate:windows-release",
+  "pnpm validate:windows-signing-report",
   "pnpm validate:windows-signing",
   "pnpm validate:kms-hsm-sdk-approval",
   "pnpm validate:kms-hsm-evidence",

@@ -65,6 +65,14 @@ pnpm verify:windows:signatures
 
 The status must be `Valid` and the signer must match the expected publishing certificate.
 
+Validate the release-host signing report before generating execution evidence:
+
+```powershell
+pnpm validate:windows-signing-report -- --report ".\artifacts\windows\signing-report.json" --strict --out ".\artifacts\windows\windows-signing-report-validation.json"
+```
+
+The report validator checks approved release-host metadata, certificate validity, artifact existence and SHA-256 hashes, Authenticode/timestamp status, required release checks, approvals, and redaction flags before the report is converted into formal signing execution evidence.
+
 Record release evidence with `docs/templates/windows-release-evidence.json`.
 Record install hardening evidence with `docs/templates/windows-install-hardening-evidence.json`.
 
@@ -84,6 +92,7 @@ Validate planned or completed release evidence with:
 
 ```powershell
 pnpm validate:windows-release -- docs/templates/windows-release-evidence.json
+pnpm validate:windows-signing-report -- --report ".\artifacts\windows\signing-report.json" --strict
 pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evidence.json
 ```
 

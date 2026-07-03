@@ -330,6 +330,7 @@ Generate Windows release evidence from built artifacts:
 
 ```powershell
 pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip"
+pnpm validate:windows-signing-report -- --report ".\artifacts\windows\signing-report.json" --strict --out ".\artifacts\windows\windows-signing-report-validation.json"
 pnpm release:windows-signing -- --status signed --report ".\artifacts\windows\signing-report.json" --out ".\artifacts\windows\windows-signing-execution-evidence.json"
 pnpm validate:windows-signing -- ".\artifacts\windows\windows-signing-execution-evidence.json"
 ```

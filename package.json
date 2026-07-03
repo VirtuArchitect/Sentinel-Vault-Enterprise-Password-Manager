@@ -102,6 +102,7 @@
     "validate:release-archive": "node scripts/validate-production-release-archive.mjs",
     "validate:windows-release": "node scripts/validate-windows-release-evidence.mjs",
     "validate:windows-hardening": "node scripts/validate-windows-install-hardening-evidence.mjs",
+    "validate:windows-signing-report": "node scripts/validate-windows-signing-report.mjs",
     "validate:windows-signing": "node scripts/validate-windows-signing-execution-evidence.mjs",
     "validate:windows-package": "powershell -ExecutionPolicy Bypass -File scripts/validate-windows-package.ps1",
     "release:pentest-scope": "node scripts/generate-pentest-scope-evidence.mjs",
