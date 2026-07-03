@@ -86,6 +86,33 @@ test("deployment evidence status report records missing evidence without failing
   }
 });
 
+test("production deployment evidence status report lists strict status expectations", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-status-production-${process.pid}-${Date.now()}`);
+  try {
+    const workspace = JSON.parse(runWorkspace([
+      "--environment", "prod-east",
+      "--status", "production",
+      "--owner", "platform-security",
+      "--out-dir", dir
+    ]));
+
+    const report = JSON.parse(runReport(["--bundle", workspace.bundlePath]));
+    const postgres = report.items.find((item) => item.name === "postgresHa");
+    const browserRollout = report.items.find((item) => item.name === "browserRollout");
+
+    assert.equal(report.status, "production");
+    assert.equal(report.readyForPilotOrProduction, false);
+    assert.ok(report.summary.withStatusMismatches > 0);
+    assert.equal(postgres.expectedStatus, "approved");
+    assert.equal(postgres.statusMatchesProductionRequirement, false);
+    assert.match(postgres.statusIssue, /postgresHa evidence status must be approved/);
+    assert.equal(browserRollout.expectedStatus, "production");
+    assert.equal(browserRollout.statusMatchesProductionRequirement, false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("deployment evidence status validator accepts current reports", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-status-validate-${process.pid}-${Date.now()}`);
   try {

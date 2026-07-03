@@ -48,6 +48,22 @@ const artifactFormats = {
   releaseProvenance: "sentinel-release-provenance-v1"
 };
 
+const productionEvidenceRequirements = {
+  connector: "certified",
+  itsmWorkNotes: "production",
+  siemReceiverRotation: "certified",
+  windowsSigning: "signed",
+  browserIdentity: "production",
+  browserRollout: "production",
+  nativeCompanion: "production",
+  credentialProviderApproval: "approved",
+  kmsHsm: "active",
+  kmsHsmSdkApproval: "approved",
+  sourceMigration: "production",
+  tenantIsolation: "production",
+  postgresHa: "approved"
+};
+
 const resolveEvidencePath = (candidate) => {
   const bundleRelative = path.resolve(path.dirname(path.resolve(bundlePath)), candidate);
   if (existsSync(bundleRelative)) return bundleRelative;
@@ -112,6 +128,15 @@ const items = Object.entries(bundle.evidence).map(([name, candidate]) => {
   }
 
   const evidence = parseJson(evidencePath);
+  const releaseStatus = evidence.releaseStatus || evidence.status || evidence.deploymentStatus || evidence.providerStatus || null;
+  const expectedStatus = bundle.status === "production" ? productionEvidenceRequirements[name] || null : null;
+  const statusMatchesProductionRequirement = expectedStatus === null || releaseStatus === expectedStatus;
+  const environmentMatchesBundle = bundle.status !== "production" || evidence.environment === undefined || evidence.environment === bundle.environment;
+  const statusIssue = !statusMatchesProductionRequirement
+    ? `${name} evidence status must be ${expectedStatus} for production bundles`
+    : !environmentMatchesBundle
+      ? `${name} evidence environment must match the production bundle environment`
+      : null;
   const placeholderCount = countPlaceholders(evidence);
   const blockingStatuses = collectStatuses(evidence);
   const validator = runValidator(name, evidencePath);
@@ -124,12 +149,17 @@ const items = Object.entries(bundle.evidence).map(([name, candidate]) => {
     path: evidencePath,
     exists: true,
     format: evidence.format,
-    releaseStatus: evidence.releaseStatus || evidence.status || evidence.deploymentStatus || evidence.providerStatus || null,
+    releaseStatus,
+    expectedStatus,
+    statusMatchesProductionRequirement,
+    environment: evidence.environment || null,
+    environmentMatchesBundle,
     validates,
     placeholderCount,
     blockingStatuses,
-    productionReady: validates && placeholderCount === 0 && blockingStatuses.length === 0,
-    issue: validates ? null : validator.error || `expected format ${artifactFormats[name]}`
+    productionReady: validates && placeholderCount === 0 && blockingStatuses.length === 0 && !statusIssue,
+    statusIssue,
+    issue: validates ? statusIssue : validator.error || `expected format ${artifactFormats[name]}`
   };
 });
 
@@ -140,6 +170,7 @@ const summary = {
   validating: items.filter((item) => item.validates).length,
   withPlaceholders: items.filter((item) => (item.placeholderCount || 0) > 0).length,
   withBlockingStatuses: items.filter((item) => item.blockingStatuses.length > 0).length,
+  withStatusMismatches: items.filter((item) => item.statusIssue).length,
   productionReady: items.filter((item) => item.productionReady).length
 };
 

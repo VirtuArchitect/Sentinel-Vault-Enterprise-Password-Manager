@@ -117,6 +117,7 @@ Implemented:
 - Deployment evidence workspace manifest and validator that hash the copied bundle, README, and evidence templates before operator edits.
 - Deployment evidence workspace template-drift check that rejects stale workspaces when new required evidence gates are added.
 - Deployment evidence status reporter for operator-facing placeholder, validation, and production-readiness blockers.
+- Deployment evidence status reporter includes strict production expected-status and environment-alignment mismatches from the final bundle gate.
 - Deployment evidence status report validator and production release-gate check for stale or not-ready deployment evidence status.
 - Deployment evidence redaction reporter, validator, and release-gate check that scan every bundle evidence file for private keys, service tokens, provider tokens, generic secret assignments, stale reports, and not-ready evidence.
 - External evidence request generator for owner-ready Phase 2-8 deployment, signing, provider approval, extension ID, and native credential-provider inputs.
