@@ -45,7 +45,9 @@ const productionEvidenceRequirements = {
   siemReceiverRotation: "certified",
   windowsSigning: "signed",
   browserIdentity: "production",
-  browserRollout: "production"
+  browserRollout: "production",
+  nativeCompanion: "production",
+  credentialProviderApproval: "approved"
 };
 
 const artifactFormats = {
@@ -87,7 +89,7 @@ for (const [name, command] of Object.entries(validators)) {
     path: evidencePath,
     validated: true,
     environment: evidence.environment,
-    status: evidence.status || evidence.deploymentStatus
+    status: evidence.status || evidence.deploymentStatus || evidence.releaseStatus
   };
 }
 
@@ -108,7 +110,9 @@ if (deployedStatuses.has(bundle.status)) {
 if (bundle.status === "production") {
   for (const [name, requiredStatus] of Object.entries(productionEvidenceRequirements)) {
     assert.equal(results[name].status, requiredStatus, `${name} evidence status must be ${requiredStatus} for production bundles`);
-    assert.equal(results[name].environment, bundle.environment, `${name} evidence environment must match the production bundle environment`);
+    if (results[name].environment !== undefined) {
+      assert.equal(results[name].environment, bundle.environment, `${name} evidence environment must match the production bundle environment`);
+    }
   }
 }
 

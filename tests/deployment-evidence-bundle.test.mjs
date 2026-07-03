@@ -229,6 +229,82 @@ const writeProductionBrowserEvidence = (dir, environment = "prod-east") => {
   writeFileSync(rolloutPath, JSON.stringify(rollout, null, 2));
 };
 
+const credentialProviderClsid = "{12345678-1234-1234-1234-123456789abc}";
+
+const writeProductionNativeEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const nativePath = path.join(evidenceDir, "native-companion-evidence.json");
+  const credentialArtifactPath = path.join(evidenceDir, "SentinelVault.CredentialProvider.dll");
+  writeFileSync(credentialArtifactPath, "credential provider dll fixture");
+  const credentialArtifactSha256 = crypto.createHash("sha256").update(readFileSync(credentialArtifactPath)).digest("hex");
+
+  const native = JSON.parse(readFileSync(nativePath, "utf8"));
+  native.releaseStatus = "production";
+  native.releaseVersion = "1.0.0";
+  native.releaseDate = "2026-07-01";
+  native.buildHost = "release-host";
+  native.sourceCommit = "abc1234";
+  native.artifacts = native.artifacts.map((artifact) => ({
+    ...artifact,
+    sha256: artifact.name.endsWith(".dll") ? credentialArtifactSha256 : "d".repeat(64),
+    authenticodeStatus: "Valid",
+    signerThumbprint: "e".repeat(40)
+  }));
+  native.nativeMessaging.manifestPath = "C:\\Program Files\\Sentinel Vault\\native-messaging.json";
+  native.nativeMessaging.allowedExtensionIds = ["a".repeat(32), "b".repeat(32)];
+  native.nativeMessaging.hostPath = "C:\\Program Files\\Sentinel Vault\\SentinelVault.Companion.exe";
+  native.credentialProvider.enabled = true;
+  native.credentialProvider.clsid = credentialProviderClsid;
+  native.credentialProvider.registrationPath = `HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Authentication\\Credential Providers\\${credentialProviderClsid}`;
+  native.credentialProvider.offlineLogonDocumented = true;
+  for (const name of Object.keys(native.securityControls)) {
+    native.securityControls[name] = "passed";
+  }
+  for (const name of Object.keys(native.testResults)) {
+    native.testResults[name] = "passed";
+  }
+  native.approvals.securityReviewer = "security-review";
+  native.approvals.desktopEngineering = "desktop-engineering";
+  native.approvals.releaseOwner = "release-owner";
+  native.approvals.changeTicket = "CHG-2026-0701";
+  native.rollback.disableProcedure = "Disable credential provider registration and remove native messaging host.";
+  native.rollback.tested = true;
+  writeFileSync(nativePath, JSON.stringify(native, null, 2));
+
+  const approvalPath = path.join(evidenceDir, "credential-provider-approval-evidence.json");
+  const approval = JSON.parse(readFileSync(approvalPath, "utf8"));
+  approval.status = "approved";
+  approval.environment = environment;
+  approval.implementation.approvalReference = "SEC-2026-0701";
+  approval.implementation.clsid = credentialProviderClsid;
+  approval.implementation.registrationPath = native.credentialProvider.registrationPath;
+  approval.implementation.allowListedVaultEntriesOnly = "passed";
+  approval.implementation.offlineLogonDocumented = "passed";
+  approval.implementation.noPlaintextCredentialStorage = "passed";
+  approval.implementation.outOfProcessBoundaryReviewed = "passed";
+  for (const name of Object.keys(approval.riskReview)) {
+    approval.riskReview[name] = "passed";
+  }
+  approval.releaseEvidence.nativeCompanionEvidencePath = nativePath;
+  approval.releaseEvidence.signedCredentialProviderArtifact = credentialArtifactPath;
+  approval.releaseEvidence.artifactSha256 = credentialArtifactSha256;
+  approval.releaseEvidence.authenticodeStatus = "Valid";
+  approval.releaseEvidence.signerThumbprint = "e".repeat(40);
+  approval.releaseEvidence.cleanInstall = "passed";
+  approval.releaseEvidence.cleanUninstall = "passed";
+  approval.releaseEvidence.rollbackDisable = "passed";
+  approval.approvals.windowsEndpointSecurityOwner = "endpoint-security";
+  approval.approvals.securityReviewer = "security-review";
+  approval.approvals.desktopEngineeringOwner = "desktop-engineering";
+  approval.approvals.releaseOwner = "release-owner";
+  approval.approvals.changeTicket = "CHG-2026-0701";
+  approval.redaction.containsCredentialMaterial = false;
+  approval.redaction.containsSessionTokens = false;
+  approval.redaction.containsCustomerData = false;
+  approval.redaction.containsPrivateKeyMaterial = false;
+  writeFileSync(approvalPath, JSON.stringify(approval, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -374,7 +450,26 @@ test("production evidence bundle requires production browser extension evidence"
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5, signing, and browser evidence", () => {
+test("production evidence bundle requires approved native credential-provider evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-native-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
+    writeProductionBrowserEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /nativeCompanion evidence status must be production/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5, signing, browser, and native evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -386,6 +481,7 @@ test("production evidence bundle accepts aligned Phase 5, signing, and browser e
     writeProductionPhaseFiveEvidence(dir);
     writeSignedWindowsEvidence(dir);
     writeProductionBrowserEvidence(dir);
+    writeProductionNativeEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
@@ -395,6 +491,8 @@ test("production evidence bundle accepts aligned Phase 5, signing, and browser e
     assert.equal(validation.results.itsmWorkNotes.status, "production");
     assert.equal(validation.results.siemReceiverRotation.status, "certified");
     assert.equal(validation.results.windowsSigning.status, "signed");
+    assert.equal(validation.results.nativeCompanion.status, "production");
+    assert.equal(validation.results.credentialProviderApproval.status, "approved");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
