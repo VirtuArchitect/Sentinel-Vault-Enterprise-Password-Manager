@@ -35,7 +35,7 @@ const writeFixturePackage = (dir, { omitInstall = false } = {}) => {
     mkdirSync(folder, { recursive: true });
   }
 
-  const scriptNames = ["uninstall.ps1", "rollback.ps1", "run-sentinel.ps1", "healthcheck.ps1"];
+  const scriptNames = ["preflight.ps1", "uninstall.ps1", "rollback.ps1", "run-sentinel.ps1", "healthcheck.ps1"];
   if (!omitInstall) scriptNames.unshift("install.ps1");
   for (const scriptName of scriptNames) {
     writeFileSync(path.join(stage, scriptName), "Write-Host 'fixture'\n");
@@ -92,7 +92,47 @@ test("windows package validator extracts and smoke tests a package", { skip: !is
     assert.equal(result.format, "sentinel-windows-package-validation-v1");
     assert.equal(result.runtimeSmoke, "passed");
     assert.equal(result.validated, true);
-    assert.equal(result.requiredFileCount, 14);
+    assert.equal(result.requiredFileCount, 15);
+    assert.deepEqual(savedResult, result);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("windows target preflight reports package, runtime, and port checks", { skip: !isWindows }, () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-preflight-"));
+  try {
+    const zipPath = writeFixturePackage(dir);
+    const extractDir = path.join(dir, "extract");
+    const reportPath = path.join(dir, "windows-target-preflight.json");
+    runPowerShell([
+      "-Command",
+      "& { param($package, $destination) Expand-Archive -LiteralPath $package -DestinationPath $destination -Force }",
+      zipPath,
+      extractDir
+    ]);
+
+    const output = runPowerShell([
+      "-File",
+      "deployments/windows/preflight.ps1",
+      "-PackageRoot",
+      extractDir,
+      "-Port",
+      "5998",
+      "-Out",
+      reportPath,
+      "-AllowFailures"
+    ]);
+    const result = JSON.parse(output);
+    const savedResult = JSON.parse(readFileSync(reportPath, "utf8"));
+
+    assert.equal(result.format, "sentinel-windows-target-preflight-v1");
+    assert.equal(result.packageRoot, extractDir);
+    assert.equal(result.port, 5998);
+    assert.ok(Array.isArray(result.checks));
+    assert.ok(result.checks.some((check) => check.name === "package-layout" && check.status === "passed"));
+    assert.ok(result.checks.some((check) => check.name === "node-runtime"));
+    assert.ok(result.checks.some((check) => check.name === "api-port"));
     assert.deepEqual(savedResult, result);
   } finally {
     rmSync(dir, { recursive: true, force: true });

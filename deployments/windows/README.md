@@ -126,6 +126,18 @@ Sign the generated `.msix` with the same approved release certificate used for t
 Extract the zip on the target server, then run:
 
 ```powershell
+.\preflight.ps1 -Port 5173
+```
+
+The preflight writes a structured readiness report and fails before installation when Node.js, the package layout, administrator elevation, or the selected ports are not ready. Save the report for VM handoff evidence when needed:
+
+```powershell
+.\preflight.ps1 -Port 5173 -Out ".\windows-target-preflight.json"
+```
+
+Then install:
+
+```powershell
 .\install.ps1 -Port 5173 -VaultRootKey "replace-with-production-secret"
 ```
 
@@ -156,6 +168,10 @@ Install with the SQLite storage provider on a Node.js 24+ host:
 ## Install With IIS Front End
 
 Install IIS, URL Rewrite, and ARR first. Then run:
+
+```powershell
+.\preflight.ps1 -Port 5173 -ConfigureIis -SitePort 8080
+```
 
 ```powershell
 .\install.ps1 `

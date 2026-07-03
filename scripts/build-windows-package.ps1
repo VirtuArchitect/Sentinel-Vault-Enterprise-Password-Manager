@@ -50,6 +50,7 @@ try {
 }
 
 Copy-Item -Path (Join-Path $root "deployments\windows\install.ps1") -Destination $stageRoot
+Copy-Item -Path (Join-Path $root "deployments\windows\preflight.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\uninstall.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\rollback.ps1") -Destination $stageRoot
 Copy-Item -Path (Join-Path $root "deployments\windows\run-sentinel.ps1") -Destination $stageRoot

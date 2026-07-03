@@ -54,6 +54,7 @@ try {
 
   $requiredPaths = @(
     "install.ps1",
+    "preflight.ps1",
     "uninstall.ps1",
     "rollback.ps1",
     "run-sentinel.ps1",

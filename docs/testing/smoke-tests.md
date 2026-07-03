@@ -62,9 +62,21 @@ Expected result:
 - The zip extracts with Windows-native tooling.
 - The zip contains `assets/sentinel-vault-app-icon.svg`.
 - The zip contains `app/dist/favicon.svg`.
-- The zip contains `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
+- The zip contains `preflight.ps1`, `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
 - The extracted production app passes `/healthz`.
 - `artifacts/windows/windows-package-validation.json` records the package validation result for release evidence.
+
+Optional VM preflight:
+
+```powershell
+.\preflight.ps1 -Port 5173 -Out ".\windows-target-preflight.json"
+```
+
+Expected result:
+
+- The report format is `sentinel-windows-target-preflight-v1`.
+- Package layout, Node.js version, selected ports, and optional IIS prerequisites are checked before installation.
+- Missing Node.js or occupied ports fail before `install.ps1` is run.
 
 ## Browser Extension Package
 
