@@ -177,6 +177,58 @@ const writeSignedWindowsEvidence = (dir, environment = "prod-east") => {
   writeFileSync(windowsSigningPath, JSON.stringify(windowsSigning, null, 2));
 };
 
+const writeProductionBrowserEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const packageSha256 = "c".repeat(64);
+  const chromeExtensionId = "a".repeat(32);
+  const edgeExtensionId = "b".repeat(32);
+
+  const identityPath = path.join(evidenceDir, "browser-extension-identity-evidence.json");
+  const identity = JSON.parse(readFileSync(identityPath, "utf8"));
+  identity.status = "production";
+  identity.environment = environment;
+  identity.packageSha256 = packageSha256;
+  for (const [browser, extensionId] of Object.entries({ chrome: chromeExtensionId, edge: edgeExtensionId })) {
+    identity[browser].extensionId = extensionId;
+    identity[browser].publisher = `${browser}-publisher`;
+    identity[browser].reviewStatus = "passed";
+    identity[browser].policyAssignment = "passed";
+  }
+  for (const name of Object.keys(identity.controls)) {
+    identity.controls[name] = "passed";
+  }
+  identity.approvals.endpointPlatformOwner = "endpoint-platform";
+  identity.approvals.securityReviewer = "security-review";
+  identity.approvals.businessOwner = "business-owner";
+  identity.approvals.changeTicket = "CHG-2026-0701";
+  identity.redaction.containsCredentials = false;
+  identity.redaction.containsInternalHostnames = false;
+  identity.redaction.containsCustomerData = false;
+  writeFileSync(identityPath, JSON.stringify(identity, null, 2));
+
+  const rolloutPath = path.join(evidenceDir, "browser-extension-rollout-evidence.json");
+  const rollout = JSON.parse(readFileSync(rolloutPath, "utf8"));
+  rollout.deploymentStatus = "production";
+  rollout.environment = environment;
+  rollout.owner = "endpoint-platform";
+  rollout.package.sha256 = packageSha256;
+  rollout.chrome.extensionId = chromeExtensionId;
+  rollout.edge.extensionId = edgeExtensionId;
+  for (const ring of rollout.rolloutRings) {
+    ring.scope = `${ring.name}-managed-devices`;
+    ring.status = "passed";
+    ring.startDate = "2026-07-01";
+    ring.validation = "passed";
+  }
+  rollout.storeReview.privacyStatementApproved = true;
+  rollout.storeReview.screenshotsRedacted = true;
+  rollout.rollback.tested = true;
+  rollout.approvals.securityReviewer = "security-review";
+  rollout.approvals.desktopEngineering = "desktop-engineering";
+  rollout.approvals.businessOwner = "business-owner";
+  writeFileSync(rolloutPath, JSON.stringify(rollout, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -304,7 +356,25 @@ test("production evidence bundle requires signed Windows release evidence", () =
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5 and signing evidence", () => {
+test("production evidence bundle requires production browser extension evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-browser-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /browserIdentity evidence status must be production/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5, signing, and browser evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -315,9 +385,12 @@ test("production evidence bundle accepts aligned Phase 5 and signing evidence", 
     });
     writeProductionPhaseFiveEvidence(dir);
     writeSignedWindowsEvidence(dir);
+    writeProductionBrowserEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
+    assert.equal(validation.results.browserIdentity.status, "production");
+    assert.equal(validation.results.browserRollout.status, "production");
     assert.equal(validation.results.connector.status, "certified");
     assert.equal(validation.results.itsmWorkNotes.status, "production");
     assert.equal(validation.results.siemReceiverRotation.status, "certified");

@@ -309,6 +309,7 @@ Implemented:
 - Browser extension enterprise rollout evidence template and validator.
 - Browser extension rollout evidence generator for packaged artifact SHA-256, manifest version, and planned enterprise rollout metadata.
 - Browser extension identity evidence template, generator, validator, and deployment-bundle gate for production Chrome/Edge extension IDs, private-channel review, enterprise policy assignment, rollback ownership, and redaction checks.
+- Production deployment-bundle enforcement that browser extension identity and rollout evidence are production and environment-aligned.
 - Browser enterprise policy renderer for completed rollout evidence.
 - Browser enterprise policy validator for rendered Chrome/Edge force-install JSON, production extension IDs, approved update URLs, runtime host allowlist, and blocked permissions before rollout handoff.
 - Native companion and credential-provider release evidence template and validator for signed-artifact, abuse-test, rollback, and approval gates.

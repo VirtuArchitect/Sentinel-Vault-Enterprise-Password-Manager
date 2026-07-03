@@ -43,7 +43,9 @@ const productionEvidenceRequirements = {
   connector: "certified",
   itsmWorkNotes: "production",
   siemReceiverRotation: "certified",
-  windowsSigning: "signed"
+  windowsSigning: "signed",
+  browserIdentity: "production",
+  browserRollout: "production"
 };
 
 const artifactFormats = {
@@ -85,7 +87,7 @@ for (const [name, command] of Object.entries(validators)) {
     path: evidencePath,
     validated: true,
     environment: evidence.environment,
-    status: evidence.status
+    status: evidence.status || evidence.deploymentStatus
   };
 }
 
