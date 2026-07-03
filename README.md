@@ -244,6 +244,7 @@ Windows deployment hardening guides:
 Validate native companion and credential-provider release evidence:
 
 ```powershell
+pnpm validate:native-artifacts -- --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --require-signature --out ".\artifacts\native\native-artifact-validation.json"
 pnpm release:credential-provider-approval -- --status planned --out ".\artifacts\native\credential-provider-approval-evidence.json"
 pnpm validate:credential-provider-approval -- docs/templates/credential-provider-approval-evidence.json
 pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe"

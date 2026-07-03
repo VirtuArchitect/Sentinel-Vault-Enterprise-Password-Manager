@@ -95,7 +95,7 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(result.blockedApprovalCount, 7);
     assert.equal(result.pendingActionCount, 7);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 15);
+    assert.equal(result.validatorCommandCount, 16);
     assert.ok(existsSync(matrixPath));
     assert.ok(existsSync(markdownPath));
 
@@ -104,7 +104,7 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(matrix.decision, "hold-phase-closure");
     assert.equal(matrix.summary.evidenceKeyCount, 18);
     assert.ok(matrix.summary.commandScriptCount > 20);
-    assert.equal(matrix.summary.validatorCommandCount, 15);
+    assert.equal(matrix.summary.validatorCommandCount, 16);
     assert.ok(matrix.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(matrix.summary.evidenceKeys.includes("windowsSigning"));
     assert.ok(matrix.approvals.some((approval) => approval.evidenceKeys.includes("windowsSigning")));
@@ -114,7 +114,7 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.match(markdown, /Sentinel Vault Phase Signoff Matrix/);
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 15/);
+    assert.match(markdown, /- Validator commands: 16/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-signoff-matrix.mjs", [
@@ -127,7 +127,7 @@ test("phase signoff matrix groups pending actions by owner role", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 15);
+    assert.equal(validation.validatorCommandCount, 16);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -53,6 +53,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.summary.commandScriptCount > 20);
     assert.ok(report.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(report.summary.commandScripts.includes("validate:extension-package"));
+    assert.ok(report.summary.commandScripts.includes("validate:native-artifacts"));
     assert.ok(report.summary.commandScripts.includes("release:kms-hsm-sdk-approval"));
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
@@ -67,6 +68,7 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:browser-identity -- <browser-extension-identity-evidence.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:extension-package -- --package <sentinel-vault-autofill.zip> --out <browser-extension-package-validation.json>")));
     assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:credential-provider-approval -- <credential-provider-approval-evidence.json>")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:native-artifacts -- --artifact <signed-credential-provider-artifact> --require-signature --out <native-artifact-validation.json>")));
     assert.ok(report.requests.every((request) => request.acceptanceCriteria.length >= 3));
 
     const markdown = readFileSync(markdownPath, "utf8");
@@ -100,7 +102,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 15);
+    assert.equal(result.validatorCommandCount, 16);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

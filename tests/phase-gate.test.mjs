@@ -95,7 +95,7 @@ test("phase gate validator accepts generated blocked-but-covered evidence packs"
     assert.ok(report.remainingItemCount > 0);
     assert.equal(report.externalRequestSummary.evidenceKeyCount, 18);
     assert.ok(report.externalRequestSummary.commandScriptCount > 20);
-    assert.equal(report.externalRequestSummary.validatorCommandCount, 15);
+    assert.equal(report.externalRequestSummary.validatorCommandCount, 16);
     assert.ok(existsSync(outputPath));
     assert.ok(existsSync(markdownPath));
     assert.equal(JSON.parse(readFileSync(outputPath, "utf8")).format, "sentinel-phase-gate-validation-v1");

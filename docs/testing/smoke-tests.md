@@ -80,3 +80,21 @@ Expected result:
 - The manifest uses Manifest V3.
 - The package does not request wildcard web host permissions.
 - `artifacts/browser/browser-extension-package-validation.json` records the package hash, required file count, permissions, and host permissions for rollout evidence.
+
+## Native Companion Artifact
+
+Name: Native companion artifact validation records release metadata
+
+Purpose: Prove native companion artifacts can be hashed and classified before signed credential-provider release approval.
+
+Steps:
+
+```powershell
+pnpm validate:native-artifacts -- --artifact ".\companions\windows\sentinel-tray-helper.ps1" --out ".\artifacts\native\native-artifact-validation.json"
+```
+
+Expected result:
+
+- `artifacts/native/native-artifact-validation.json` records the artifact name, type, size, SHA-256 hash, and signature status.
+- Script artifacts are classified as `script`.
+- Signed `.exe`, `.dll`, `.msi`, and `.msix` release artifacts can be rechecked with `--require-signature` on the release host.

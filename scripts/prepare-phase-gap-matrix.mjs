@@ -67,6 +67,7 @@ const requiredValidatorCommands = [
   "pnpm validate:browser-identity",
   "pnpm validate:browser-rollout",
   "pnpm validate:credential-provider-approval",
+  "pnpm validate:native-artifacts",
   "pnpm validate:native-companion"
 ];
 const allCommands = requests.requests.flatMap((request) => request.commands);

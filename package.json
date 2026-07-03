@@ -18,6 +18,7 @@
     "release:windows-hardening": "node scripts/generate-windows-install-hardening-evidence.mjs",
     "release:windows-signing": "node scripts/generate-windows-signing-execution-evidence.mjs",
     "release:native-companion": "node scripts/generate-native-companion-evidence.mjs",
+    "validate:native-artifacts": "node scripts/validate-native-release-artifacts.mjs",
     "release:credential-provider-approval": "node scripts/generate-credential-provider-approval-evidence.mjs",
     "validate:credential-provider-approval": "node scripts/validate-credential-provider-approval-evidence.mjs",
     "validate:extensions": "node scripts/validate-extension-artifacts.mjs",

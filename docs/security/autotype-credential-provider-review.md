@@ -58,6 +58,7 @@ Native autotype or credential-provider code must not be released until:
 Record the implementation approval with `docs/templates/credential-provider-approval-evidence.json`, then record the release gate with `docs/templates/native-companion-evidence.json` and validate both with:
 
 ```powershell
+pnpm validate:native-artifacts -- --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --require-signature --out ".\artifacts\native\native-artifact-validation.json"
 pnpm release:credential-provider-approval -- --status approved --report ".\artifacts\native\credential-provider-approval-report.json" --native-companion-evidence ".\artifacts\native\native-companion-evidence.json" --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --out ".\artifacts\native\credential-provider-approval-evidence.json"
 pnpm validate:credential-provider-approval -- ".\artifacts\native\credential-provider-approval-evidence.json"
 pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe" --out ".\artifacts\native\native-companion-evidence.json"
