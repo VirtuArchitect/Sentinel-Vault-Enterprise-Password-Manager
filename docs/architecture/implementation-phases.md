@@ -77,6 +77,7 @@ Implemented:
 - Source column-map validator for proprietary CSV mapping hash evidence, required fields, safe redaction flags, and mapped-or-ignored source column coverage.
 - Normalized import validator for converted Sentinel CSV shape, adapter-evidence row matching, allowed type/risk values, and redacted password fingerprint reporting.
 - Source migration evidence template, generator, validator, and deployment-bundle gate that bind proprietary column maps, redacted adapter evidence, normalized import output, storage migration evidence, and tenant-isolation proof.
+- Production deployment-bundle enforcement that source migration and tenant isolation evidence are production and environment-aligned.
 
 Remaining:
 - Completed deployment-specific proprietary source migration evidence and completed tenant-isolation evidence for each deployment.

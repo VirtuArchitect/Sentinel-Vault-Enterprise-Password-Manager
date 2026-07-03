@@ -18,6 +18,13 @@ const runBundleValidator = (bundlePath) => execFileSync(process.execPath, [
   windowsHide: true
 });
 
+const runScript = (script, args) => execFileSync(process.execPath, [script, ...args], {
+  cwd: rootDir,
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "pipe"],
+  windowsHide: true
+});
+
 const writeBundleFixture = (dir, overrides = {}) => {
   const evidenceDir = path.join(dir, "evidence");
   mkdirSync(evidenceDir, { recursive: true });
@@ -372,6 +379,109 @@ const writeActiveKmsHsmEvidence = (dir, environment = "prod-east") => {
   writeFileSync(sdkPath, JSON.stringify(sdk, null, 2));
 };
 
+const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const sourcePath = path.join(evidenceDir, "source.csv");
+  const columnMapPath = path.join(evidenceDir, "column-map.json");
+  const normalizedPath = path.join(evidenceDir, "normalized-import.csv");
+  const adapterEvidencePath = path.join(evidenceDir, "source-adapter-evidence.json");
+  const storageEvidencePath = path.join(evidenceDir, "storage-migration-evidence.json");
+  const tenantEvidencePath = path.join(evidenceDir, "tenant-isolation-evidence.json");
+  const sourceMigrationPath = path.join(evidenceDir, "source-migration-evidence.json");
+
+  writeFileSync(sourcePath, [
+    "Record Title,Login ID,Secret Value,Endpoint,Folder,Description",
+    "Privileged Console,root,Map-Secret-Value,https://console.example.test,Privileged,Emergency admin"
+  ].join("\n"));
+  writeFileSync(columnMapPath, JSON.stringify({
+    format: "sentinel-source-export-column-map-v1",
+    sourceSystem: "Enterprise Legacy Vault",
+    fields: {
+      type: { constant: "password" },
+      name: { columns: ["Record Title"] },
+      username: { columns: ["Login ID"] },
+      password: { columns: ["Secret Value"] },
+      url: { columns: ["Endpoint"] },
+      tags: { columns: ["Folder"], constants: ["migrated"] },
+      risk: { constant: "high" },
+      notes: { columns: ["Description"] }
+    },
+    redaction: {
+      evidenceIncludesPasswordValues: false,
+      evidenceIncludesOtpValues: false
+    }
+  }, null, 2));
+  runScript("scripts/convert-source-export.mjs", [
+    "--source", sourcePath,
+    "--format", "mapped-csv",
+    "--mapping", columnMapPath,
+    "--vault-id", "v-import",
+    "--out", normalizedPath,
+    "--evidence", adapterEvidencePath
+  ]);
+
+  const storage = JSON.parse(readFileSync(storageEvidencePath, "utf8"));
+  storage.inspectedAt = "2026-07-01T10:00:00Z";
+  storage.stateFile = path.join(evidenceDir, "sentinel-state.json");
+  storage.stateSha256 = "a".repeat(43);
+  storage.counts.users = 2;
+  storage.counts.tenants = 2;
+  storage.counts.vaults = 2;
+  storage.counts.secrets = 1;
+  for (const key of Object.keys(storage.checks)) {
+    storage.checks[key] = true;
+  }
+  for (const key of Object.keys(storage.findings)) {
+    storage.findings[key] = [];
+  }
+  writeFileSync(storageEvidencePath, JSON.stringify(storage, null, 2));
+
+  const tenant = JSON.parse(readFileSync(tenantEvidencePath, "utf8"));
+  tenant.status = "production";
+  tenant.environment = environment;
+  tenant.testedAt = "2026-07-01T10:00:00Z";
+  tenant.scope = {
+    tenantCount: 3,
+    vaultCount: 8,
+    userCount: 24,
+    sampledTenantPairs: 4,
+    testCadence: "per-release"
+  };
+  for (const key of Object.keys(tenant.controls)) {
+    tenant.controls[key] = "passed";
+  }
+  for (const key of Object.keys(tenant.negativeTests)) {
+    tenant.negativeTests[key] = "passed";
+  }
+  tenant.redaction = {
+    secretValuesFound: false,
+    sessionTokensFound: false,
+    tenantIdentifiersScoped: "passed"
+  };
+  tenant.approvals = {
+    securityReviewer: "security-review",
+    operationsOwner: "platform-operations",
+    changeTicket: "CHG-2026-0701"
+  };
+  writeFileSync(tenantEvidencePath, JSON.stringify(tenant, null, 2));
+
+  runScript("scripts/generate-source-migration-evidence.mjs", [
+    "--status", "production",
+    "--environment", environment,
+    "--source-system", "Enterprise Legacy Vault",
+    "--column-map", columnMapPath,
+    "--source-adapter-evidence", adapterEvidencePath,
+    "--normalized-import", normalizedPath,
+    "--storage-migration-evidence", storageEvidencePath,
+    "--tenant-isolation-evidence", tenantEvidencePath,
+    "--migration-owner", "migration-owner",
+    "--security-reviewer", "security-review",
+    "--operations-owner", "platform-operations",
+    "--change-ticket", "CHG-2026-0701",
+    "--out", sourceMigrationPath
+  ]);
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -556,7 +666,28 @@ test("production evidence bundle requires active KMS/HSM evidence", () => {
   }
 });
 
-test("production evidence bundle accepts aligned Phase 5, signing, browser, native, and KMS evidence", () => {
+test("production evidence bundle requires production migration and tenant evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-migration-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    writeSignedWindowsEvidence(dir);
+    writeProductionBrowserEvidence(dir);
+    writeProductionNativeEvidence(dir);
+    writeActiveKmsHsmEvidence(dir);
+
+    assert.throws(() => runBundleValidator(bundlePath), /sourceMigration evidence status must be production/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5, signing, browser, native, KMS, and migration evidence", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
   try {
     const bundlePath = writeBundleFixture(dir, {
@@ -570,6 +701,7 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, nati
     writeProductionBrowserEvidence(dir);
     writeProductionNativeEvidence(dir);
     writeActiveKmsHsmEvidence(dir);
+    writeProductionMigrationEvidence(dir);
     const validation = JSON.parse(runBundleValidator(bundlePath));
 
     assert.equal(validation.status, "production");
@@ -583,6 +715,8 @@ test("production evidence bundle accepts aligned Phase 5, signing, browser, nati
     assert.equal(validation.results.credentialProviderApproval.status, "approved");
     assert.equal(validation.results.kmsHsm.status, "active");
     assert.equal(validation.results.kmsHsmSdkApproval.status, "approved");
+    assert.equal(validation.results.sourceMigration.status, "production");
+    assert.equal(validation.results.tenantIsolation.status, "production");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -49,7 +49,9 @@ const productionEvidenceRequirements = {
   nativeCompanion: "production",
   credentialProviderApproval: "approved",
   kmsHsm: "active",
-  kmsHsmSdkApproval: "approved"
+  kmsHsmSdkApproval: "approved",
+  sourceMigration: "production",
+  tenantIsolation: "production"
 };
 
 const artifactFormats = {
