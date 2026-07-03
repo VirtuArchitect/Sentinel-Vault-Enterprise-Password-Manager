@@ -180,7 +180,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(result.validated, true);
     assert.equal(result.ready, false);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 17);
+    assert.equal(result.validatorCommandCount, 18);
     assert.ok(existsSync(manifestPath));
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -204,15 +204,15 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(manifest.evidenceKeySummary.attachmentEvidenceKeyCount, 18);
     assert.equal(manifest.evidenceKeySummary.waivedEvidenceKeyCount, 18);
     assert.ok(manifest.commandCoverageSummary.signoffCommandScriptCount > 20);
-    assert.equal(manifest.commandCoverageSummary.signoffValidatorCommandCount, 17);
+    assert.equal(manifest.commandCoverageSummary.signoffValidatorCommandCount, 18);
     assert.ok(manifest.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
     assert.equal(manifest.commandCoverageSummary.waiverCommandScriptCount, manifest.commandCoverageSummary.signoffCommandScriptCount);
-    assert.equal(manifest.commandCoverageSummary.waiverValidatorCommandCount, 17);
+    assert.equal(manifest.commandCoverageSummary.waiverValidatorCommandCount, 18);
     assert.ok(manifest.commandCoverageSummary.waiverCommandScripts.includes("validate:windows-signing"));
     assert.equal(manifest.markdownCoverageSummary.artifactCount, 7);
     assert.ok(manifest.markdownCoverageSummary.artifactNames.includes("phaseWaiverRegisterMarkdown"));
     assert.equal(manifest.markdownCoverageSummary.commandScriptCount, manifest.commandCoverageSummary.signoffCommandScriptCount);
-    assert.equal(manifest.markdownCoverageSummary.validatorCommandCount, 17);
+    assert.equal(manifest.markdownCoverageSummary.validatorCommandCount, 18);
     assert.ok(manifest.evidenceKeySummary.decisionActionEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.signoffEvidenceKeys.includes("windowsSigning"));
     assert.ok(manifest.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
@@ -229,7 +229,7 @@ test("phase review bundle hashes final review artifacts", () => {
     assert.equal(validation.signoffEvidenceKeyCount, 18);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 17);
+    assert.equal(validation.validatorCommandCount, 18);
     assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
   } finally {
     rmSync(dir, { recursive: true, force: true });

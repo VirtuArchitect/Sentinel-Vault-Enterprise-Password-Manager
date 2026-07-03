@@ -109,13 +109,13 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     assert.equal(result.waiverCount, 22);
     assert.equal(result.proposedCount, 22);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 17);
+    assert.equal(result.validatorCommandCount, 18);
 
     const register = JSON.parse(readFileSync(registerPath, "utf8"));
     assert.equal(register.format, "sentinel-phase-waiver-register-v1");
     assert.equal(register.summary.missingEvidenceCount, 22);
     assert.ok(register.summary.commandScriptCount > 20);
-    assert.equal(register.summary.validatorCommandCount, 17);
+    assert.equal(register.summary.validatorCommandCount, 18);
     assert.ok(register.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(register.waivers.every((waiver) => waiver.status === "proposed"));
     assert.ok(register.waivers.some((waiver) => waiver.evidenceKey === "windowsSigning"));
@@ -125,7 +125,7 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     assert.match(markdown, /Sentinel Vault Phase Waiver Register/);
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 17/);
+    assert.match(markdown, /- Validator commands: 18/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-waiver-register.mjs", [
@@ -137,7 +137,7 @@ test("phase waiver register creates proposed waivers for missing attachments", (
     assert.equal(validation.format, "sentinel-phase-waiver-register-validation-v1");
     assert.equal(validation.validated, true);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 17);
+    assert.equal(validation.validatorCommandCount, 18);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

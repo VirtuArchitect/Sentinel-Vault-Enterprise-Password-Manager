@@ -139,6 +139,7 @@ pnpm release:device-trust -- --device-inventory ".\artifacts\security\device-inv
 pnpm validate:device-trust -- docs/templates/device-trust-evidence.json
 pnpm release:brute-force -- --report ".\artifacts\security\brute-force-drill.json"
 pnpm validate:brute-force -- docs/templates/brute-force-evidence.json
+pnpm validate:source-map -- --mapping ".\docs\templates\source-export-column-map.json" --out ".\artifacts\import\source-column-map-validation.json"
 pnpm release:tenant-isolation -- --report ".\artifacts\security\tenant-isolation-tests.json"
 pnpm validate:tenant-isolation -- docs/templates/tenant-isolation-evidence.json
 pnpm release:source-migration -- --status planned --out ".\artifacts\import\source-migration-evidence.json"

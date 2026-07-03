@@ -117,3 +117,22 @@ Expected result:
 - Required mirror tables and indexes are present.
 - Generated columns used by planned queries are present.
 - The schema is wrapped in `BEGIN` / `COMMIT`.
+
+## Source Column Map
+
+Name: Proprietary source column map validates before conversion
+
+Purpose: Prove source migration mappings define required Sentinel fields, keep evidence redacted, and account for source CSV columns before conversion.
+
+Steps:
+
+```powershell
+pnpm validate:source-map -- --mapping ".\docs\templates\source-export-column-map.json" --out ".\artifacts\import\source-column-map-validation.json"
+```
+
+Expected result:
+
+- `artifacts/import/source-column-map-validation.json` records the mapping SHA-256 hash.
+- Required fields `name`, `username`, and `password` are present.
+- Redaction settings do not allow password or OTP values in evidence.
+- When `--source` is supplied, every source CSV column is mapped or explicitly ignored.

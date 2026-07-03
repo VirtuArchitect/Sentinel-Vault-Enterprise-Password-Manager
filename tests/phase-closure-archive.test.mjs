@@ -187,7 +187,7 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(result.decision, "hold-phase-closure");
     assert.equal(result.artifactCount, 17);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 17);
+    assert.equal(result.validatorCommandCount, 18);
     assert.ok(existsSync(archivePath));
 
     const archive = JSON.parse(readFileSync(archivePath, "utf8"));
@@ -198,10 +198,10 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(archive.review.evidenceKeySummary.waivedEvidenceKeyCount, 18);
     assert.ok(archive.review.evidenceKeySummary.waivedEvidenceKeys.includes("windowsSigning"));
     assert.ok(archive.review.commandCoverageSummary.signoffCommandScriptCount > 20);
-    assert.equal(archive.review.commandCoverageSummary.signoffValidatorCommandCount, 17);
+    assert.equal(archive.review.commandCoverageSummary.signoffValidatorCommandCount, 18);
     assert.ok(archive.review.commandCoverageSummary.signoffCommandScripts.includes("validate:windows-signing"));
     assert.equal(archive.review.markdownCoverageSummary.artifactCount, 7);
-    assert.equal(archive.review.markdownCoverageSummary.validatorCommandCount, 17);
+    assert.equal(archive.review.markdownCoverageSummary.validatorCommandCount, 18);
     assert.match(archive.review.manifest.sha256, /^[a-f0-9]{64}$/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-closure-archive.mjs", [
@@ -213,7 +213,7 @@ test("phase closure archive binds review bundle to Git provenance", () => {
     assert.equal(validation.waiverCount, 22);
     assert.equal(validation.waivedEvidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 17);
+    assert.equal(validation.validatorCommandCount, 18);
     assert.equal(validation.commandCoverageMarkdownArtifactCount, 7);
   } finally {
     rmSync(dir, { recursive: true, force: true });

@@ -69,6 +69,7 @@ const requests = [
       "tenantIsolation"
     ],
     commands: [
+      "pnpm validate:source-map -- --mapping <column-map.json> --source <source-export.csv> --out <source-column-map-validation.json>",
       "pnpm convert:source-export -- --source <source-export.csv> --format mapped-csv --mapping <column-map.json> --vault-id <target-vault-id> --out <normalized-import.json> --evidence <migration-evidence.json>",
       "pnpm release:source-migration -- --status pilot --source-system <source-system> --column-map <column-map.json> --source-adapter-evidence <migration-evidence.json> --normalized-import <normalized-import.json> --storage-migration-evidence <storage-migration-evidence.json> --tenant-isolation-evidence <tenant-isolation-evidence.json> --out <source-migration-evidence.json>",
       "pnpm validate:source-migration -- <source-migration-evidence.json>",
@@ -78,6 +79,7 @@ const requests = [
       "pnpm validate:tenant-isolation -- <tenant-isolation-evidence.json>"
     ],
     acceptanceCriteria: [
+      "Column-map validation proves every proprietary source column is mapped or explicitly ignored before conversion",
       "No source-system credentials, plaintext secrets, or customer-only fields appear in evidence",
       "Every proprietary source column is mapped, intentionally ignored, or escalated",
       "Tenant isolation evidence includes passing cross-tenant negative authorization checks"

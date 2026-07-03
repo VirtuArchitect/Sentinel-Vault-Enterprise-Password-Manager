@@ -28,8 +28,11 @@ pnpm convert:source-export -- --source ".\secure-work\1password-export.csv" --fo
 For a proprietary CSV export, copy `docs/templates/source-export-column-map.json`, map the source columns, and run:
 
 ```powershell
+pnpm validate:source-map -- --mapping ".\secure-work\source-export-column-map.json" --source ".\secure-work\vendor-export.csv" --out ".\secure-work\source-column-map-validation.json"
 pnpm convert:source-export -- --source ".\secure-work\vendor-export.csv" --format mapped-csv --mapping ".\secure-work\source-export-column-map.json" --vault-id "v1" --out ".\secure-work\source-export.csv"
 ```
+
+If the source CSV is supplied, validation requires every source column to be mapped or listed in `ignoredColumns` before conversion.
 
 Default outputs:
 
