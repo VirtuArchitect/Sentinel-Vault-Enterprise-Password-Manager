@@ -39,6 +39,12 @@ const validators = {
   logRedaction: ["scripts/validate-log-redaction-evidence.mjs"]
 };
 
+const productionEvidenceRequirements = {
+  connector: "certified",
+  itsmWorkNotes: "production",
+  siemReceiverRotation: "certified"
+};
+
 const artifactFormats = {
   storageMigration: "sentinel-storage-migration-evidence-v1",
   releaseProvenance: "sentinel-release-provenance-v1"
@@ -68,12 +74,18 @@ for (const [name, command] of Object.entries(validators)) {
   assert.ok(bundle.evidence[name], `${name} evidence path is required`);
   const evidencePath = resolveEvidencePath(bundle.evidence[name]);
   assert.ok(existsSync(evidencePath), `${name} evidence file not found: ${evidencePath}`);
+  const evidence = JSON.parse(readFileSync(evidencePath, "utf8").replace(/^\uFEFF/, ""));
   execFileSync(process.execPath, [...command, evidencePath], {
     cwd: rootDir,
     stdio: "pipe",
     windowsHide: true
   });
-  results[name] = { path: evidencePath, validated: true };
+  results[name] = {
+    path: evidencePath,
+    validated: true,
+    environment: evidence.environment,
+    status: evidence.status
+  };
 }
 
 for (const [name, format] of Object.entries(artifactFormats)) {
@@ -88,6 +100,13 @@ for (const [name, format] of Object.entries(artifactFormats)) {
 if (deployedStatuses.has(bundle.status)) {
   assert.ok(isoTimestamp.test(bundle.generatedAt), "generatedAt must be an ISO timestamp for deployed bundles");
   assert.doesNotMatch(JSON.stringify(bundle), placeholder, "deployed bundle cannot contain placeholders");
+}
+
+if (bundle.status === "production") {
+  for (const [name, requiredStatus] of Object.entries(productionEvidenceRequirements)) {
+    assert.equal(results[name].status, requiredStatus, `${name} evidence status must be ${requiredStatus} for production bundles`);
+    assert.equal(results[name].environment, bundle.environment, `${name} evidence environment must match the production bundle environment`);
+  }
 }
 
 console.log(JSON.stringify({

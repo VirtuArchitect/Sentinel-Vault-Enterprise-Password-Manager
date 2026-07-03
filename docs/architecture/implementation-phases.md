@@ -109,6 +109,7 @@ Implemented:
 - ITSM work-note evidence template, generator, validator, and deployment-bundle gate for redacted access request, approval, denial, and revocation work-note samples.
 - SIEM receiver signing-key rotation evidence template and validator.
 - SIEM receiver signing-key rotation evidence generator for receiver metadata, key-window checks, replay rejection, delivery samples, redaction review, and approvals.
+- Production deployment-bundle enforcement for Phase 5 connector, SIEM rotation, and ITSM work-note evidence statuses and environment alignment.
 - Deployment evidence bundle validator for connector, browser, identity, KMS/HSM, Windows release, storage, and provenance evidence.
 - Deployment evidence workspace generator for environment-specific bundles copied from templates.
 - Deployment evidence workspace manifest and validator that hash the copied bundle, README, and evidence templates before operator edits.

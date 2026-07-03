@@ -72,6 +72,67 @@ const writeBundleFixture = (dir, overrides = {}) => {
   return bundlePath;
 };
 
+const writeProductionPhaseFiveEvidence = (dir, environment = "prod-east") => {
+  const evidenceDir = path.join(dir, "evidence");
+  const connectorPath = path.join(evidenceDir, "connector-certification-evidence.json");
+  const connector = JSON.parse(readFileSync(connectorPath, "utf8"));
+  connector.environment = environment;
+  connector.status = "certified";
+  connector.rollback.tested = true;
+  writeFileSync(connectorPath, JSON.stringify(connector, null, 2));
+
+  const siemPath = path.join(evidenceDir, "siem-receiver-rotation-evidence.json");
+  const siem = JSON.parse(readFileSync(siemPath, "utf8"));
+  siem.status = "certified";
+  siem.environment = environment;
+  siem.receiver.system = "sentinel-siem";
+  siem.receiver.endpointHost = "siem.prod.example.com";
+  siem.receiver.owner = "security-operations";
+  siem.receiver.supportQueue = "soc-queue";
+  siem.rotation.rotatedAt = "2026-07-01T10:00:00Z";
+  siem.rotation.previousKeyRetireAfter = "2026-07-08T10:00:00Z";
+  siem.rotation.activeKeyId = "sv-prod-active-202607";
+  siem.rotation.previousKeyId = "sv-prod-prev-202606";
+  siem.rotation.changeTicket = "CHG-2026-0701";
+  for (const name of Object.keys(siem.checks)) {
+    siem.checks[name] = "passed";
+  }
+  siem.samples.activeDeliveryId = "delivery-active-001";
+  siem.samples.previousKeyDeliveryId = "delivery-prev-001";
+  siem.samples.replayAttemptId = "replay-test-001";
+  siem.samples.receiverEvidencePath = "artifacts/integrations/siem-rotation-prod.json";
+  siem.approvals.siemOwner = "security-operations";
+  siem.approvals.securityReviewer = "security-review";
+  siem.approvals.operationsOwner = "platform-operations";
+  writeFileSync(siemPath, JSON.stringify(siem, null, 2));
+
+  const itsmPath = path.join(evidenceDir, "itsm-worknote-evidence.json");
+  const itsm = JSON.parse(readFileSync(itsmPath, "utf8"));
+  itsm.status = "production";
+  itsm.environment = environment;
+  itsm.system = "enterprise-itsm";
+  itsm.reviewedAt = "2026-07-01T10:00:00Z";
+  itsm.ticketRef = "CHG-2026-0701";
+  for (const [index, note] of itsm.workNotes.entries()) {
+    note.workNoteId = `WN-${index + 1}`;
+    note.createdAt = "2026-07-01T10:00:00Z";
+    note.bodySha256 = "a".repeat(64 - String(index).length) + index;
+    note.redacted = "true";
+    note.ticketRef = itsm.ticketRef;
+  }
+  for (const name of Object.keys(itsm.checks)) {
+    itsm.checks[name] = "passed";
+  }
+  itsm.redaction.containsSecretValues = "false";
+  itsm.redaction.containsSessionTokens = "false";
+  itsm.redaction.containsCustomerOnlyFields = "false";
+  itsm.approvals.integrationOwner = "integration-owner";
+  itsm.approvals.securityReviewer = "security-review";
+  itsm.approvals.operationsOwner = "platform-operations";
+  itsm.approvals.changeTicket = itsm.ticketRef;
+  writeFileSync(itsmPath, JSON.stringify(itsm, null, 2));
+};
+
 test("deployment evidence bundle validates referenced evidence files", () => {
   const dir = path.join(tmpdir(), `sentinel-deployment-bundle-${process.pid}-${Date.now()}`);
   try {
@@ -161,6 +222,43 @@ test("deployed evidence bundle cannot contain placeholders", () => {
       owner: "replace-with-owner"
     });
     assert.throws(() => runBundleValidator(bundlePath), /deployed bundle cannot contain placeholders/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle requires production-ready Phase 5 evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+
+    assert.throws(() => runBundleValidator(bundlePath), /connector evidence status must be certified/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production evidence bundle accepts aligned Phase 5 evidence", () => {
+  const dir = path.join(tmpdir(), `sentinel-deployment-bundle-prod-phase5-pass-${process.pid}-${Date.now()}`);
+  try {
+    const bundlePath = writeBundleFixture(dir, {
+      environment: "prod-east",
+      status: "production",
+      owner: "platform-team",
+      generatedAt: "2026-07-01T10:00:00Z"
+    });
+    writeProductionPhaseFiveEvidence(dir);
+    const validation = JSON.parse(runBundleValidator(bundlePath));
+
+    assert.equal(validation.status, "production");
+    assert.equal(validation.results.connector.status, "certified");
+    assert.equal(validation.results.itsmWorkNotes.status, "production");
+    assert.equal(validation.results.siemReceiverRotation.status, "certified");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

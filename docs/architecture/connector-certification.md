@@ -46,6 +46,8 @@ pnpm validate:devops-token-response -- artifacts/integrations/devops-token-respo
 
 The preflight verifies that the revoked token is rejected, the replacement token can retrieve the intended scoped secret, an out-of-scope secret remains blocked, and the output contains only token fingerprints and secret-value hashes.
 
+Production deployment evidence bundles require connector evidence with `certified` status, SIEM receiver rotation evidence with `certified` status, ITSM work-note evidence with `production` status, and environment values that match the bundle environment.
+
 ## SIEM Connectors
 
 - Verify `X-Sentinel-Signature` with the timestamp, nonce, and raw body envelope.
