@@ -53,7 +53,7 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.equal(result.format, "sentinel-phase-handoff-checklist-result-v1");
     assert.equal(result.requestCount, 7);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 16);
+    assert.equal(result.validatorCommandCount, 17);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(checklistPath));
@@ -67,7 +67,7 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.match(checklist, /- \[ \] Approved code-signing certificate or PFX access on the release host/);
     assert.match(checklist, /Command Coverage Summary/);
     assert.match(checklist, /- Command scripts: [2-9][0-9]/);
-    assert.match(checklist, /- Validator commands: 16/);
+    assert.match(checklist, /- Validator commands: 17/);
     assert.match(checklist, /- `pnpm validate:windows-signing`/);
     assert.match(checklist, /pnpm report:phase-readiness/);
   } finally {
@@ -89,7 +89,7 @@ test("phase handoff checklist validator accepts generated checklists", () => {
     assert.equal(validation.validated, true);
     assert.equal(validation.requestCount, 7);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 16);
+    assert.equal(validation.validatorCommandCount, 17);
     assert.ok(validation.blockerSummaryCount > 0);
   } finally {
     rmSync(dir, { recursive: true, force: true });

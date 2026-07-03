@@ -229,6 +229,7 @@ Inspect a JSON state file before a future SQLite/Postgres migration:
 
 ```powershell
 pnpm inspect:storage -- --state ".\data\sentinel-state.json"
+pnpm validate:postgres-schema -- --out ".\artifacts\storage\postgres-schema-validation.json"
 ```
 
 Windows deployment hardening guides:

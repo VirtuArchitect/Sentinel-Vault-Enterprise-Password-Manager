@@ -80,7 +80,7 @@ test("phase evidence pack manifest hashes release review artifacts", () => {
     assert.equal(manifest.requestCount, 7);
     assert.equal(manifest.externalRequestSummary.evidenceKeyCount, 18);
     assert.ok(manifest.externalRequestSummary.commandScriptCount > 20);
-    assert.equal(manifest.externalRequestSummary.validatorCommandCount, 16);
+    assert.equal(manifest.externalRequestSummary.validatorCommandCount, 17);
     assert.ok(manifest.externalRequestSummary.commandScripts.includes("validate:windows-signing"));
     assert.equal(manifest.remainingExternallyCovered, true);
     assert.equal(Object.keys(manifest.artifacts).length, 12);

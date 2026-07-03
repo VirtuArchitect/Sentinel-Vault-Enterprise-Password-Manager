@@ -47,6 +47,7 @@ assert.equal(externalRequests.format, "sentinel-external-evidence-requests-v1");
 assert.equal(matrix.phases.length, externalRequests.requests.length, "phase gap matrix request count mismatch");
 const requiredValidatorCommands = [
   "pnpm plan:postgres",
+  "pnpm validate:postgres-schema",
   "pnpm validate:storage-migration",
   "pnpm validate:tenant-isolation",
   "pnpm validate:connector-evidence",

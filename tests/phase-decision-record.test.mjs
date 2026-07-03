@@ -100,7 +100,7 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.equal(record.evidenceKeySummary.gapEvidenceKeyCount, 18);
     assert.ok(record.commandCoverageSummary.actionCommandScriptCount > 20);
     assert.equal(record.commandCoverageSummary.gapCommandScriptCount, record.commandCoverageSummary.actionCommandScriptCount);
-    assert.equal(record.commandCoverageSummary.validatorCommandCount, 16);
+    assert.equal(record.commandCoverageSummary.validatorCommandCount, 17);
     assert.ok(record.commandCoverageSummary.actionCommandScripts.includes("validate:windows-signing"));
     assert.ok(record.evidenceKeySummary.actionEvidenceKeys.includes("windowsSigning"));
     assert.ok(record.pendingActions.some((action) => action.evidenceKeys.includes("windowsSigning")));
@@ -110,7 +110,7 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Action command scripts: [2-9][0-9]/);
     assert.match(markdown, /- Gap command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 16/);
+    assert.match(markdown, /- Validator commands: 17/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-decision-record.mjs", [
@@ -125,7 +125,7 @@ test("phase decision record holds closure while blockers remain", () => {
     assert.equal(validation.evidenceKeyCount, 18);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.gapCommandScriptCount, validation.commandScriptCount);
-    assert.equal(validation.validatorCommandCount, 16);
+    assert.equal(validation.validatorCommandCount, 17);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

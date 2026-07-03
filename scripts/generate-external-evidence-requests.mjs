@@ -34,12 +34,14 @@ const requests = [
     ],
     commands: [
       "pnpm plan:postgres -- --state <deployment-state.json> --out <postgres-migration-plan.json>",
+      "pnpm validate:postgres-schema -- --out <postgres-schema-validation.json>",
       "pnpm release:postgres-ha -- --status approved --migration-plan <postgres-migration-plan.json> --storage-migration-evidence <storage-migration-evidence.json> --out <postgres-ha-approval-evidence.json>",
       "pnpm validate:postgres-ha -- <postgres-ha-approval-evidence.json>",
       "pnpm inspect:storage -- --state <deployment-state.json> --out <storage-readiness.json>",
       "pnpm validate:storage-migration -- <storage-migration-evidence.json>"
     ],
     acceptanceCriteria: [
+      "Postgres schema validation records target schema hash, required JSONB mirror tables, generated columns, and index coverage",
       "Runtime dependency approval covers provenance, maintenance, license, and threat-model impact",
       "Target database controls cover HA, backup, restore, network isolation, and least-privilege access",
       "Cutover evidence proves migration readiness and rollback before enabling HA production storage"

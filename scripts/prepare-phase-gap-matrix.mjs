@@ -54,6 +54,7 @@ const findEvidence = (templatePath) => bundleEvidence.find((artifact) => (
 ));
 const requiredValidatorCommands = [
   "pnpm plan:postgres",
+  "pnpm validate:postgres-schema",
   "pnpm validate:storage-migration",
   "pnpm validate:tenant-isolation",
   "pnpm validate:connector-evidence",

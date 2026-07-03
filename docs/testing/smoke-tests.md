@@ -98,3 +98,22 @@ Expected result:
 - `artifacts/native/native-artifact-validation.json` records the artifact name, type, size, SHA-256 hash, and signature status.
 - Script artifacts are classified as `script`.
 - Signed `.exe`, `.dll`, `.msi`, and `.msix` release artifacts can be rechecked with `--require-signature` on the release host.
+
+## Postgres Schema
+
+Name: Postgres schema validation records target shape evidence
+
+Purpose: Prove the planned Postgres schema has the required JSONB mirror tables, generated columns, indexes, and migration bookkeeping before a database driver is approved.
+
+Steps:
+
+```powershell
+pnpm validate:postgres-schema -- --out ".\artifacts\storage\postgres-schema-validation.json"
+```
+
+Expected result:
+
+- `artifacts/storage/postgres-schema-validation.json` records the schema SHA-256 hash.
+- Required mirror tables and indexes are present.
+- Generated columns used by planned queries are present.
+- The schema is wrapped in `BEGIN` / `COMMIT`.

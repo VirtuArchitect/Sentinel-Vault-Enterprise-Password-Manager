@@ -52,10 +52,12 @@ test("external evidence request generator writes remaining phase request pack", 
     assert.deepEqual(report.summary.phases, ["Phase 2", "Phase 4", "Phase 5", "Phase 6", "Phase 7", "Phase 8"]);
     assert.ok(report.summary.commandScriptCount > 20);
     assert.ok(report.summary.commandScripts.includes("validate:windows-signing"));
+    assert.ok(report.summary.commandScripts.includes("validate:postgres-schema"));
     assert.ok(report.summary.commandScripts.includes("validate:extension-package"));
     assert.ok(report.summary.commandScripts.includes("validate:native-artifacts"));
     assert.ok(report.summary.commandScripts.includes("release:kms-hsm-sdk-approval"));
     assert.ok(report.requests.some((request) => request.title.includes("Postgres HA")));
+    assert.ok(report.requests.some((request) => request.commands.includes("pnpm validate:postgres-schema -- --out <postgres-schema-validation.json>")));
     assert.ok(report.requests.some((request) => request.title.includes("MSI/MSIX signing")));
     assert.ok(report.requests.some((request) => request.evidenceTemplates.includes("docs/templates/windows-signing-execution-evidence.json")));
     assert.ok(report.requests.some((request) => request.evidenceKeys.includes("windowsSigning")));
@@ -102,7 +104,7 @@ test("external evidence request validator accepts strict generated request packs
     assert.ok(result.templateCount >= 10);
     assert.equal(result.evidenceKeyCount, 18);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 16);
+    assert.equal(result.validatorCommandCount, 17);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

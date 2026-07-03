@@ -100,7 +100,7 @@ test("phase evidence intake maps owner requests to intake folders and validation
     assert.equal(result.expectedFileCount, 22);
     assert.equal(result.blockedIntakeCount, 7);
     assert.ok(result.commandScriptCount > 20);
-    assert.equal(result.validatorCommandCount, 16);
+    assert.equal(result.validatorCommandCount, 17);
     assert.ok(existsSync(intakePath));
     assert.ok(existsSync(markdownPath));
 
@@ -108,7 +108,7 @@ test("phase evidence intake maps owner requests to intake folders and validation
     assert.equal(intake.format, "sentinel-phase-evidence-intake-v1");
     assert.equal(intake.summary.evidenceKeyCount, 18);
     assert.ok(intake.summary.commandScriptCount > 20);
-    assert.equal(intake.summary.validatorCommandCount, 16);
+    assert.equal(intake.summary.validatorCommandCount, 17);
     assert.ok(intake.summary.commandScripts.includes("validate:windows-signing"));
     assert.ok(intake.intakeItems.some((item) => item.intakeDir === "intake/phase-6-certificate-backed-release"));
     assert.ok(intake.intakeItems.some((item) => item.evidenceKeys.includes("windowsSigning")));
@@ -119,7 +119,7 @@ test("phase evidence intake maps owner requests to intake folders and validation
     assert.match(markdown, /Sentinel Vault Phase Evidence Intake/);
     assert.match(markdown, /Command Coverage Summary/);
     assert.match(markdown, /- Command scripts: [2-9][0-9]/);
-    assert.match(markdown, /- Validator commands: 16/);
+    assert.match(markdown, /- Validator commands: 17/);
     assert.match(markdown, /- `pnpm validate:windows-signing`/);
 
     const validation = JSON.parse(runScript("scripts/validate-phase-evidence-intake.mjs", [
@@ -132,7 +132,7 @@ test("phase evidence intake maps owner requests to intake folders and validation
     assert.equal(validation.format, "sentinel-phase-evidence-intake-validation-v1");
     assert.equal(validation.validated, true);
     assert.ok(validation.commandScriptCount > 20);
-    assert.equal(validation.validatorCommandCount, 16);
+    assert.equal(validation.validatorCommandCount, 17);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
