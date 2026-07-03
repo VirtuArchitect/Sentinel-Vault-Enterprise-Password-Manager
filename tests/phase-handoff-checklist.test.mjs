@@ -54,6 +54,7 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.equal(result.requestCount, 7);
     assert.ok(result.commandScriptCount > 20);
     assert.equal(result.validatorCommandCount, 22);
+    assert.equal(result.productionRequirementCount, 13);
     assert.equal(result.ready, false);
     assert.ok(result.blockerCount > 0);
     assert.ok(existsSync(checklistPath));
@@ -69,6 +70,10 @@ test("phase handoff checklist turns readiness and external requests into owner a
     assert.match(checklist, /- Command scripts: [2-9][0-9]/);
     assert.match(checklist, /- Validator commands: 22/);
     assert.match(checklist, /- `pnpm validate:windows-signing`/);
+    assert.match(checklist, /Production Evidence Status Requirements/);
+    assert.match(checklist, /- `postgresHa`: `approved`/);
+    assert.match(checklist, /- `browserRollout`: `production`/);
+    assert.match(checklist, /- `windowsSigning`: `signed`/);
     assert.match(checklist, /pnpm report:phase-readiness/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -90,7 +95,28 @@ test("phase handoff checklist validator accepts generated checklists", () => {
     assert.equal(validation.requestCount, 7);
     assert.ok(validation.commandScriptCount > 20);
     assert.equal(validation.validatorCommandCount, 22);
+    assert.equal(validation.productionRequirementCount, 13);
     assert.ok(validation.blockerSummaryCount > 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("phase handoff checklist validator rejects stale production requirements", () => {
+  const dir = path.join(tmpdir(), `sentinel-phase-handoff-production-invalid-${process.pid}-${Date.now()}`);
+  try {
+    const { checklistPath, readinessPath, requestsPath } = createChecklistWorkspace(dir);
+    const checklist = readFileSync(checklistPath, "utf8").replace(
+      "- `postgresHa`: `approved`",
+      "- `postgresHa`: `pending`"
+    );
+    writeFileSync(checklistPath, checklist);
+
+    assert.throws(() => runScript("scripts/validate-phase-handoff-checklist.mjs", [
+      "--checklist", checklistPath,
+      "--readiness", readinessPath,
+      "--external-requests", requestsPath
+    ]), /missing production evidence status requirement/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

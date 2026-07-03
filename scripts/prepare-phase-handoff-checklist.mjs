@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { productionEvidenceRequirementEntries } from "./production-evidence-requirements.mjs";
 
 const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
 const args = new Map();
@@ -38,6 +39,9 @@ const blockerSummary = (readiness.blockers || []).reduce((summary, blocker) => {
 const commandScripts = externalRequests.summary?.commandScripts || [];
 const commandScriptCount = externalRequests.summary?.commandScriptCount || commandScripts.length;
 const validatorCommandCount = readiness.externalRequests?.validatorCommandCount || 0;
+const productionRequirementRows = productionEvidenceRequirementEntries
+  .map(([evidenceKey, expectedStatus]) => `- \`${evidenceKey}\`: \`${expectedStatus}\``)
+  .join("\n");
 
 assert.equal(readiness.externalRequests?.commandScriptCount || 0, commandScriptCount, "readiness command script count does not match external requests");
 
@@ -93,6 +97,12 @@ ${readiness.warnings?.length ? readiness.warnings.map((warning) => `- ${warning.
 
 ${commandScripts.map((script) => `- \`pnpm ${script}\``).join("\n")}
 
+## Production Evidence Status Requirements
+
+The final production release gate expects these deployment evidence statuses before the phase handoff can close:
+
+${productionRequirementRows}
+
 ${externalRequests.requests.map(renderRequest).join("\n")}
 `;
 
@@ -107,6 +117,7 @@ console.log(JSON.stringify({
   requestCount: externalRequests.requests.length,
   commandScriptCount,
   validatorCommandCount,
+  productionRequirementCount: productionEvidenceRequirementEntries.length,
   blockerCount: readiness.blockers?.length || 0,
   ready: readiness.ready
 }, null, 2));

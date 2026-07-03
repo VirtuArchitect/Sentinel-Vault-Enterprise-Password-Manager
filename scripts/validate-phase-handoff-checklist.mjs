@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { productionEvidenceRequirementEntries } from "./production-evidence-requirements.mjs";
 
 const cliArgs = process.argv.slice(2).filter((arg) => arg !== "--");
 const args = new Map();
@@ -43,6 +44,14 @@ assert.ok(checklist.includes("## Command Coverage Summary"), "checklist must inc
 assert.ok(checklist.includes(`- Command scripts: ${externalRequests.summary?.commandScriptCount || 0}`), "checklist command script count does not match external requests");
 assert.ok(checklist.includes(`- Validator commands: ${readiness.externalRequests?.validatorCommandCount || 0}`), "checklist validator command count does not match readiness report");
 assert.equal(readiness.externalRequests?.commandScriptCount || 0, externalRequests.summary?.commandScriptCount || 0, "readiness command script count does not match external requests");
+assert.ok(checklist.includes("## Production Evidence Status Requirements"), "checklist must include production evidence status requirements");
+
+for (const [evidenceKey, expectedStatus] of productionEvidenceRequirementEntries) {
+  assert.ok(
+    checklist.includes(`- \`${evidenceKey}\`: \`${expectedStatus}\``),
+    `missing production evidence status requirement: ${evidenceKey}`
+  );
+}
 
 for (const script of externalRequests.summary?.commandScripts || []) {
   assert.ok(checklist.includes(`- \`pnpm ${script}\``), `missing command script coverage: ${script}`);
@@ -87,6 +96,7 @@ console.log(JSON.stringify({
   requestCount: externalRequests.requests.length,
   commandScriptCount: externalRequests.summary?.commandScriptCount || 0,
   validatorCommandCount: readiness.externalRequests?.validatorCommandCount || 0,
+  productionRequirementCount: productionEvidenceRequirementEntries.length,
   blockerSummaryCount: blockerSummary.size,
   validated: true
 }, null, 2));
