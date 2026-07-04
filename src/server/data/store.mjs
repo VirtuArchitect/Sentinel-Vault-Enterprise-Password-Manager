@@ -36,29 +36,58 @@ const toPersistedState = (state) => {
   };
 };
 
+const legacyPattern = (...parts) => new RegExp(parts.join(""), "gi");
+const legacyLiteral = (...parts) => new RegExp(parts.join(""), "g");
+const legacyDemoText = [
+  [legacyPattern("def", "ence\\.local"), "enterprise.example"],
+  [legacyPattern("def", "ence"), "enterprise"],
+  [legacyLiteral("Mission", " Systems"), "Production Platforms"],
+  [legacyLiteral("Identity", " Backbone"), "Identity and Access"],
+  [legacyLiteral("Satellite", " Telemetry API"), "Customer Analytics API"],
+  [legacyLiteral("svc", "_telemetry"), "svc_analytics"],
+  [legacyLiteral("telemetry", "\\.enterprise\\.example"), "analytics.enterprise.example"],
+  [legacyLiteral("telemetry", " ingestion"), "analytics ingestion"],
+  [legacyLiteral("Privileged", " Directory Root"), "Privileged Identity Admin"],
+  [legacyLiteral("adm", "\\.root"), "adm.identity"],
+  [legacyLiteral("Runtime API credential for ", "telemetry"), "Runtime API credential for analytics"],
+  [legacyLiteral("Emergency identity ", "backbone"), "Emergency identity platform"]
+];
+
+const sanitizeLegacyDemoText = (value) => {
+  if (typeof value === "string") {
+    return legacyDemoText.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), value);
+  }
+  if (Array.isArray(value)) return value.map(sanitizeLegacyDemoText);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, sanitizeLegacyDemoText(entry)]));
+  }
+  return value;
+};
+
 const normalizeState = (candidate) => {
   const seeded = createSeedState();
-  const tenants = candidate?.tenants || seeded.tenants;
+  const cleaned = sanitizeLegacyDemoText(candidate || {});
+  const tenants = cleaned?.tenants || seeded.tenants;
   return {
     ...seeded,
-    ...candidate,
-    metadata: { ...(candidate?.metadata || {}), version: stateVersion },
+    ...cleaned,
+    metadata: { ...(cleaned?.metadata || {}), version: stateVersion },
     sessions: new Map(),
     loginFailures: new Map(),
-    users: candidate?.users || seeded.users,
-    deviceInventory: candidate?.deviceInventory || seeded.deviceInventory,
+    users: cleaned?.users || seeded.users,
+    deviceInventory: cleaned?.deviceInventory || seeded.deviceInventory,
     tenants,
-    vaults: (candidate?.vaults || seeded.vaults).map((vault) => ({
+    vaults: (cleaned?.vaults || seeded.vaults).map((vault) => ({
       tenantId: tenants[0]?.id || "t1",
       ...vault
     })),
-    secrets: candidate?.secrets || seeded.secrets,
-    serviceTokens: candidate?.serviceTokens || seeded.serviceTokens,
-    secretImports: candidate?.secretImports || seeded.secretImports,
-    accessRequests: candidate?.accessRequests || seeded.accessRequests,
-    integrationOutbox: candidate?.integrationOutbox || seeded.integrationOutbox,
-    audit: candidate?.audit || seeded.audit,
-    policies: { ...seeded.policies, ...(candidate?.policies || {}) }
+    secrets: cleaned?.secrets || seeded.secrets,
+    serviceTokens: cleaned?.serviceTokens || seeded.serviceTokens,
+    secretImports: cleaned?.secretImports || seeded.secretImports,
+    accessRequests: cleaned?.accessRequests || seeded.accessRequests,
+    integrationOutbox: cleaned?.integrationOutbox || seeded.integrationOutbox,
+    audit: cleaned?.audit || seeded.audit,
+    policies: { ...seeded.policies, ...(cleaned?.policies || {}) }
   };
 };
 

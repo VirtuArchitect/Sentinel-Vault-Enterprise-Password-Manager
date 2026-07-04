@@ -331,6 +331,16 @@ function App() {
   const selectedSecret = visibleSecrets.find((secret) => secret.id === selectedSecretId) || visibleSecrets[0] || (selectedGroup === "deleted" ? undefined : data.secrets[0]);
   const selectedVault = data.vaults.find((vault) => vault.id === selectedSecret?.vaultId);
   const viewingDeleted = selectedGroup === "deleted" || Boolean(selectedSecret?.deletedAt);
+  const displayRole = data.user.role.replaceAll("_", " ");
+  const viewGroup = selectedGroup === "all"
+    ? "All entries"
+    : selectedGroup === "shared"
+      ? "Shared entries"
+      : selectedGroup === "risk"
+        ? "High risk"
+        : selectedGroup === "deleted"
+          ? "Deleted items"
+          : data.vaults.find((vault) => vault.id === selectedGroup)?.name || "Enterprise vault";
 
   const submitSecret = (event: React.FormEvent) => {
     event.preventDefault();
@@ -439,6 +449,12 @@ function App() {
     notify(message);
   };
 
+  const showEntriesGroup = (nextGroup: string, message?: string) => {
+    setSelectedGroup(nextGroup);
+    setTab("entries");
+    if (message) notify(message);
+  };
+
   const runMenuCommand = (command: () => void, event?: React.MouseEvent) => {
     event?.preventDefault();
     event?.stopPropagation();
@@ -527,9 +543,11 @@ function App() {
               aria-haspopup="menu"
               aria-expanded={activeMenu === section.label}
               onClick={(event) => toggleMenu(section.label, event)}
+              onMouseEnter={() => activeMenu && setActiveMenu(section.label)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") setActiveMenu(null);
                 if (event.key === "ArrowDown") setActiveMenu(section.label);
+                if (event.key === "Enter" || event.key === " ") setActiveMenu(section.label);
               }}
             >
               {section.label}
@@ -543,11 +561,11 @@ function App() {
             )}
           </div>
         ))}
-        <span className="session-label"><BadgeCheck size={15} />{data.user.name} - {data.user.role.replace("_", " ")}</span>
+        <span className="session-label"><BadgeCheck size={15} />{data.user.name} - {displayRole}</span>
       </section>
 
       <section className="toolbar">
-        <button title="Console summary" onClick={() => setTab("manage")}><Database size={18} /></button>
+        <button title="Console summary" onClick={() => showView("manage", "Showing enterprise console summary")}><Database size={18} /></button>
         <button title="Export console snapshot" onClick={exportConsoleSnapshot}><Download size={18} /></button>
         <button title="Add entry" disabled={!can("vault:write")} onClick={() => setAddOpen(true)}><FilePlus2 size={18} /></button>
         <button title="Edit selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && startEditSecret(selectedSecret)}><Edit3 size={18} /></button>
@@ -568,18 +586,18 @@ function App() {
 
       <section className="database-tabs">
         <button className="active"><SentinelLogo size="small" />Enterprise Vault</button>
-        <button onClick={() => { setSelectedGroup("risk"); setTab("entries"); notify("Showing recovery review queue"); }}><Archive size={15} />Recovery Review</button>
+        <button onClick={() => showEntriesGroup("risk", "Showing recovery review queue")}><Archive size={15} />Recovery Review</button>
       </section>
 
       <section className="workbench">
         <aside className="group-tree">
-          <TreeButton active={selectedGroup === "all"} icon={<FolderLock />} label="Database" meta={`${data.secrets.length} entries`} onClick={() => setSelectedGroup("all")} />
+          <TreeButton active={selectedGroup === "all"} icon={<FolderLock />} label="Database" meta={`${data.secrets.length} entries`} onClick={() => showEntriesGroup("all")} />
           {data.vaults.map((vault) => (
-            <TreeButton key={vault.id} active={selectedGroup === vault.id} icon={<Folder />} label={vault.name} meta={`${groupCounts.get(vault.id) || 0} entries`} onClick={() => setSelectedGroup(vault.id)} inset />
+            <TreeButton key={vault.id} active={selectedGroup === vault.id} icon={<Folder />} label={vault.name} meta={`${groupCounts.get(vault.id) || 0} entries`} onClick={() => showEntriesGroup(vault.id)} inset />
           ))}
-          <TreeButton active={selectedGroup === "shared"} icon={<Users />} label="Shared Entries" meta="delegated" onClick={() => setSelectedGroup("shared")} />
-          <TreeButton active={selectedGroup === "risk"} icon={<ShieldCheck />} label="High Risk" meta={`${data.metrics.highRisk} flagged`} onClick={() => setSelectedGroup("risk")} />
-          <TreeButton active={selectedGroup === "deleted"} icon={<Trash2 />} label="Deleted Items" meta={`${data.deletedSecrets.length} recoverable`} onClick={() => setSelectedGroup("deleted")} />
+          <TreeButton active={selectedGroup === "shared"} icon={<Users />} label="Shared Entries" meta="delegated" onClick={() => showEntriesGroup("shared")} />
+          <TreeButton active={selectedGroup === "risk"} icon={<ShieldCheck />} label="High Risk" meta={`${data.metrics.highRisk} flagged`} onClick={() => showEntriesGroup("risk")} />
+          <TreeButton active={selectedGroup === "deleted"} icon={<Trash2 />} label="Deleted Items" meta={`${data.deletedSecrets.length} recoverable`} onClick={() => showEntriesGroup("deleted")} />
           <div className="tree-footer">
             <strong>{data.metrics.pendingRequests}</strong>
             <span>Pending access requests</span>
@@ -595,6 +613,14 @@ function App() {
             <button className={tab === "policy" ? "active" : ""} onClick={() => setTab("policy")}>Options</button>
             <button className={tab === "manage" ? "active" : ""} onClick={() => setTab("manage")}>Manage</button>
           </div>
+
+          <section className="workspace-summary" aria-label="Enterprise vault status">
+            <div><span>View</span><strong>{viewGroup}</strong></div>
+            <div><span>Entries</span><strong>{visibleSecrets.length}</strong></div>
+            <div><span>High Risk</span><strong>{data.metrics.highRisk}</strong></div>
+            <div><span>Pending Access</span><strong>{data.metrics.pendingRequests}</strong></div>
+            <div><span>Audit</span><strong>{data.auditIntegrity.verified ? "Verified" : "Review"}</strong></div>
+          </section>
 
           {tab === "entries" && (
             <>
@@ -793,7 +819,7 @@ function App() {
             <dl>
               <div><dt>Workspace</dt><dd>Enterprise Vault</dd></div>
               <div><dt>Signed-in identity</dt><dd>{data.user.name}</dd></div>
-              <div><dt>Role</dt><dd>{data.user.role.replace("_", " ")}</dd></div>
+              <div><dt>Role</dt><dd>{displayRole}</dd></div>
               <div><dt>Storage</dt><dd>{data.storage.mode} v{data.storage.stateVersion}</dd></div>
               <div><dt>Audit integrity</dt><dd>{data.auditIntegrity.verified ? "Verified" : "Attention required"}</dd></div>
             </dl>
