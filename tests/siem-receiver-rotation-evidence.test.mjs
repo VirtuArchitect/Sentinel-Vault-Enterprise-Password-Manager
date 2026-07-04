@@ -37,6 +37,16 @@ const certifiedEvidence = () => {
     changeTicket: "CHG-95001"
   };
   evidence.checks = Object.fromEntries(Object.keys(evidence.checks).map((name) => [name, "passed"]));
+  evidence.receiverReport = {
+    reportPath: "artifacts/integrations/siem-rotation-prod.json",
+    validated: true,
+    receiverEndpointHost: evidence.receiver.endpointHost,
+    checkCount: Object.keys(evidence.checks).length,
+    checks: { ...evidence.checks },
+    activeDeliveryId: "delivery-active-1",
+    previousKeyDeliveryId: "delivery-previous-1",
+    replayAttemptId: "replay-test-1"
+  };
   evidence.samples = {
     activeDeliveryId: "delivery-active-1",
     previousKeyDeliveryId: "delivery-previous-1",
@@ -95,6 +105,20 @@ test("certified siem receiver rotation evidence rejects leaked signing secrets",
     writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
 
     assert.throws(() => runValidator(evidencePath), /signing secrets/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("certified siem receiver rotation evidence rejects receiver report drift", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-siem-rotation-report-fail-"));
+  try {
+    const evidence = certifiedEvidence();
+    evidence.receiverReport.activeDeliveryId = "different-delivery";
+    const evidencePath = path.join(dir, "siem-rotation.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /activeDeliveryId must match/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

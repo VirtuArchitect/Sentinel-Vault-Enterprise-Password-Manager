@@ -84,8 +84,38 @@ test("siem receiver rotation generator summarizes planned receiver evidence", ()
     assert.equal(evidence.receiver.system, "Sentinel SIEM");
     assert.equal(evidence.rotation.activeKeyId, "siem-key-2026-07");
     assert.equal(evidence.checks.signatureVerified, "passed");
+    assert.equal(evidence.receiverReport.validated, true);
+    assert.equal(evidence.receiverReport.receiverEndpointHost, "siem.example.test");
+    assert.equal(evidence.receiverReport.activeDeliveryId, "delivery-active-1");
     assert.equal(evidence.redaction.signingSecretsFound, false);
     assert.match(runValidator(evidencePath), /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("siem receiver rotation validator rejects certified evidence with failed receiver report checks", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-siem-rotation-certified-report-fail-"));
+  try {
+    const reportPath = path.join(dir, "siem-rotation.json");
+    const evidencePath = path.join(dir, "siem-rotation-evidence.json");
+    writeReport(reportPath);
+
+    runGenerator([
+      "--status", "certified",
+      "--environment", "prod",
+      "--report", reportPath,
+      "--siem-owner", "SIEM Owner",
+      "--security-reviewer", "Security Reviewer",
+      "--operations-owner", "Operations Owner",
+      "--out", evidencePath
+    ]);
+
+    const evidence = readJson(evidencePath);
+    evidence.receiverReport.checks.signatureVerified = "failed";
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /receiverReport\.checks\.signatureVerified must pass/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

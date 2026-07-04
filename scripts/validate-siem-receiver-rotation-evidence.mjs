@@ -42,6 +42,9 @@ assert.ok(evidence.samples?.activeDeliveryId, "samples.activeDeliveryId is requi
 assert.ok(evidence.samples?.previousKeyDeliveryId, "samples.previousKeyDeliveryId is required");
 assert.ok(evidence.samples?.replayAttemptId, "samples.replayAttemptId is required");
 assert.ok(evidence.samples?.receiverEvidencePath, "samples.receiverEvidencePath is required");
+assert.ok(evidence.receiverReport && typeof evidence.receiverReport === "object", "receiverReport is required");
+assert.ok(evidence.receiverReport.reportPath, "receiverReport.reportPath is required");
+assert.ok(evidence.receiverReport.checks && typeof evidence.receiverReport.checks === "object", "receiverReport.checks are required");
 assert.equal(typeof evidence.redaction?.signingSecretsFound, "boolean", "redaction.signingSecretsFound must be boolean");
 assert.equal(typeof evidence.redaction?.payloadSecretValuesFound, "boolean", "redaction.payloadSecretValuesFound must be boolean");
 assert.equal(typeof evidence.redaction?.tokenValuesFound, "boolean", "redaction.tokenValuesFound must be boolean");
@@ -55,8 +58,15 @@ if (strictStatuses.has(evidence.status)) {
   assert.ok(isoTimestamp.test(evidence.rotation.previousKeyRetireAfter), "rotation.previousKeyRetireAfter must be an ISO timestamp");
   assert.ok(Date.parse(evidence.rotation.previousKeyRetireAfter) > Date.parse(evidence.rotation.rotatedAt), "previousKeyRetireAfter must be after rotatedAt");
   assert.notEqual(evidence.rotation.activeKeyId, evidence.rotation.previousKeyId, "active and previous key IDs must differ");
+  assert.equal(evidence.receiverReport.validated, true, "strict SIEM receiver rotation evidence requires a validated receiver report");
+  assert.equal(evidence.receiverReport.receiverEndpointHost, evidence.receiver.endpointHost, "receiverReport.receiverEndpointHost must match receiver.endpointHost");
+  assert.equal(evidence.receiverReport.activeDeliveryId, evidence.samples.activeDeliveryId, "receiverReport.activeDeliveryId must match samples.activeDeliveryId");
+  assert.equal(evidence.receiverReport.previousKeyDeliveryId, evidence.samples.previousKeyDeliveryId, "receiverReport.previousKeyDeliveryId must match samples.previousKeyDeliveryId");
+  assert.equal(evidence.receiverReport.replayAttemptId, evidence.samples.replayAttemptId, "receiverReport.replayAttemptId must match samples.replayAttemptId");
+  assert.ok(evidence.receiverReport.checkCount >= Object.keys(evidence.checks).length, "receiverReport.checkCount must cover receiver checks");
   for (const name of Object.keys(evidence.checks)) {
     assert.equal(evidence.checks[name], "passed", `${name} must pass for strict SIEM receiver rotation evidence`);
+    assert.equal(evidence.receiverReport.checks[name], "passed", `receiverReport.checks.${name} must pass for strict SIEM receiver rotation evidence`);
   }
   assert.equal(evidence.redaction.signingSecretsFound, false, "rotation evidence cannot contain SIEM signing secrets");
   assert.equal(evidence.redaction.payloadSecretValuesFound, false, "rotation evidence cannot contain payload secret values");

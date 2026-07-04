@@ -26,6 +26,16 @@
     "redactedLogsReviewed": "planned",
     "receiverAlertingConfirmed": "planned"
   },
+  "receiverReport": {
+    "reportPath": "replace-with-siem-receiver-rotation.json",
+    "validated": false,
+    "receiverEndpointHost": "replace-with-host",
+    "checkCount": 0,
+    "checks": {},
+    "activeDeliveryId": "replace-with-delivery-id",
+    "previousKeyDeliveryId": "replace-with-delivery-id",
+    "replayAttemptId": "replace-with-replay-test-id"
+  },
   "samples": {
     "activeDeliveryId": "replace-with-delivery-id",
     "previousKeyDeliveryId": "replace-with-delivery-id",

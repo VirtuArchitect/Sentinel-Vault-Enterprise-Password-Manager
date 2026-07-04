@@ -57,6 +57,12 @@ const receiver = report?.receiver || {};
 const rotation = report?.rotation || {};
 const samples = report?.samples || {};
 const checks = report?.checks || {};
+const reportValidated = Boolean(report)
+  && Object.values(checks).every((value) => normalizeStatus(value) === "passed")
+  && Boolean(receiver.endpointHost)
+  && Boolean(samples.activeDeliveryId)
+  && Boolean(samples.previousKeyDeliveryId)
+  && Boolean(samples.replayAttemptId);
 const rotatedAt = args.get("--rotated-at") || rotation.rotatedAt || (status === "planned" ? "YYYY-MM-DDTHH:mm:ssZ" : toIso());
 const previousKeyRetireAfter = args.get("--previous-key-retire-after")
   || rotation.previousKeyRetireAfter
@@ -95,6 +101,16 @@ const evidence = {
     deliveryIdStored: argStatus("--delivery-id-stored", normalizeStatus(checks.deliveryIdStored)),
     redactedLogsReviewed: argStatus("--redacted-logs-reviewed", normalizeStatus(checks.redactedLogsReviewed)),
     receiverAlertingConfirmed: argStatus("--receiver-alerting-confirmed", normalizeStatus(checks.receiverAlertingConfirmed))
+  },
+  receiverReport: {
+    reportPath,
+    validated: reportValidated,
+    receiverEndpointHost: receiver.endpointHost || "replace-with-host",
+    checkCount: Object.keys(checks).length,
+    checks: Object.fromEntries(Object.entries(checks).map(([name, value]) => [name, normalizeStatus(value)])),
+    activeDeliveryId: samples.activeDeliveryId || "replace-with-delivery-id",
+    previousKeyDeliveryId: samples.previousKeyDeliveryId || "replace-with-delivery-id",
+    replayAttemptId: samples.replayAttemptId || "replace-with-replay-test-id"
   },
   samples: {
     activeDeliveryId: args.get("--active-delivery-id") || samples.activeDeliveryId || "replace-with-delivery-id",

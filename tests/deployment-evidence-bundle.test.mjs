@@ -127,6 +127,16 @@ const writeProductionPhaseFiveEvidence = (dir, environment = "prod-east") => {
   for (const name of Object.keys(siem.checks)) {
     siem.checks[name] = "passed";
   }
+  siem.receiverReport = {
+    reportPath: "artifacts/integrations/siem-rotation-prod.json",
+    validated: true,
+    receiverEndpointHost: siem.receiver.endpointHost,
+    checkCount: Object.keys(siem.checks).length,
+    checks: { ...siem.checks },
+    activeDeliveryId: "delivery-active-001",
+    previousKeyDeliveryId: "delivery-prev-001",
+    replayAttemptId: "replay-test-001"
+  };
   siem.samples.activeDeliveryId = "delivery-active-001";
   siem.samples.previousKeyDeliveryId = "delivery-prev-001";
   siem.samples.replayAttemptId = "replay-test-001";
