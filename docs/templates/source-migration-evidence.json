@@ -8,8 +8,20 @@
     "columnMapPath": "replace-with-column-map.json",
     "sourceAdapterEvidencePath": "replace-with-source-adapter-evidence.json",
     "normalizedImportPath": "replace-with-normalized-import.csv",
+    "normalizedImportValidationPath": "replace-with-normalized-import-validation.json",
     "storageMigrationEvidencePath": "replace-with-storage-migration-evidence.json",
     "tenantIsolationEvidencePath": "replace-with-tenant-isolation-evidence.json"
+  },
+  "normalizedImportValidation": {
+    "reportPath": "replace-with-normalized-import-validation.json",
+    "format": "sentinel-normalized-import-validation-v1",
+    "validated": false,
+    "csvPath": "replace-with-normalized-import.csv",
+    "csvSha256": "replace-with-sha256",
+    "rowCount": 0,
+    "uniqueVaultCount": 0,
+    "adapterEvidenceMatched": false,
+    "passwordValuesIncluded": "planned"
   },
   "checks": {
     "allColumnsMappedOrIgnored": "planned",

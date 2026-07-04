@@ -20,6 +20,7 @@ const writeCompletedMigrationFixture = (dir) => {
   const columnMapPath = path.join(dir, "column-map.json");
   const normalizedPath = path.join(dir, "normalized.csv");
   const adapterEvidencePath = path.join(dir, "adapter-evidence.json");
+  const normalizedImportValidationPath = path.join(dir, "normalized-import-validation.json");
   const storageEvidencePath = path.join(dir, "storage-migration-evidence.json");
   const tenantEvidencePath = path.join(dir, "tenant-isolation-evidence.json");
 
@@ -52,6 +53,12 @@ const writeCompletedMigrationFixture = (dir) => {
     "--vault-id", "v-import",
     "--out", normalizedPath,
     "--evidence", adapterEvidencePath
+  ]);
+  runScript("scripts/validate-normalized-import.mjs", [
+    "--csv", normalizedPath,
+    "--adapter-evidence", adapterEvidencePath,
+    "--expected-rows", "1",
+    "--out", normalizedImportValidationPath
   ]);
 
   copyFileSync(path.join(rootDir, "docs", "templates", "storage-migration-evidence.json"), storageEvidencePath);
@@ -93,7 +100,7 @@ const writeCompletedMigrationFixture = (dir) => {
   };
   writeFileSync(tenantEvidencePath, JSON.stringify(tenant, null, 2));
 
-  return { columnMapPath, normalizedPath, adapterEvidencePath, storageEvidencePath, tenantEvidencePath };
+  return { columnMapPath, normalizedPath, normalizedImportValidationPath, adapterEvidencePath, storageEvidencePath, tenantEvidencePath };
 };
 
 test("source migration evidence template validates in planned mode", () => {
@@ -116,6 +123,7 @@ test("source migration generator creates deployed evidence from migration artifa
       "--column-map", artifacts.columnMapPath,
       "--source-adapter-evidence", artifacts.adapterEvidencePath,
       "--normalized-import", artifacts.normalizedPath,
+      "--normalized-import-validation", artifacts.normalizedImportValidationPath,
       "--storage-migration-evidence", artifacts.storageEvidencePath,
       "--tenant-isolation-evidence", artifacts.tenantEvidencePath,
       "--migration-owner", "Migration",
@@ -147,6 +155,7 @@ test("source migration validator rejects deployed evidence with secret redaction
       "--column-map", artifacts.columnMapPath,
       "--source-adapter-evidence", artifacts.adapterEvidencePath,
       "--normalized-import", artifacts.normalizedPath,
+      "--normalized-import-validation", artifacts.normalizedImportValidationPath,
       "--storage-migration-evidence", artifacts.storageEvidencePath,
       "--tenant-isolation-evidence", artifacts.tenantEvidencePath,
       "--migration-owner", "Migration",
@@ -160,6 +169,40 @@ test("source migration validator rejects deployed evidence with secret redaction
     assert.throws(() => runScript("scripts/validate-source-migration-evidence.mjs", [
       evidencePath
     ]), /cannot contain plaintext secrets/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("source migration validator rejects normalized import validation drift", () => {
+  const dir = path.join(tmpdir(), `sentinel-source-migration-normalized-drift-${process.pid}-${Date.now()}`);
+  try {
+    const artifacts = writeCompletedMigrationFixture(dir);
+    const evidencePath = path.join(dir, "source-migration-evidence.json");
+    runScript("scripts/generate-source-migration-evidence.mjs", [
+      "--status", "pilot",
+      "--environment", "pilot",
+      "--source-system", "Acme Proprietary Vault",
+      "--column-map", artifacts.columnMapPath,
+      "--source-adapter-evidence", artifacts.adapterEvidencePath,
+      "--normalized-import", artifacts.normalizedPath,
+      "--normalized-import-validation", artifacts.normalizedImportValidationPath,
+      "--storage-migration-evidence", artifacts.storageEvidencePath,
+      "--tenant-isolation-evidence", artifacts.tenantEvidencePath,
+      "--migration-owner", "Migration",
+      "--security-reviewer", "Security",
+      "--operations-owner", "Operations",
+      "--change-ticket", "CHG-12345",
+      "--out", evidencePath
+    ]);
+
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence.normalizedImportValidation.csvSha256 = "f".repeat(64);
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-source-migration-evidence.mjs", [
+      evidencePath
+    ]), /embedded normalized import hash must match/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

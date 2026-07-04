@@ -463,6 +463,7 @@ const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
   const sourcePath = path.join(evidenceDir, "source.csv");
   const columnMapPath = path.join(evidenceDir, "column-map.json");
   const normalizedPath = path.join(evidenceDir, "normalized-import.csv");
+  const normalizedValidationPath = path.join(evidenceDir, "normalized-import-validation.json");
   const adapterEvidencePath = path.join(evidenceDir, "source-adapter-evidence.json");
   const storageEvidencePath = path.join(evidenceDir, "storage-migration-evidence.json");
   const tenantEvidencePath = path.join(evidenceDir, "tenant-isolation-evidence.json");
@@ -497,6 +498,12 @@ const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
     "--vault-id", "v-import",
     "--out", normalizedPath,
     "--evidence", adapterEvidencePath
+  ]);
+  runScript("scripts/validate-normalized-import.mjs", [
+    "--csv", normalizedPath,
+    "--adapter-evidence", adapterEvidencePath,
+    "--expected-rows", "1",
+    "--out", normalizedValidationPath
   ]);
 
   const storage = JSON.parse(readFileSync(storageEvidencePath, "utf8"));
@@ -551,6 +558,7 @@ const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
     "--column-map", columnMapPath,
     "--source-adapter-evidence", adapterEvidencePath,
     "--normalized-import", normalizedPath,
+    "--normalized-import-validation", normalizedValidationPath,
     "--storage-migration-evidence", storageEvidencePath,
     "--tenant-isolation-evidence", tenantEvidencePath,
     "--migration-owner", "migration-owner",

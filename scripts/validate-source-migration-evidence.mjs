@@ -27,9 +27,11 @@ assert.ok(evidence.environment, "environment is required");
 assert.ok(evidence.sourceSystem, "sourceSystem is required");
 assert.match(evidence.reviewedAt || "", timestampOrPlaceholder, "reviewedAt must be an ISO timestamp or placeholder");
 
-for (const field of ["columnMapPath", "sourceAdapterEvidencePath", "normalizedImportPath", "storageMigrationEvidencePath", "tenantIsolationEvidencePath"]) {
+for (const field of ["columnMapPath", "sourceAdapterEvidencePath", "normalizedImportPath", "normalizedImportValidationPath", "storageMigrationEvidencePath", "tenantIsolationEvidencePath"]) {
   assert.ok(evidence.artifacts?.[field], `artifacts.${field} is required`);
 }
+assert.ok(evidence.normalizedImportValidation && typeof evidence.normalizedImportValidation === "object", "normalizedImportValidation is required");
+assert.equal(evidence.normalizedImportValidation.format, "sentinel-normalized-import-validation-v1", "normalizedImportValidation.format must be sentinel-normalized-import-validation-v1");
 for (const field of ["allColumnsMappedOrIgnored", "sourceEvidenceRedacted", "normalizedImportReviewed", "storageMigrationValidated", "tenantIsolationValidated", "rollbackPlanReviewed"]) {
   assert.ok(evidence.checks?.[field], `checks.${field} is required`);
   assert.ok(!failStatuses.has(String(evidence.checks[field]).toLowerCase()), `checks.${field} cannot be failing`);
@@ -75,6 +77,18 @@ if (deployedStatuses.has(evidence.status)) {
   assert.equal(evidence.summary.sourceRowCount, adapterEvidence.rowCount, "source row count mismatch");
   assert.equal(evidence.summary.convertedRowCount, adapterEvidence.convertedCount, "converted row count mismatch");
   assert.ok(adapterEvidence.convertedCount > 0, "deployed migration evidence must include converted rows");
+
+  const normalizedImportValidation = readJson(artifactPaths.normalizedImportValidationPath);
+  assert.equal(normalizedImportValidation.format, "sentinel-normalized-import-validation-v1");
+  assert.equal(normalizedImportValidation.validated, true, "normalized import validation report must be validated");
+  assert.equal(path.resolve(normalizedImportValidation.csvPath), artifactPaths.normalizedImportPath, "normalized import validation CSV must match normalized import path");
+  assert.equal(path.resolve(evidence.normalizedImportValidation.csvPath), artifactPaths.normalizedImportPath, "embedded normalized import CSV must match normalized import path");
+  assert.equal(evidence.normalizedImportValidation.validated, true, "embedded normalized import validation must be true");
+  assert.equal(evidence.normalizedImportValidation.csvSha256, normalizedImportValidation.csvSha256, "embedded normalized import hash must match validation report");
+  assert.equal(evidence.normalizedImportValidation.rowCount, normalizedImportValidation.rowCount, "embedded normalized import row count must match validation report");
+  assert.equal(evidence.normalizedImportValidation.rowCount, evidence.summary.convertedRowCount, "normalized import row count must match converted row count");
+  assert.equal(evidence.normalizedImportValidation.adapterEvidenceMatched, true, "normalized import validation must match adapter evidence");
+  assert.equal(evidence.normalizedImportValidation.passwordValuesIncluded, false, "normalized import validation cannot include password values");
 
   runValidator("scripts/validate-storage-migration-evidence.mjs", artifactPaths.storageMigrationEvidencePath);
   runValidator("scripts/validate-tenant-isolation-evidence.mjs", artifactPaths.tenantIsolationEvidencePath);

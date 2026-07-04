@@ -159,6 +159,7 @@ Expected result:
 - Required fields `name`, `username`, and `password` are present.
 - Redaction settings do not allow password or OTP values in evidence.
 - When `--source` is supplied, every source CSV column is mapped or explicitly ignored.
+- Deployed source migration evidence must include the normalized-import validation report and match its CSV hash, row count, adapter evidence, and password-redaction status.
 
 ## Connector Preflight Evidence
 

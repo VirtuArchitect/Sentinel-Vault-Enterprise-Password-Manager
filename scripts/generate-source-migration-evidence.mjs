@@ -18,6 +18,16 @@ const readJsonIfExists = (filePath) => existsSync(filePath) ? JSON.parse(readFil
 
 const sourceAdapterEvidencePath = artifact("--source-adapter-evidence", "replace-with-source-adapter-evidence.json");
 const adapterEvidence = readJsonIfExists(sourceAdapterEvidencePath);
+const normalizedImportValidationPath = artifact("--normalized-import-validation", "replace-with-normalized-import-validation.json");
+const normalizedImportValidation = readJsonIfExists(normalizedImportValidationPath);
+if (normalizedImportValidation) {
+  if (normalizedImportValidation.format !== "sentinel-normalized-import-validation-v1") {
+    throw new Error("normalized import validation report format is unsupported");
+  }
+  if (normalizedImportValidation.validated !== true) {
+    throw new Error("normalized import validation report must be validated");
+  }
+}
 
 const evidence = {
   format: "sentinel-source-migration-evidence-v1",
@@ -29,8 +39,30 @@ const evidence = {
     columnMapPath: artifact("--column-map", "replace-with-column-map.json"),
     sourceAdapterEvidencePath,
     normalizedImportPath: artifact("--normalized-import", adapterEvidence?.outputCsv || "replace-with-normalized-import.csv"),
+    normalizedImportValidationPath,
     storageMigrationEvidencePath: artifact("--storage-migration-evidence", "replace-with-storage-migration-evidence.json"),
     tenantIsolationEvidencePath: artifact("--tenant-isolation-evidence", "replace-with-tenant-isolation-evidence.json")
+  },
+  normalizedImportValidation: normalizedImportValidation ? {
+    reportPath: normalizedImportValidationPath,
+    format: normalizedImportValidation.format,
+    validated: normalizedImportValidation.validated,
+    csvPath: normalizedImportValidation.csvPath,
+    csvSha256: normalizedImportValidation.csvSha256,
+    rowCount: normalizedImportValidation.rowCount,
+    uniqueVaultCount: normalizedImportValidation.uniqueVaultCount,
+    adapterEvidenceMatched: normalizedImportValidation.adapterEvidenceMatched,
+    passwordValuesIncluded: normalizedImportValidation.passwordValuesIncluded
+  } : {
+    reportPath: "replace-with-normalized-import-validation.json",
+    format: "sentinel-normalized-import-validation-v1",
+    validated: false,
+    csvPath: "replace-with-normalized-import.csv",
+    csvSha256: "replace-with-sha256",
+    rowCount: 0,
+    uniqueVaultCount: 0,
+    adapterEvidenceMatched: false,
+    passwordValuesIncluded: "planned"
   },
   checks: {
     allColumnsMappedOrIgnored: statusOrPlanned("--all-columns-mapped"),
