@@ -159,14 +159,14 @@ const requests = [
       "pnpm validate:windows-signing-report -- --report <signing-report.json> --strict --out <windows-signing-report-validation.json>",
       "pnpm release:windows-signing -- --status signed --report <signing-report.json> --out <windows-signing-execution-evidence.json>",
       "pnpm validate:windows-signing -- <windows-signing-execution-evidence.json>",
-      "pnpm release:windows-evidence -- --artifact <signed-artifact> --out <windows-release-evidence.json>",
+      "pnpm release:windows-evidence -- --artifact <signed-artifact> --package-validation <windows-package-validation.json> --out <windows-release-evidence.json>",
       "pnpm validate:windows-release -- <windows-release-evidence.json>"
     ],
     acceptanceCriteria: [
       "Windows zip validation evidence proves native extraction, required package files, and packaged `/healthz` smoke before signing handoff",
       "Release-host signing report validation proves approved host, artifact hashes, signatures, timestamps, and redaction before evidence generation",
       "All distributable Windows artifacts are signed and signature verification passes",
-      "Release evidence records certificate identity, release host metadata, source commit, and artifact hashes",
+      "Release evidence records certificate identity, release host metadata, source commit, package-validation report binding, and artifact hashes",
       "Rollback and uninstall evidence is attached before pilot or production distribution"
     ]
   },

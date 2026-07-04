@@ -79,7 +79,7 @@ Record install hardening evidence with `docs/templates/windows-install-hardening
 Generate artifact hashes and a planned Windows release evidence file from built artifacts:
 
 ```powershell
-pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip" --out ".\artifacts\release\windows-release-evidence.json"
+pnpm release:windows-evidence -- --artifact ".\artifacts\windows\SentinelVault-Windows.zip" --package-validation ".\artifacts\windows\windows-package-validation.json" --out ".\artifacts\release\windows-release-evidence.json"
 ```
 
 Generate local install hardening evidence from an installed layout:
@@ -96,6 +96,6 @@ pnpm validate:windows-signing-report -- --report ".\artifacts\windows\signing-re
 pnpm validate:windows-hardening -- docs/templates/windows-install-hardening-evidence.json
 ```
 
-When `checks.signatureVerification` is `valid` or `passed`, the validator requires real artifact SHA-256 values, valid Authenticode status for `.exe`, `.msi`, and `.msix` artifacts, signer thumbprints, a Git source commit, passing verification gates, and tested rollback evidence.
+When `checks.signatureVerification` is `valid` or `passed`, the validator requires real artifact SHA-256 values, a validated Windows package report with a matching package hash, valid Authenticode status for `.exe`, `.msi`, and `.msix` artifacts, signer thumbprints, a Git source commit, passing verification gates, and tested rollback evidence.
 On the approved signing host, replace `signatureVerification`, `authenticodeStatus`, and `signerThumbprint` with the verified Authenticode results before marking the release as signed.
 Record source, lockfile, dependency, and artifact provenance with `docs/templates/release-provenance-template.json` or generate it with `pnpm release:provenance`.

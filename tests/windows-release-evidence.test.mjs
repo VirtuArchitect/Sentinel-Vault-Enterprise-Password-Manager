@@ -33,6 +33,15 @@ test("signed windows release evidence requires real signatures and hashes", () =
     evidence.buildHost = "release-host-01";
     evidence.sourceCommit = hex("a", 40);
     evidence.checks.signatureVerification = "valid";
+    evidence.packageValidation = {
+      reportPath: "C:\\Release\\windows-package-validation.json",
+      format: "sentinel-windows-package-validation-v1",
+      validated: true,
+      packagePath: "C:\\Release\\SentinelVault-Windows.zip",
+      packageSha256: hex("b", 64),
+      runtimeSmoke: "passed",
+      requiredFileCount: 15
+    };
     evidence.rollback.tested = true;
     evidence.approvals = {
       releaseOwner: "Release Owner",
@@ -71,6 +80,15 @@ test("signed windows release evidence rejects unsigned installer artifacts", () 
     evidence.buildHost = "release-host-01";
     evidence.sourceCommit = hex("a", 40);
     evidence.checks.signatureVerification = "valid";
+    evidence.packageValidation = {
+      reportPath: "C:\\Release\\windows-package-validation.json",
+      format: "sentinel-windows-package-validation-v1",
+      validated: true,
+      packagePath: "C:\\Release\\SentinelVault-Windows.zip",
+      packageSha256: hex("b", 64),
+      runtimeSmoke: "passed",
+      requiredFileCount: 15
+    };
     evidence.rollback.tested = true;
     evidence.approvals = {
       releaseOwner: "Release Owner",
@@ -87,6 +105,45 @@ test("signed windows release evidence rejects unsigned installer artifacts", () 
     writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
 
     assert.throws(() => runValidator(evidencePath), /must have a valid Authenticode signature/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("signed windows release evidence rejects missing package validation binding", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-package-binding-fail-"));
+  try {
+    const evidence = template();
+    evidence.releaseVersion = "1.0.0";
+    evidence.releaseDate = "2026-07-01";
+    evidence.buildHost = "release-host-01";
+    evidence.sourceCommit = hex("a", 40);
+    evidence.checks.signatureVerification = "valid";
+    evidence.packageValidation = {
+      reportPath: "C:\\Release\\windows-package-validation.json",
+      format: "sentinel-windows-package-validation-v1",
+      validated: false,
+      packagePath: "C:\\Release\\SentinelVault-Windows.zip",
+      packageSha256: hex("b", 64),
+      runtimeSmoke: "passed",
+      requiredFileCount: 15
+    };
+    evidence.rollback.tested = true;
+    evidence.approvals = {
+      releaseOwner: "Release Owner",
+      securityReviewer: "Security Reviewer",
+      operationsReviewer: "Operations Reviewer"
+    };
+    evidence.artifacts = [{
+      name: "SentinelVault-Windows-Setup.exe",
+      sha256: hex("b", 64),
+      authenticodeStatus: "Valid",
+      signerThumbprint: hex("c", 40)
+    }];
+    const evidencePath = path.join(dir, "windows-release.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /packageValidation.validated must be true/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

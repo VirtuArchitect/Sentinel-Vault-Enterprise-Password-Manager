@@ -136,6 +136,7 @@ try {
   $result = @{
     format = "sentinel-windows-package-validation-v1"
     packagePath = (Resolve-Path -LiteralPath $resolvedPackage).Path
+    packageSha256 = (Get-FileHash -LiteralPath $resolvedPackage -Algorithm SHA256).Hash.ToLowerInvariant()
     extractedTo = $resolvedExtractDir
     runtimeSmoke = if ($SkipRuntimeSmoke) { "skipped" } else { "passed" }
     healthUrl = if ($SkipRuntimeSmoke) { $null } else { $healthUrl }

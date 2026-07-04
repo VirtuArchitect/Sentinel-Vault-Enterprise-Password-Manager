@@ -64,7 +64,8 @@ Expected result:
 - The zip contains `app/dist/favicon.svg`.
 - The zip contains `preflight.ps1`, `install.ps1`, `uninstall.ps1`, `run-sentinel.ps1`, and `healthcheck.ps1`.
 - The extracted production app passes `/healthz`.
-- `artifacts/windows/windows-package-validation.json` records the package validation result for release evidence.
+- `artifacts/windows/windows-package-validation.json` records the package validation result and package SHA-256 for release evidence.
+- Signed Windows release evidence must include the package validation report and match the validated package SHA-256 to a release artifact.
 
 Optional VM preflight:
 

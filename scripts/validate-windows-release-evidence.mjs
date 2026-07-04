@@ -20,6 +20,8 @@ assert.ok(evidence.releaseDate, "releaseDate is required");
 assert.ok(evidence.buildHost, "buildHost is required");
 assert.ok(evidence.sourceCommit, "sourceCommit is required");
 assert.ok(evidence.checks && typeof evidence.checks === "object", "checks are required");
+assert.ok(evidence.packageValidation && typeof evidence.packageValidation === "object", "packageValidation is required");
+assert.equal(evidence.packageValidation.format, "sentinel-windows-package-validation-v1", "packageValidation.format must be sentinel-windows-package-validation-v1");
 assert.ok(Array.isArray(evidence.artifacts), "artifacts must be an array");
 assert.ok(evidence.artifacts.length > 0, "at least one artifact is required");
 assert.ok(evidence.approvals?.releaseOwner, "releaseOwner approval is required");
@@ -47,7 +49,14 @@ if (signedRelease) {
   assert.equal(evidence.checks.secretScan, "passed", "secretScan must pass for signed releases");
   assert.equal(evidence.checks.dependencyAudit, "passed", "dependencyAudit must pass for signed releases");
   assert.equal(evidence.checks.windowsPackage, "passed", "windowsPackage must pass for signed releases");
+  assert.equal(evidence.packageValidation.validated, true, "packageValidation.validated must be true for signed releases");
+  assert.ok(sha256Pattern.test(evidence.packageValidation.packageSha256 || ""), "packageValidation.packageSha256 must be a SHA-256 hex digest");
+  assert.ok(["passed", "skipped"].includes(evidence.packageValidation.runtimeSmoke), "packageValidation.runtimeSmoke must be passed or skipped for signed releases");
+  assert.ok(evidence.packageValidation.requiredFileCount >= 15, "packageValidation.requiredFileCount must cover the Windows package manifest");
   assert.equal(evidence.rollback.tested, true, "rollback must be tested for signed releases");
+
+  const validatedPackageArtifact = evidence.artifacts.find((artifact) => artifact.sha256 === evidence.packageValidation.packageSha256);
+  assert.ok(validatedPackageArtifact, "packageValidation.packageSha256 must match a release artifact");
 
   for (const artifact of evidence.artifacts) {
     assert.ok(sha256Pattern.test(artifact.sha256), `${artifact.name}.sha256 must be a SHA-256 hex digest`);

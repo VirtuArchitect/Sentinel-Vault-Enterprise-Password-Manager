@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -93,6 +94,7 @@ test("windows package validator extracts and smoke tests a package", { skip: !is
     assert.equal(result.runtimeSmoke, "passed");
     assert.equal(result.validated, true);
     assert.equal(result.requiredFileCount, 15);
+    assert.equal(result.packageSha256, crypto.createHash("sha256").update(readFileSync(zipPath)).digest("hex"));
     assert.deepEqual(savedResult, result);
   } finally {
     rmSync(dir, { recursive: true, force: true });

@@ -11,6 +11,15 @@
     "windowsPackage": "passed",
     "signatureVerification": "replace-with-valid-or-not-signed"
   },
+  "packageValidation": {
+    "reportPath": "replace-with-windows-package-validation.json",
+    "format": "sentinel-windows-package-validation-v1",
+    "validated": false,
+    "packagePath": "replace-with-package-path",
+    "packageSha256": "replace-with-sha256",
+    "runtimeSmoke": "not-run",
+    "requiredFileCount": 0
+  },
   "artifacts": [
     {
       "name": "SentinelVault-Windows.zip",

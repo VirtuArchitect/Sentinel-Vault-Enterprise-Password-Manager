@@ -13,6 +13,7 @@ for (let index = 0; index < cliArgs.length; index += 2) {
 
 const artifactPaths = cliArgs.flatMap((arg, index) => (arg === "--artifact" ? [cliArgs[index + 1]] : [])).filter(Boolean);
 const outputPath = args.get("--out") || "artifacts/release/windows-release-evidence.json";
+const packageValidationPath = args.get("--package-validation");
 const releaseVersion = args.get("--version") || JSON.parse(readFileSync("package.json", "utf8")).version;
 const releaseDate = args.get("--release-date") || new Date().toISOString().slice(0, 10);
 const buildHost = args.get("--build-host") || os.hostname();
@@ -32,6 +33,12 @@ const sha256FileHex = (filePath) => crypto.createHash("sha256").update(readFileS
 
 assert.ok(artifactPaths.length > 0, "At least one --artifact path is required");
 
+const packageValidation = packageValidationPath ? JSON.parse(readFileSync(packageValidationPath, "utf8").replace(/^\uFEFF/, "")) : null;
+if (packageValidation) {
+  assert.equal(packageValidation.format, "sentinel-windows-package-validation-v1", "package validation report format is unsupported");
+  assert.equal(packageValidation.validated, true, "package validation report must be validated");
+}
+
 const artifacts = artifactPaths.map((artifactPath) => {
   assert.ok(existsSync(artifactPath), `Windows release artifact not found: ${artifactPath}`);
   const stats = statSync(artifactPath);
@@ -46,6 +53,12 @@ const artifacts = artifactPaths.map((artifactPath) => {
   };
 });
 
+if (packageValidation) {
+  const packageArtifact = artifacts.find((artifact) => path.resolve(artifact.path) === path.resolve(packageValidation.packagePath));
+  assert.ok(packageArtifact, "package validation report must reference one of the release artifacts");
+  assert.equal(packageArtifact.sha256, packageValidation.packageSha256, "package validation hash must match release artifact hash");
+}
+
 const evidence = {
   format: "sentinel-windows-release-evidence-v1",
   releaseVersion,
@@ -58,6 +71,23 @@ const evidence = {
     dependencyAudit: args.get("--dependency-audit") || "not-run",
     windowsPackage: args.get("--windows-package") || "passed",
     signatureVerification
+  },
+  packageValidation: packageValidation ? {
+    reportPath: path.resolve(packageValidationPath),
+    format: packageValidation.format,
+    validated: packageValidation.validated,
+    packagePath: packageValidation.packagePath,
+    packageSha256: packageValidation.packageSha256,
+    runtimeSmoke: packageValidation.runtimeSmoke,
+    requiredFileCount: packageValidation.requiredFileCount
+  } : {
+    reportPath: "replace-with-windows-package-validation.json",
+    format: "sentinel-windows-package-validation-v1",
+    validated: false,
+    packagePath: "replace-with-package-path",
+    packageSha256: "replace-with-sha256",
+    runtimeSmoke: "not-run",
+    requiredFileCount: 0
   },
   artifacts,
   approvals: {

@@ -32,11 +32,23 @@ test("windows release evidence generator writes valid planned evidence from arti
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-release-generator-"));
   try {
     const artifactPath = path.join(dir, "SentinelVault-Windows.zip");
+    const validationPath = path.join(dir, "windows-package-validation.json");
     const evidencePath = path.join(dir, "windows-release-evidence.json");
-    writeFileSync(artifactPath, "sentinel release artifact fixture");
+    const fixture = "sentinel release artifact fixture";
+    const artifactSha256 = crypto.createHash("sha256").update(fixture).digest("hex");
+    writeFileSync(artifactPath, fixture);
+    writeFileSync(validationPath, JSON.stringify({
+      format: "sentinel-windows-package-validation-v1",
+      packagePath: artifactPath,
+      packageSha256: artifactSha256,
+      runtimeSmoke: "passed",
+      requiredFileCount: 15,
+      validated: true
+    }, null, 2));
 
     runGenerator([
       "--artifact", artifactPath,
+      "--package-validation", validationPath,
       "--version", "1.2.3",
       "--release-date", "2026-07-01",
       "--build-host", "release-host-01",
@@ -51,9 +63,36 @@ test("windows release evidence generator writes valid planned evidence from arti
     assert.equal(evidence.format, "sentinel-windows-release-evidence-v1");
     assert.equal(evidence.releaseVersion, "1.2.3");
     assert.equal(evidence.artifacts[0].name, "SentinelVault-Windows.zip");
-    assert.equal(evidence.artifacts[0].sha256, crypto.createHash("sha256").update("sentinel release artifact fixture").digest("hex"));
+    assert.equal(evidence.artifacts[0].sha256, artifactSha256);
+    assert.equal(evidence.packageValidation.packageSha256, artifactSha256);
+    assert.equal(evidence.packageValidation.validated, true);
     assert.equal(evidence.artifacts[0].authenticodeStatus, "not-signed");
     assert.match(runValidator(evidencePath), /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("windows release evidence generator rejects package validation hash mismatches", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-release-validation-fail-"));
+  try {
+    const artifactPath = path.join(dir, "SentinelVault-Windows.zip");
+    const validationPath = path.join(dir, "windows-package-validation.json");
+    writeFileSync(artifactPath, "sentinel release artifact fixture");
+    writeFileSync(validationPath, JSON.stringify({
+      format: "sentinel-windows-package-validation-v1",
+      packagePath: artifactPath,
+      packageSha256: "f".repeat(64),
+      runtimeSmoke: "passed",
+      requiredFileCount: 15,
+      validated: true
+    }, null, 2));
+
+    assert.throws(() => runGenerator([
+      "--artifact", artifactPath,
+      "--package-validation", validationPath,
+      "--out", path.join(dir, "windows-release-evidence.json")
+    ]), /package validation hash must match release artifact hash/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
