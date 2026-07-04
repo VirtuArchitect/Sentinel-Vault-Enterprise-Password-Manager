@@ -14,6 +14,17 @@
   "leastPrivilegeScopes": [
     "replace-with-scope"
   ],
+  "livePreflight": {
+    "reportPath": "replace-with-connector-live-preflight.json",
+    "format": "sentinel-enterprise-connector-live-preflight-v1",
+    "checkedAt": "YYYY-MM-DDTHH:mm:ssZ",
+    "validated": false,
+    "connectorTypes": [],
+    "checkCount": 0,
+    "checks": {},
+    "selectedConnector": "siem-or-itsm-or-devops",
+    "selectedEndpointHost": "replace-with-target-system"
+  },
   "replayProtection": {
     "implemented": true,
     "windowSeconds": 300,

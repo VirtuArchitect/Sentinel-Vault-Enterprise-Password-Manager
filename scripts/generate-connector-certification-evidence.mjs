@@ -15,6 +15,8 @@ const readJson = (filePath) => JSON.parse(readFileSync(filePath, "utf8").replace
 const preflight = existsSync(preflightPath) ? readJson(preflightPath) : null;
 const connectors = preflight?.connectors || {};
 const selected = connector === "siem" ? connectors.siem : connector === "itsm" ? connectors.itsm : connector === "devops" ? connectors.devops : connectors.siem || connectors.itsm || connectors.devops || {};
+const preflightChecks = preflight?.checks || {};
+const preflightConnectorNames = Object.keys(connectors);
 const today = new Date().toISOString().slice(0, 10);
 const checkStatus = (argName, fallback) => {
   const value = args.get(argName) || fallback;
@@ -34,6 +36,7 @@ const asBool = (value, fallback) => {
   return fallback;
 };
 const redactedOutput = preflight?.checks?.redactedOutput !== false;
+const preflightValidated = Boolean(preflight) && Object.values(preflightChecks).every((value) => value === true);
 
 const evidence = {
   format: "sentinel-connector-certification-evidence-v1",
@@ -49,6 +52,17 @@ const evidence = {
   authMethod: args.get("--auth-method") || (connector === "siem" ? "HMAC signed webhook" : "replace-with-auth-method"),
   credentialStorage: args.get("--credential-storage") || "replace-with-storage-location",
   leastPrivilegeScopes: (args.get("--least-privilege-scopes") || "replace-with-scope").split(",").map((scope) => scope.trim()).filter(Boolean),
+  livePreflight: {
+    reportPath: preflight ? path.resolve(preflightPath) : "replace-with-connector-live-preflight.json",
+    format: preflight?.format || "sentinel-enterprise-connector-live-preflight-v1",
+    checkedAt: preflight?.checkedAt || "YYYY-MM-DDTHH:mm:ssZ",
+    validated: preflightValidated,
+    connectorTypes: preflightConnectorNames,
+    checkCount: Object.keys(preflightChecks).length,
+    checks: preflightChecks,
+    selectedConnector: connector,
+    selectedEndpointHost: selected.endpointHost || "replace-with-target-system"
+  },
   replayProtection: {
     implemented: asBool(args.get("--replay-protection-implemented"), connector === "siem" ? connectors.siem?.signed === true || preflight?.checks?.siemReplayEvidencePresent === true : true),
     windowSeconds: Number(args.get("--replay-window-seconds") || connectors.siem?.replayWindowSeconds || 300),

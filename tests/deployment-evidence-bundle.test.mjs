@@ -86,6 +86,28 @@ const writeProductionPhaseFiveEvidence = (dir, environment = "prod-east") => {
   const connector = JSON.parse(readFileSync(connectorPath, "utf8"));
   connector.environment = environment;
   connector.status = "certified";
+  connector.connector = "siem";
+  connector.targetSystem = "siem.prod.example.com";
+  connector.livePreflight = {
+    reportPath: path.join(evidenceDir, "connector-live-preflight.json"),
+    format: "sentinel-enterprise-connector-live-preflight-v1",
+    checkedAt: "2026-07-01T10:00:00Z",
+    validated: true,
+    connectorTypes: ["siem"],
+    checkCount: 3,
+    checks: {
+      siemDeliveryAccepted: true,
+      siemReplayEvidencePresent: true,
+      redactedOutput: true
+    },
+    selectedConnector: "siem",
+    selectedEndpointHost: "siem.prod.example.com"
+  };
+  writeFileSync(connector.livePreflight.reportPath, JSON.stringify({
+    format: connector.livePreflight.format,
+    checkedAt: connector.livePreflight.checkedAt,
+    checks: connector.livePreflight.checks
+  }, null, 2));
   connector.rollback.tested = true;
   writeFileSync(connectorPath, JSON.stringify(connector, null, 2));
 

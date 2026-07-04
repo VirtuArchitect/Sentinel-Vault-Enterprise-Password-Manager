@@ -70,6 +70,9 @@ test("connector certification generator creates pilot evidence from preflight", 
     const evidence = readJson(evidencePath);
     assert.equal(evidence.connector, "siem");
     assert.equal(evidence.targetSystem, "siem.example.test");
+    assert.equal(evidence.livePreflight.validated, true);
+    assert.equal(evidence.livePreflight.selectedEndpointHost, "siem.example.test");
+    assert.deepEqual(evidence.livePreflight.connectorTypes, ["siem"]);
     assert.equal(evidence.replayProtection.implemented, true);
     assert.equal(evidence.testResults.deliveryTest, "passed");
     assert.equal(evidence.testResults.replayTest, "passed");
@@ -94,8 +97,53 @@ test("connector certification generator reflects unredacted preflight output", (
 
     const evidence = readJson(evidencePath);
     assert.equal(evidence.redactionEvidence.secretValuesFound, true);
+    assert.equal(evidence.livePreflight.validated, false);
     assert.equal(evidence.testResults.redactionTest, "failed");
     assert.match(runValidator(evidencePath), /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("connector certification validator rejects certified evidence without validated live preflight", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-connector-certified-preflight-fail-"));
+  try {
+    const preflightPath = path.join(dir, "connector-live-preflight.json");
+    const evidencePath = path.join(dir, "connector-evidence.json");
+    writePreflight(preflightPath);
+
+    runGenerator([
+      "--connector", "siem",
+      "--status", "certified",
+      "--preflight", preflightPath,
+      "--environment", "prod",
+      "--owner", "Connector Owner",
+      "--support-contact", "SOC Platform",
+      "--classification", "confidential",
+      "--network-path", "private endpoint",
+      "--credential-storage", "Windows DPAPI protected secret",
+      "--least-privilege-scopes", "audit.write,health.read",
+      "--dedupe-store", "SIEM delivery ID store",
+      "--receiver-outage", "bounded retry with alert",
+      "--rate-limit", "backoff and alert",
+      "--malformed-payload", "reject and alert",
+      "--dashboards-reviewed", "true",
+      "--tickets-reviewed", "true",
+      "--auth-failure-test", "passed",
+      "--retry-test", "passed",
+      "--disable-procedure", "Disable connector in Sentinel Vault integration settings",
+      "--rollback-tested", "true",
+      "--connector-owner", "Connector Owner",
+      "--security-reviewer", "Security Reviewer",
+      "--operations-reviewer", "Operations Reviewer",
+      "--out", evidencePath
+    ]);
+
+    const evidence = readJson(evidencePath);
+    evidence.livePreflight.checks.siemDeliveryAccepted = false;
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /livePreflight\.checks\.siemDeliveryAccepted must pass/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

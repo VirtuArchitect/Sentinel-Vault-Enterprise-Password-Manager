@@ -178,3 +178,4 @@ Expected result:
 - SIEM evidence, when present, is signed and accepted by the receiver.
 - ITSM evidence, when present, proves an active allowed-state ticket inside the change window.
 - Redacted output does not include connector secrets.
+- Certified connector evidence generated with `--preflight` includes live preflight summary checks that match the certified connector target.
