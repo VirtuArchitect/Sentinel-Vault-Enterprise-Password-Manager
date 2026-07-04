@@ -160,6 +160,7 @@ Expected result:
 - Redaction settings do not allow password or OTP values in evidence.
 - When `--source` is supplied, every source CSV column is mapped or explicitly ignored.
 - Deployed source migration evidence must include the normalized-import validation report and match its CSV hash, row count, adapter evidence, and password-redaction status.
+- Deployed tenant-isolation evidence must include the tenant test report summary and match its tested scope plus all required negative-test outcomes.
 
 ## Connector Preflight Evidence
 

@@ -76,11 +76,48 @@ test("tenant isolation generator summarizes planned negative-test evidence", () 
     assert.equal(evidence.testedAt, "2026-07-01T10:00:00Z");
     assert.equal(evidence.scope.tenantCount, 3);
     assert.equal(evidence.scope.sampledTenantPairs, 4);
+    assert.equal(evidence.testReport.validated, true);
+    assert.deepEqual(evidence.testReport.scope, evidence.scope);
+    assert.equal(evidence.testReport.negativeTests.share, "passed");
     assert.equal(evidence.negativeTests.reveal, "passed");
     assert.equal(evidence.negativeTests.offlineCacheEnumeration, "passed");
     assert.equal(evidence.redaction.secretValuesFound, false);
     assert.equal(evidence.redaction.sessionTokensFound, false);
     assert.match(runValidator(evidencePath), /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("tenant isolation validator rejects production evidence with mismatched test report scope", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-tenant-isolation-scope-drift-"));
+  try {
+    const reportPath = path.join(dir, "tenant-isolation-tests.json");
+    const evidencePath = path.join(dir, "tenant-isolation.json");
+    writeReport(reportPath);
+
+    runGenerator([
+      "--status", "production",
+      "--environment", "prod",
+      "--report", reportPath,
+      "--service-layer-object-checks", "passed",
+      "--route-rbac-checks", "passed",
+      "--console-payload-filtering", "passed",
+      "--offline-cache-scoping", "passed",
+      "--admin-metadata-export-restricted", "passed",
+      "--jit-grant-tenant-boundary", "passed",
+      "--tenant-identifiers-scoped", "passed",
+      "--security-reviewer", "Security Reviewer",
+      "--operations-owner", "Operations Owner",
+      "--change-ticket", "CHG-93001",
+      "--out", evidencePath
+    ]);
+
+    const evidence = readJson(evidencePath);
+    evidence.testReport.scope.tenantCount = 2;
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /testReport\.scope\.tenantCount must match/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

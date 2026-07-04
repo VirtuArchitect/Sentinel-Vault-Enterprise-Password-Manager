@@ -83,6 +83,7 @@ const requests = [
       "Column-map validation proves every proprietary source column is mapped or explicitly ignored before conversion",
       "Normalized import validation matches adapter evidence row counts and stores only redacted password fingerprints",
       "Source migration evidence binds to normalized import validation by CSV hash, row count, adapter evidence, and password redaction status",
+      "Tenant isolation evidence binds to the tenant test report scope and required negative-test outcomes",
       "No source-system credentials, plaintext secrets, or customer-only fields appear in evidence",
       "Every proprietary source column is mapped, intentionally ignored, or escalated",
       "Tenant isolation evidence includes passing cross-tenant negative authorization checks"

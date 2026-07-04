@@ -533,6 +533,13 @@ const writeProductionMigrationEvidence = (dir, environment = "prod-east") => {
     sampledTenantPairs: 4,
     testCadence: "per-release"
   };
+  tenant.testReport = {
+    reportPath: path.join(evidenceDir, "tenant-isolation-tests.json"),
+    validated: true,
+    testedAt: tenant.testedAt,
+    scope: { ...tenant.scope },
+    negativeTests: Object.fromEntries(Object.keys(tenant.negativeTests).map((key) => [key, "passed"]))
+  };
   for (const key of Object.keys(tenant.controls)) {
     tenant.controls[key] = "passed";
   }

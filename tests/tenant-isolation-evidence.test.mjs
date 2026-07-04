@@ -31,6 +31,26 @@ const productionEvidence = () => {
     sampledTenantPairs: 4,
     testCadence: "per-release"
   };
+  evidence.testReport = {
+    reportPath: "artifacts/security/tenant-isolation-tests.json",
+    validated: true,
+    testedAt: evidence.testedAt,
+    scope: { ...evidence.scope },
+    negativeTests: {
+      reveal: "passed",
+      update: "passed",
+      delete: "passed",
+      restore: "passed",
+      versionRestore: "passed",
+      rotate: "passed",
+      share: "passed",
+      approveAccess: "passed",
+      denyAccess: "passed",
+      revokeAccess: "passed",
+      consoleVaultEnumeration: "passed",
+      offlineCacheEnumeration: "passed"
+    }
+  };
   evidence.controls = {
     serviceLayerObjectChecks: "passed",
     routeRbacChecks: "passed",
@@ -105,6 +125,20 @@ test("production tenant isolation evidence rejects leaked secret values", () => 
     writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
 
     assert.throws(() => runValidator(evidencePath), /secret values/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production tenant isolation evidence rejects test report drift", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-tenant-isolation-report-fail-"));
+  try {
+    const evidence = productionEvidence();
+    evidence.testReport.negativeTests.share = "failed";
+    const evidencePath = path.join(dir, "tenant-isolation.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /testReport\.negativeTests\.share must pass/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

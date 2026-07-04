@@ -79,6 +79,7 @@ Implemented:
 - Normalized import validator for converted Sentinel CSV shape, adapter-evidence row matching, allowed type/risk values, and redacted password fingerprint reporting.
 - Source migration evidence template, generator, validator, and deployment-bundle gate that bind proprietary column maps, redacted adapter evidence, normalized import output, storage migration evidence, and tenant-isolation proof.
 - Source migration evidence binding for normalized-import validation reports so deployed migration evidence cannot drift from reviewed CSV hashes, row counts, adapter evidence, and password-redaction status.
+- Tenant isolation evidence binding for tenant test report scope and required negative-test outcomes so deployed evidence cannot drift from reviewed cross-tenant authorization tests.
 - Production deployment-bundle enforcement that source migration and tenant isolation evidence are production and environment-aligned.
 
 Remaining:

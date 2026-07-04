@@ -88,6 +88,13 @@ const writeCompletedMigrationFixture = (dir) => {
   };
   for (const key of Object.keys(tenant.controls)) tenant.controls[key] = "passed";
   for (const key of Object.keys(tenant.negativeTests)) tenant.negativeTests[key] = "passed";
+  tenant.testReport = {
+    reportPath: path.join(dir, "tenant-isolation-tests.json"),
+    validated: true,
+    testedAt: tenant.testedAt,
+    scope: { ...tenant.scope },
+    negativeTests: { ...tenant.negativeTests }
+  };
   tenant.redaction = {
     secretValuesFound: false,
     sessionTokensFound: false,

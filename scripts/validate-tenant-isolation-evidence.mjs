@@ -21,6 +21,10 @@ for (const name of ["tenantCount", "vaultCount", "userCount", "sampledTenantPair
 }
 assert.ok(evidence.scope.sampledTenantPairs <= evidence.scope.tenantCount * Math.max(evidence.scope.tenantCount - 1, 0), "sampledTenantPairs exceeds possible directed tenant pairs");
 assert.ok(frequencies.has(evidence.scope?.testCadence), "Unsupported tenant isolation test cadence");
+assert.ok(evidence.testReport && typeof evidence.testReport === "object", "testReport is required");
+assert.ok(evidence.testReport.reportPath, "testReport.reportPath is required");
+assert.ok(evidence.testReport.scope && typeof evidence.testReport.scope === "object", "testReport.scope is required");
+assert.ok(evidence.testReport.negativeTests && typeof evidence.testReport.negativeTests === "object", "testReport.negativeTests are required");
 
 for (const name of ["serviceLayerObjectChecks", "routeRbacChecks", "consolePayloadFiltering", "offlineCacheScoping", "adminMetadataExportRestricted", "jitGrantTenantBoundary"]) {
   assert.ok(checkStatuses.has(evidence.controls?.[name]), `Unsupported control status for ${name}`);
@@ -40,15 +44,21 @@ assert.ok(evidence.approvals?.changeTicket, "approvals.changeTicket is required"
 if (deployedStatuses.has(evidence.status)) {
   assert.doesNotMatch(JSON.stringify(evidence), placeholder, "deployed tenant isolation evidence cannot contain placeholders");
   assert.ok(isoTimestamp.test(evidence.testedAt), "testedAt must be an ISO timestamp");
+  assert.equal(evidence.testReport.validated, true, "deployed tenant isolation evidence requires a validated test report");
+  assert.equal(evidence.testReport.testedAt, evidence.testedAt, "testReport.testedAt must match evidence testedAt");
   assert.ok(evidence.scope.tenantCount >= 2, "deployed evidence must include at least two tenants");
   assert.ok(evidence.scope.vaultCount >= 2, "deployed evidence must include at least two vaults");
   assert.ok(evidence.scope.userCount >= 2, "deployed evidence must include at least two users");
   assert.ok(evidence.scope.sampledTenantPairs >= 1, "deployed evidence must sample at least one cross-tenant pair");
+  for (const name of ["tenantCount", "vaultCount", "userCount", "sampledTenantPairs", "testCadence"]) {
+    assert.equal(evidence.testReport.scope[name], evidence.scope[name], `testReport.scope.${name} must match evidence scope`);
+  }
   for (const name of ["serviceLayerObjectChecks", "routeRbacChecks", "consolePayloadFiltering", "offlineCacheScoping", "adminMetadataExportRestricted", "jitGrantTenantBoundary"]) {
     assert.equal(evidence.controls[name], "passed", `${name} must pass for deployed evidence`);
   }
   for (const name of ["reveal", "update", "delete", "restore", "versionRestore", "rotate", "share", "approveAccess", "denyAccess", "revokeAccess", "consoleVaultEnumeration", "offlineCacheEnumeration"]) {
     assert.equal(evidence.negativeTests[name], "passed", `${name} negative test must pass for deployed evidence`);
+    assert.equal(evidence.testReport.negativeTests[name], "passed", `testReport.negativeTests.${name} must pass for deployed evidence`);
   }
   assert.equal(evidence.redaction.secretValuesFound, false, "tenant isolation evidence cannot contain secret values");
   assert.equal(evidence.redaction.sessionTokensFound, false, "tenant isolation evidence cannot contain session tokens");

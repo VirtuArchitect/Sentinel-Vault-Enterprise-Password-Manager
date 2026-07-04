@@ -60,6 +60,27 @@ const statusFor = (name) => {
   const entry = testByName.get(name);
   return normalizeStatus(entry?.status || entry?.result || entry?.outcome);
 };
+const negativeTestNames = [
+  "reveal",
+  "update",
+  "delete",
+  "restore",
+  "versionRestore",
+  "rotate",
+  "share",
+  "approveAccess",
+  "denyAccess",
+  "revokeAccess",
+  "consoleVaultEnumeration",
+  "offlineCacheEnumeration"
+];
+const reportNegativeTests = Object.fromEntries(negativeTestNames.map((name) => [name, statusFor(name)]));
+const reportValidated = Boolean(report)
+  && negativeTestNames.every((name) => reportNegativeTests[name] === "passed")
+  && Number(scope.tenantCount || 0) >= 2
+  && Number(scope.vaultCount || 0) >= 2
+  && Number(scope.userCount || 0) >= 2
+  && Number(scope.sampledTenantPairs || 0) >= 1;
 const samplePath = args.get("--samples");
 const sampleText = samplePath && existsSync(samplePath) && !statSync(samplePath).isDirectory() ? readText(samplePath) : "";
 const combinedText = `${report ? JSON.stringify(report) : ""}\n${sampleText}`;
@@ -77,6 +98,19 @@ const evidence = {
     userCount: Number(args.get("--user-count") || scope.userCount || 0),
     sampledTenantPairs: Number(args.get("--sampled-tenant-pairs") || scope.sampledTenantPairs || 0),
     testCadence: args.get("--test-cadence") || scope.testCadence || "per-release"
+  },
+  testReport: {
+    reportPath,
+    validated: reportValidated,
+    testedAt: report?.testedAt || "YYYY-MM-DDTHH:mm:ssZ",
+    scope: {
+      tenantCount: Number(scope.tenantCount || 0),
+      vaultCount: Number(scope.vaultCount || 0),
+      userCount: Number(scope.userCount || 0),
+      sampledTenantPairs: Number(scope.sampledTenantPairs || 0),
+      testCadence: scope.testCadence || "per-release"
+    },
+    negativeTests: reportNegativeTests
   },
   controls: {
     serviceLayerObjectChecks: argStatus("--service-layer-object-checks", "planned"),
