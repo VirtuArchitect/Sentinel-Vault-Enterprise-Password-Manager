@@ -213,12 +213,35 @@ const writeProductionBrowserEvidence = (dir, environment = "prod-east") => {
   identity.redaction.containsCustomerData = false;
   writeFileSync(identityPath, JSON.stringify(identity, null, 2));
 
+  const packageValidationPath = path.join(evidenceDir, "browser-extension-package-validation.json");
+  writeFileSync(packageValidationPath, JSON.stringify({
+    format: "sentinel-browser-extension-package-validation-v1",
+    packagePath: path.join(evidenceDir, "sentinel-vault-autofill.zip"),
+    packageSha256,
+    packageBytes: 12345,
+    manifestVersion: 3,
+    extensionName: "Sentinel Vault Autofill",
+    requiredFileCount: 6,
+    hostPermissions: ["http://127.0.0.1:5173/*", "http://localhost:5173/*"],
+    permissions: ["activeTab", "scripting"],
+    validated: true
+  }, null, 2));
+
   const rolloutPath = path.join(evidenceDir, "browser-extension-rollout-evidence.json");
   const rollout = JSON.parse(readFileSync(rolloutPath, "utf8"));
   rollout.deploymentStatus = "production";
   rollout.environment = environment;
   rollout.owner = "endpoint-platform";
   rollout.package.sha256 = packageSha256;
+  rollout.packageValidation = {
+    reportPath: packageValidationPath,
+    format: "sentinel-browser-extension-package-validation-v1",
+    validated: true,
+    packageSha256,
+    requiredFileCount: 6,
+    hostPermissionCount: 2,
+    permissionCount: 2
+  };
   rollout.chrome.extensionId = chromeExtensionId;
   rollout.edge.extensionId = edgeExtensionId;
   for (const ring of rollout.rolloutRings) {

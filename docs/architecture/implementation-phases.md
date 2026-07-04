@@ -321,6 +321,7 @@ Implemented:
 - Production deployment-bundle enforcement that browser extension identity and rollout evidence are production and environment-aligned.
 - Browser enterprise policy renderer for completed rollout evidence.
 - Browser enterprise policy validator for rendered Chrome/Edge force-install JSON, production extension IDs, approved update URLs, runtime host allowlist, and blocked permissions before rollout handoff.
+- Browser rollout evidence binding for package-validation reports so deployed rollout evidence cannot pass without a validated extension package hash.
 - Native companion and credential-provider release evidence template and validator for signed-artifact, abuse-test, rollback, and approval gates.
 - Native companion release evidence generator for artifact hashes, architecture metadata, native messaging metadata, and planned credential-provider release gates.
 - Native release artifact validator for SHA-256 hashes, artifact classification, Windows Authenticode status, and signed credential-provider handoff evidence.

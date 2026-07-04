@@ -89,6 +89,8 @@ Steps:
 ```powershell
 pnpm package:extension
 pnpm validate:extension-package -- --out ".\artifacts\browser\browser-extension-package-validation.json"
+pnpm release:browser-rollout -- --artifact ".\artifacts\browser\sentinel-vault-autofill.zip" --package-validation ".\artifacts\browser\browser-extension-package-validation.json" --out ".\artifacts\browser\browser-extension-rollout-evidence.json"
+pnpm validate:browser-rollout -- ".\artifacts\browser\browser-extension-rollout-evidence.json"
 ```
 
 Expected result:
@@ -98,6 +100,7 @@ Expected result:
 - The manifest uses Manifest V3.
 - The package does not request wildcard web host permissions.
 - `artifacts/browser/browser-extension-package-validation.json` records the package hash, required file count, permissions, and host permissions for rollout evidence.
+- Browser rollout evidence records the package validation report and cannot pass deployed rollout gates without a validated package hash match.
 
 ## Native Companion Artifact
 

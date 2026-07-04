@@ -9,6 +9,15 @@
     "sha256": "replace-with-package-sha256",
     "manifestVersion": 3
   },
+  "packageValidation": {
+    "reportPath": "replace-with-browser-extension-package-validation-report",
+    "format": "sentinel-browser-extension-package-validation-v1",
+    "validated": false,
+    "packageSha256": "replace-with-package-sha256",
+    "requiredFileCount": 6,
+    "hostPermissionCount": 2,
+    "permissionCount": 2
+  },
   "chrome": {
     "enabled": true,
     "extensionId": "replace-with-chrome-extension-id",
