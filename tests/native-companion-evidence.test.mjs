@@ -43,6 +43,20 @@ const productionEvidence = () => {
       signerThumbprint: hex("e", 40)
     }
   ];
+  evidence.artifactValidation = {
+    reportPath: "C:\\Release\\native-artifact-validation.json",
+    format: "sentinel-native-release-artifact-validation-v1",
+    validated: true,
+    requireSignature: true,
+    artifactCount: evidence.artifacts.length,
+    signedArtifactCount: evidence.artifacts.length,
+    artifacts: evidence.artifacts.map((artifact) => ({
+      name: artifact.name,
+      type: artifact.type,
+      sha256: artifact.sha256,
+      authenticodeStatus: "Valid"
+    }))
+  };
   evidence.nativeMessaging = {
     enabled: true,
     manifestPath: "C:\\Program Files\\Sentinel Vault\\native-messaging\\sentinel-vault.json",
@@ -96,6 +110,20 @@ test("production native companion evidence rejects unsigned credential provider 
     writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
 
     assert.throws(() => runValidator(evidencePath), /must have a valid Authenticode signature/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("production native companion evidence rejects artifact validation hash mismatch", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-native-artifact-validation-fail-"));
+  try {
+    const evidence = productionEvidence();
+    evidence.artifactValidation.artifacts[1].sha256 = hex("f", 64);
+    const evidencePath = path.join(dir, "native-companion.json");
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runValidator(evidencePath), /sha256 must match artifact validation/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

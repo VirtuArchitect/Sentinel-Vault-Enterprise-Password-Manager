@@ -258,13 +258,13 @@ const requests = [
       "pnpm validate:native-artifacts -- --artifact <signed-credential-provider-artifact> --require-signature --out <native-artifact-validation.json>",
       "pnpm release:credential-provider-approval -- --status approved --report <credential-provider-approval-report.json> --native-companion-evidence <native-companion-evidence.json> --artifact <signed-credential-provider-artifact> --out <credential-provider-approval-evidence.json>",
       "pnpm validate:credential-provider-approval -- <credential-provider-approval-evidence.json>",
-      "pnpm release:native-companion -- --artifact <signed-credential-provider-artifact> --credential-provider-enabled true --out <native-companion-evidence.json>",
+      "pnpm release:native-companion -- --artifact <signed-credential-provider-artifact> --artifact-validation <native-artifact-validation.json> --credential-provider-enabled true --out <native-companion-evidence.json>",
       "pnpm validate:native-companion -- <native-companion-evidence.json>"
     ],
     acceptanceCriteria: [
       "Native artifact validation evidence records SHA-256 hashes and valid Authenticode status before release evidence is approved",
       "Credential-provider behavior is approved before registration on managed endpoints",
-      "Signed artifact evidence includes hash, architecture, certificate verification, and rollback proof",
+      "Signed artifact evidence includes hash, architecture, certificate verification, artifact-validation report binding, and rollback proof",
       "Abuse-case and offline-logon behavior are documented and approved"
     ]
   }

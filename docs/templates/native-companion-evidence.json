@@ -25,6 +25,15 @@
       "signerThumbprint": "replace-with-thumbprint"
     }
   ],
+  "artifactValidation": {
+    "reportPath": "replace-with-native-artifact-validation.json",
+    "format": "sentinel-native-release-artifact-validation-v1",
+    "validated": false,
+    "requireSignature": false,
+    "artifactCount": 0,
+    "signedArtifactCount": 0,
+    "artifacts": []
+  },
   "nativeMessaging": {
     "enabled": true,
     "manifestPath": "replace-with-native-messaging-manifest-path",

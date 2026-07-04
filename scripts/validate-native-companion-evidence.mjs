@@ -30,6 +30,13 @@ assert.ok(Array.isArray(evidence.architectures), "architectures must be an array
 assert.ok(evidence.architectures.length > 0, "at least one architecture is required");
 assert.ok(Array.isArray(evidence.artifacts), "artifacts must be an array");
 assert.ok(evidence.artifacts.length > 0, "at least one native artifact is required");
+assert.ok(evidence.artifactValidation && typeof evidence.artifactValidation === "object", "artifactValidation is required");
+assert.equal(
+  evidence.artifactValidation.format,
+  "sentinel-native-release-artifact-validation-v1",
+  "artifactValidation.format must be sentinel-native-release-artifact-validation-v1"
+);
+assert.ok(Array.isArray(evidence.artifactValidation.artifacts), "artifactValidation.artifacts must be an array");
 assert.ok(evidence.securityControls && typeof evidence.securityControls === "object", "securityControls are required");
 assert.ok(evidence.testResults && typeof evidence.testResults === "object", "testResults are required");
 assert.ok(evidence.rollback?.disableProcedure, "rollback.disableProcedure is required");
@@ -79,11 +86,21 @@ if (deployedStatuses.has(evidence.releaseStatus)) {
 
   for (const artifact of evidence.artifacts) {
     assert.ok(sha256Pattern.test(artifact.sha256), `${artifact.name}.sha256 must be a SHA-256 hex digest`);
+    const validatedArtifact = evidence.artifactValidation.artifacts.find((candidate) => candidate.name === artifact.name);
+    assert.ok(validatedArtifact, `${artifact.name} must be present in artifactValidation.artifacts`);
+    assert.equal(validatedArtifact.type, artifact.type, `${artifact.name}.type must match artifact validation`);
+    assert.equal(validatedArtifact.sha256, artifact.sha256, `${artifact.name}.sha256 must match artifact validation`);
     if (signedNativeArtifact.test(artifact.name)) {
       assert.equal(artifact.authenticodeStatus, "Valid", `${artifact.name} must have a valid Authenticode signature`);
       assert.ok(thumbprintPattern.test(artifact.signerThumbprint), `${artifact.name}.signerThumbprint must be a certificate thumbprint`);
+      assert.equal(validatedArtifact.authenticodeStatus, "Valid", `${artifact.name} artifact validation must have a valid Authenticode signature`);
     }
   }
+
+  assert.ok(evidence.artifactValidation.reportPath, "artifactValidation.reportPath is required for deployed evidence");
+  assert.equal(evidence.artifactValidation.validated, true, "artifactValidation.validated must be true for deployed evidence");
+  assert.equal(evidence.artifactValidation.requireSignature, true, "artifactValidation.requireSignature must be true for deployed evidence");
+  assert.ok(evidence.artifactValidation.artifactCount >= evidence.artifacts.length, "artifactValidation.artifactCount must cover native artifacts");
 
   if (evidence.nativeMessaging?.enabled) {
     for (const extensionId of evidence.nativeMessaging.allowedExtensionIds) {

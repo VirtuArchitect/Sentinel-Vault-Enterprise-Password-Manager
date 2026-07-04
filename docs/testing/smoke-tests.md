@@ -117,6 +117,7 @@ pnpm validate:native-artifacts -- --artifact ".\companions\windows\sentinel-tray
 Expected result:
 
 - `artifacts/native/native-artifact-validation.json` records the artifact name, type, size, SHA-256 hash, and signature status.
+- Native companion release evidence generated with `--artifact-validation` must match the validated artifact names, types, and SHA-256 hashes.
 - Script artifacts are classified as `script`.
 - Signed `.exe`, `.dll`, `.msi`, and `.msix` release artifacts can be rechecked with `--require-signature` on the release host.
 

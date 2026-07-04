@@ -325,6 +325,7 @@ Implemented:
 - Native companion and credential-provider release evidence template and validator for signed-artifact, abuse-test, rollback, and approval gates.
 - Native companion release evidence generator for artifact hashes, architecture metadata, native messaging metadata, and planned credential-provider release gates.
 - Native release artifact validator for SHA-256 hashes, artifact classification, Windows Authenticode status, and signed credential-provider handoff evidence.
+- Native companion release evidence binding for native artifact-validation reports so deployed companion evidence cannot pass with mismatched artifact hashes.
 - Credential-provider approval evidence template, generator, validator, and deployment-bundle gate for implementation approval, LSASS/secure desktop risk review, signed DLL evidence, install/uninstall, rollback, and redaction checks.
 - Production deployment-bundle enforcement that native companion release evidence is production and credential-provider approval evidence is approved and environment-aligned.
 - Offline cache and native autotype architecture roadmap.

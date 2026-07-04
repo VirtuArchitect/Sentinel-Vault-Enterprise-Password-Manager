@@ -58,8 +58,50 @@ test("native companion evidence generator creates planned companion evidence", (
     assert.equal(evidence.artifacts[0].type, "companion-exe");
     assert.equal(evidence.artifacts[0].sha256, sha256(fixture));
     assert.equal(evidence.artifacts[0].authenticodeStatus, "not-signed");
+    assert.equal(evidence.artifactValidation.validated, false);
+    assert.equal(evidence.artifactValidation.format, "sentinel-native-release-artifact-validation-v1");
     assert.equal(evidence.credentialProvider.enabled, false);
     assert.equal(evidence.testResults.credentialProviderReview, "not-applicable");
+    assert.match(runValidator(evidencePath), /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("native companion evidence generator embeds native artifact validation summaries", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-native-generator-validation-"));
+  try {
+    const artifactPath = path.join(dir, "SentinelVault.Companion.exe");
+    const validationPath = path.join(dir, "native-artifact-validation.json");
+    const evidencePath = path.join(dir, "native-companion-evidence.json");
+    const fixture = "validated companion fixture";
+    const artifactSha256 = sha256(fixture);
+    writeFileSync(artifactPath, fixture);
+    writeFileSync(validationPath, JSON.stringify({
+      format: "sentinel-native-release-artifact-validation-v1",
+      requireSignature: false,
+      artifactCount: 1,
+      signedArtifactCount: 0,
+      validated: true,
+      artifacts: [{
+        name: "SentinelVault.Companion.exe",
+        type: "companion-exe",
+        sha256: artifactSha256,
+        authenticodeStatus: "not-applicable"
+      }]
+    }, null, 2));
+
+    runGenerator([
+      "--artifact", artifactPath,
+      "--artifact-validation", validationPath,
+      "--source-commit", sourceCommit,
+      "--out", evidencePath
+    ]);
+
+    const evidence = readJson(evidencePath);
+    assert.equal(evidence.artifactValidation.reportPath, path.resolve(validationPath));
+    assert.equal(evidence.artifactValidation.validated, true);
+    assert.equal(evidence.artifactValidation.artifacts[0].sha256, artifactSha256);
     assert.match(runValidator(evidencePath), /validated/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -100,6 +142,38 @@ test("native companion evidence generator rejects missing artifacts", () => {
       "--artifact", missingArtifactPath,
       "--out", evidencePath
     ]), /Native companion artifact not found/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("native companion evidence generator rejects artifact validation mismatches", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "sentinel-native-generator-validation-fail-"));
+  try {
+    const artifactPath = path.join(dir, "SentinelVault.Companion.exe");
+    const validationPath = path.join(dir, "native-artifact-validation.json");
+    const evidencePath = path.join(dir, "native-companion-evidence.json");
+    writeFileSync(artifactPath, "validated companion fixture");
+    writeFileSync(validationPath, JSON.stringify({
+      format: "sentinel-native-release-artifact-validation-v1",
+      requireSignature: false,
+      artifactCount: 1,
+      signedArtifactCount: 0,
+      validated: true,
+      artifacts: [{
+        name: "SentinelVault.Companion.exe",
+        type: "companion-exe",
+        sha256: "f".repeat(64),
+        authenticodeStatus: "not-applicable"
+      }]
+    }, null, 2));
+
+    assert.throws(() => runGenerator([
+      "--artifact", artifactPath,
+      "--artifact-validation", validationPath,
+      "--source-commit", sourceCommit,
+      "--out", evidencePath
+    ]), /sha256 must match artifact validation report/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

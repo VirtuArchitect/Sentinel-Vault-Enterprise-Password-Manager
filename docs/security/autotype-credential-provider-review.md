@@ -61,8 +61,8 @@ Record the implementation approval with `docs/templates/credential-provider-appr
 pnpm validate:native-artifacts -- --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --require-signature --out ".\artifacts\native\native-artifact-validation.json"
 pnpm release:credential-provider-approval -- --status approved --report ".\artifacts\native\credential-provider-approval-report.json" --native-companion-evidence ".\artifacts\native\native-companion-evidence.json" --artifact ".\artifacts\native\SentinelVault.CredentialProvider.dll" --out ".\artifacts\native\credential-provider-approval-evidence.json"
 pnpm validate:credential-provider-approval -- ".\artifacts\native\credential-provider-approval-evidence.json"
-pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe" --out ".\artifacts\native\native-companion-evidence.json"
+pnpm release:native-companion -- --artifact ".\artifacts\native\SentinelVault.Companion.exe" --artifact-validation ".\artifacts\native\native-artifact-validation.json" --out ".\artifacts\native\native-companion-evidence.json"
 pnpm validate:native-companion -- docs/templates/native-companion-evidence.json
 ```
 
-Pilot and production evidence cannot contain placeholders. It must include valid Authenticode signatures for native `.exe` and `.dll` artifacts, passing security controls, clean install/uninstall results, abuse-case test results, rollback testing, and security, desktop engineering, release, and change approvals.
+Pilot and production evidence cannot contain placeholders. It must include a validated native artifact report, valid Authenticode signatures for native `.exe` and `.dll` artifacts, passing security controls, clean install/uninstall results, abuse-case test results, rollback testing, and security, desktop engineering, release, and change approvals.

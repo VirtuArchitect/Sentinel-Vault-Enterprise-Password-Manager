@@ -13,6 +13,7 @@ for (let index = 0; index < cliArgs.length; index += 2) {
 
 const artifactPaths = cliArgs.flatMap((arg, index) => (arg === "--artifact" ? [cliArgs[index + 1]] : [])).filter(Boolean);
 const outputPath = args.get("--out") || "artifacts/native/native-companion-evidence.json";
+const artifactValidationPath = args.get("--artifact-validation");
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const releaseStatus = args.get("--status") || "planned";
 const releaseVersion = args.get("--version") || packageJson.version;
@@ -44,6 +45,16 @@ const artifactType = (artifactPath) => {
 
 const sha256FileHex = (filePath) => crypto.createHash("sha256").update(readFileSync(filePath)).digest("hex");
 
+const artifactValidation = artifactValidationPath ? JSON.parse(readFileSync(artifactValidationPath, "utf8")) : null;
+if (artifactValidation) {
+  assert.equal(
+    artifactValidation.format,
+    "sentinel-native-release-artifact-validation-v1",
+    "artifact validation report must use sentinel-native-release-artifact-validation-v1"
+  );
+  assert.equal(artifactValidation.validated, true, "artifact validation report must be validated");
+}
+
 const artifacts = artifactPaths.map((artifactPath) => {
   assert.ok(existsSync(artifactPath), `Native companion artifact not found: ${artifactPath}`);
   const stats = statSync(artifactPath);
@@ -61,6 +72,15 @@ const artifacts = artifactPaths.map((artifactPath) => {
   };
 });
 
+if (artifactValidation) {
+  for (const artifact of artifacts) {
+    const validatedArtifact = artifactValidation.artifacts.find((candidate) => candidate.name === artifact.name);
+    assert.ok(validatedArtifact, `${artifact.name} must be present in artifact validation report`);
+    assert.equal(validatedArtifact.type, artifact.type, `${artifact.name}.type must match artifact validation report`);
+    assert.equal(validatedArtifact.sha256, artifact.sha256, `${artifact.name}.sha256 must match artifact validation report`);
+  }
+}
+
 const evidence = {
   format: "sentinel-native-companion-evidence-v1",
   component: "windows-companion",
@@ -71,6 +91,28 @@ const evidence = {
   sourceCommit: args.get("--source-commit") || safeGit("rev-parse", "HEAD") || "replace-with-git-sha",
   architectures: (args.get("--architectures") || "x64").split(",").map((value) => value.trim()).filter(Boolean),
   artifacts,
+  artifactValidation: artifactValidation ? {
+    reportPath: path.resolve(artifactValidationPath),
+    format: artifactValidation.format,
+    validated: artifactValidation.validated,
+    requireSignature: artifactValidation.requireSignature,
+    artifactCount: artifactValidation.artifactCount,
+    signedArtifactCount: artifactValidation.signedArtifactCount,
+    artifacts: artifactValidation.artifacts.map((artifact) => ({
+      name: artifact.name,
+      type: artifact.type,
+      sha256: artifact.sha256,
+      authenticodeStatus: artifact.authenticodeStatus
+    }))
+  } : {
+    reportPath: "replace-with-native-artifact-validation.json",
+    format: "sentinel-native-release-artifact-validation-v1",
+    validated: false,
+    requireSignature: false,
+    artifactCount: 0,
+    signedArtifactCount: 0,
+    artifacts: []
+  },
   nativeMessaging: {
     enabled: args.get("--native-messaging-enabled") !== "false",
     manifestPath: args.get("--native-messaging-manifest") || "replace-with-native-messaging-manifest-path",

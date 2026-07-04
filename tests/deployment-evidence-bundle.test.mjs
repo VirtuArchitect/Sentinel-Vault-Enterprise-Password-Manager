@@ -280,6 +280,22 @@ const writeProductionNativeEvidence = (dir, environment = "prod-east") => {
     authenticodeStatus: "Valid",
     signerThumbprint: "e".repeat(40)
   }));
+  const nativeArtifactValidationPath = path.join(evidenceDir, "native-artifact-validation.json");
+  native.artifactValidation = {
+    reportPath: nativeArtifactValidationPath,
+    format: "sentinel-native-release-artifact-validation-v1",
+    validated: true,
+    requireSignature: true,
+    artifactCount: native.artifacts.length,
+    signedArtifactCount: native.artifacts.length,
+    artifacts: native.artifacts.map((artifact) => ({
+      name: artifact.name,
+      type: artifact.type,
+      sha256: artifact.sha256,
+      authenticodeStatus: "Valid"
+    }))
+  };
+  writeFileSync(nativeArtifactValidationPath, JSON.stringify(native.artifactValidation, null, 2));
   native.nativeMessaging.manifestPath = "C:\\Program Files\\Sentinel Vault\\native-messaging.json";
   native.nativeMessaging.allowedExtensionIds = ["a".repeat(32), "b".repeat(32)];
   native.nativeMessaging.hostPath = "C:\\Program Files\\Sentinel Vault\\SentinelVault.Companion.exe";
