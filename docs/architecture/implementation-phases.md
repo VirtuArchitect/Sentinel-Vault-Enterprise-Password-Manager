@@ -110,6 +110,7 @@ Implemented:
 - Connector certification evidence generator for live preflight summaries, least-privilege scope review, replay protection, redaction evidence, failure modes, rollback, and approvals.
 - Connector certification evidence binding for live preflight summaries so certified SIEM/ITSM evidence cannot pass without passing preflight checks aligned to the target connector.
 - ITSM work-note evidence template, generator, validator, and deployment-bundle gate for redacted access request, approval, denial, and revocation work-note samples.
+- ITSM work-note evidence binding for reviewed report hashes so production work-note evidence cannot drift from redacted lifecycle samples.
 - SIEM receiver signing-key rotation evidence template and validator.
 - SIEM receiver signing-key rotation evidence generator for receiver metadata, key-window checks, replay rejection, delivery samples, redaction review, and approvals.
 - SIEM receiver rotation evidence binding for receiver-report checks and delivery IDs so certified evidence cannot drift from reviewed receiver samples.

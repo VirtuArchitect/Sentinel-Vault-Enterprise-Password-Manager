@@ -123,6 +123,7 @@ const requests = [
       "Connector live preflight validation independently verifies signed SIEM delivery, replay evidence, active ITSM ticket state, change-window status, and redaction",
       "Connector certification evidence includes a validated live-preflight summary that matches the certified connector target",
       "SIEM rotation evidence includes a receiver-report summary whose checks and delivery IDs match reviewed receiver evidence",
+      "ITSM work-note evidence includes reviewed report hashes for request, approval, denial, and revocation lifecycle notes",
       "Receiver verifies HMAC signature, key ID, nonce, timestamp, and replay rejection",
       "ITSM ticket lookup confirms an active approved state inside the permitted window",
       "Work-note evidence is redacted and tied to approved incident, change, or request references"

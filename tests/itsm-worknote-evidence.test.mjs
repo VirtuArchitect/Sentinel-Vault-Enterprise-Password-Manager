@@ -62,9 +62,44 @@ test("ITSM work-note generator creates production evidence without raw note text
 
     const evidenceText = readFileSync(evidencePath, "utf8");
     assert.equal(evidenceText.includes("redacted request note"), false);
+    const evidence = JSON.parse(evidenceText);
+    assert.equal(evidence.workNoteReport.validated, true);
+    assert.equal(evidence.workNoteReport.ticketRef, "CHG-12345");
+    assert.equal(evidence.workNoteReport.requiredActions.length, 4);
+    assert.equal(evidence.workNoteReport.bodySha256ByAction.access_requested, evidence.workNotes[0].bodySha256);
 
     const validation = runScript("scripts/validate-itsm-worknote-evidence.mjs", [evidencePath]);
     assert.match(validation, /validated/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("ITSM work-note validator rejects report hash drift", () => {
+  const dir = path.join(tmpdir(), `sentinel-itsm-worknotes-drift-${process.pid}-${Date.now()}`);
+  try {
+    mkdirSync(dir, { recursive: true });
+    const reportPath = path.join(dir, "worknotes.json");
+    const evidencePath = path.join(dir, "itsm-worknote-evidence.json");
+    writeReport(reportPath);
+    runScript("scripts/generate-itsm-worknote-evidence.mjs", [
+      "--status", "production",
+      "--report", reportPath,
+      "--ticket-ref", "CHG-12345",
+      "--integration-owner", "Integrations",
+      "--security-reviewer", "Security",
+      "--operations-owner", "Operations",
+      "--change-ticket", "CHG-12345",
+      "--out", evidencePath
+    ]);
+
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence.workNoteReport.bodySha256ByAction.access_requested = "f".repeat(64);
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
+
+    assert.throws(() => runScript("scripts/validate-itsm-worknote-evidence.mjs", [
+      evidencePath
+    ]), /hash must match workNoteReport/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -76,14 +111,7 @@ test("ITSM work-note validator rejects unredacted deployed notes", () => {
     mkdirSync(dir, { recursive: true });
     const reportPath = path.join(dir, "worknotes.json");
     const evidencePath = path.join(dir, "itsm-worknote-evidence.json");
-    writeReport(reportPath, {
-      workNotes: [
-        { action: "access_requested", workNoteId: "wn-1", createdAt: "2026-07-01T10:00:00Z", redacted: false, ticketRef: "CHG-12345", body: "request note" },
-        { action: "access_approved", workNoteId: "wn-2", createdAt: "2026-07-01T10:05:00Z", redacted: true, ticketRef: "CHG-12345", body: "approval note" },
-        { action: "access_denied", workNoteId: "wn-3", createdAt: "2026-07-01T10:10:00Z", redacted: true, ticketRef: "CHG-12345", body: "denial note" },
-        { action: "access_revoked", workNoteId: "wn-4", createdAt: "2026-07-01T10:15:00Z", redacted: true, ticketRef: "CHG-12345", body: "revocation note" }
-      ]
-    });
+    writeReport(reportPath);
     runScript("scripts/generate-itsm-worknote-evidence.mjs", [
       "--status", "production",
       "--report", reportPath,
@@ -94,6 +122,9 @@ test("ITSM work-note validator rejects unredacted deployed notes", () => {
       "--change-ticket", "CHG-12345",
       "--out", evidencePath
     ]);
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence.workNotes[0].redacted = "false";
+    writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
 
     assert.throws(() => runScript("scripts/validate-itsm-worknote-evidence.mjs", [
       evidencePath

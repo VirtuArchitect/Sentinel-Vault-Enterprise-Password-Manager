@@ -5,6 +5,19 @@
   "system": "replace-with-itsm-system",
   "reviewedAt": "YYYY-MM-DDTHH:mm:ssZ",
   "ticketRef": "replace-with-ticket",
+  "workNoteReport": {
+    "reportPath": "replace-with-itsm-worknote-report.json",
+    "validated": false,
+    "ticketRef": "replace-with-ticket",
+    "actionCount": 0,
+    "requiredActions": [
+      "access_requested",
+      "access_approved",
+      "access_denied",
+      "access_revoked"
+    ],
+    "bodySha256ByAction": {}
+  },
   "workNotes": [
     {
       "action": "access_requested",

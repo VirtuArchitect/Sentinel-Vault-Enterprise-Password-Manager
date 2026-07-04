@@ -160,6 +160,14 @@ const writeProductionPhaseFiveEvidence = (dir, environment = "prod-east") => {
     note.redacted = "true";
     note.ticketRef = itsm.ticketRef;
   }
+  itsm.workNoteReport = {
+    reportPath: "artifacts/integrations/itsm-worknotes-prod.json",
+    validated: true,
+    ticketRef: itsm.ticketRef,
+    actionCount: itsm.workNotes.length,
+    requiredActions: itsm.workNotes.map((note) => note.action),
+    bodySha256ByAction: Object.fromEntries(itsm.workNotes.map((note) => [note.action, note.bodySha256]))
+  };
   for (const name of Object.keys(itsm.checks)) {
     itsm.checks[name] = "passed";
   }

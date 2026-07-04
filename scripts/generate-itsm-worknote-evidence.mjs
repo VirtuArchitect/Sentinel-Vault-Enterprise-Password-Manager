@@ -32,6 +32,11 @@ const workNotes = requiredActions.map((action) => {
     ticketRef: sample.ticketRef || ticketRef
   };
 });
+const reportHashes = Object.fromEntries(workNotes.map((note) => [note.action, note.bodySha256]));
+const reportActions = reportNotes.map((note) => note.action).filter(Boolean);
+const reportValidated = Boolean(report)
+  && requiredActions.every((action) => reportActions.includes(action))
+  && workNotes.every((note) => note.ticketRef === ticketRef && String(note.redacted).toLowerCase() === "true" && /^[a-f0-9]{64}$/i.test(note.bodySha256));
 
 const evidence = {
   format: "sentinel-itsm-worknote-evidence-v1",
@@ -40,6 +45,14 @@ const evidence = {
   system: args.get("--system") || report?.system || "replace-with-itsm-system",
   reviewedAt,
   ticketRef,
+  workNoteReport: {
+    reportPath: reportPath || "replace-with-itsm-worknote-report.json",
+    validated: reportValidated,
+    ticketRef,
+    actionCount: reportActions.length,
+    requiredActions,
+    bodySha256ByAction: reportHashes
+  },
   workNotes,
   checks: {
     ticketLookupPassed: statusOrPlanned("--ticket-lookup-passed"),
