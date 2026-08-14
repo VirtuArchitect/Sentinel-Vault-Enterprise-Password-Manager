@@ -315,6 +315,7 @@ function App() {
   if (!data || !token) return <Login onLogin={onLogin} initialError={bootError} />;
 
   const can = (permission: string) => data.user.permissions.includes(permission);
+  const canRevealSecrets = can("secret:reveal");
   const groupCounts = new Map<string, number>();
   data.secrets.forEach((secret) => groupCounts.set(secret.vaultId, (groupCounts.get(secret.vaultId) || 0) + 1));
 
@@ -503,7 +504,7 @@ function App() {
     {
       label: "Entry",
       items: [
-        { label: "Reveal Secret", disabled: !selectedSecret || viewingDeleted, action: () => selectedSecret && revealSecret(selectedSecret) },
+        { label: "Reveal Secret", disabled: !selectedSecret || viewingDeleted || !canRevealSecrets, action: () => selectedSecret && revealSecret(selectedSecret) },
         { label: "Rotate Secret", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated") },
         { label: "Share With Auditor", disabled: !selectedSecret || viewingDeleted || !can("vault:share"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor") },
         { label: "Restore Deleted Entry", disabled: !selectedSecret || !viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }, token); setSelectedGroup("all"); }, "Entry restored") }
@@ -572,7 +573,7 @@ function App() {
         <button title="Delete selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items")}><Trash2 size={18} /></button>
         <span className="divider" />
         <button title="Copy user name" disabled={!selectedSecret} onClick={() => selectedSecret && copyUsername(selectedSecret)}><User size={18} /></button>
-        <button title="Reveal password" disabled={!selectedSecret || viewingDeleted} onClick={() => selectedSecret && revealSecret(selectedSecret)}><KeyRound size={18} /></button>
+        <button title="Reveal password" disabled={!selectedSecret || viewingDeleted || !canRevealSecrets} onClick={() => selectedSecret && revealSecret(selectedSecret)}><KeyRound size={18} /></button>
         <button title="Rotate password" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><RefreshCw size={18} /></button>
         <button title="Share entry" disabled={!selectedSecret || viewingDeleted || !can("vault:share")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor")}><UserCog size={18} /></button>
         <span className="divider" />
@@ -659,7 +660,7 @@ function App() {
                     ) : (
                       <>
                         <button onClick={() => copyUsername(selectedSecret)}><Clipboard size={16} />Copy User</button>
-                        <button onClick={() => revealSecret(selectedSecret)}><Eye size={16} />Reveal</button>
+                        <button disabled={!canRevealSecrets} onClick={() => revealSecret(selectedSecret)}><Eye size={16} />Reveal</button>
                         <button disabled={!can("vault:write")} onClick={() => startEditSecret(selectedSecret)}><Edit3 size={16} />Edit</button>
                         <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><Shuffle size={16} />Rotate</button>
                       </>

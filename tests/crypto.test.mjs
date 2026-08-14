@@ -86,4 +86,7 @@ test("password hashing verifies exact password only", () => {
   const stored = hashPassword("Passw0rd!");
   assert.equal(verifyPassword("Passw0rd!", stored), true);
   assert.equal(verifyPassword("wrong", stored), false);
+  assert.equal(verifyPassword("Passw0rd!", { salt: stored.salt, hash: "not-hex" }), false);
+  assert.equal(verifyPassword("Passw0rd!", { hash: stored.hash }), false);
+  assert.equal(verifyPassword("Passw0rd!", null), false);
 });

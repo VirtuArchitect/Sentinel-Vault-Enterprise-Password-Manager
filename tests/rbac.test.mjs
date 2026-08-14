@@ -10,6 +10,13 @@ test("auditors cannot update policy", () => {
   assert.equal(hasPermission("AUDITOR", "policy:write"), false);
 });
 
+test("plaintext reveal requires a dedicated permission", () => {
+  assert.equal(hasPermission("SECURITY_ADMIN", "secret:reveal"), true);
+  assert.equal(hasPermission("VAULT_OPERATOR", "secret:reveal"), true);
+  assert.equal(hasPermission("AUDITOR", "secret:reveal"), false);
+  assert.equal(hasPermission("AUDITOR", "vault:read"), true);
+});
+
 test("public users do not expose password hashes", () => {
   const user = publicUser({
     id: "u1",

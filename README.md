@@ -352,7 +352,7 @@ Implemented in this prototype:
 - JSON-backed local persistence for prototype state
 - JSON state schema versioning, backup manifests, and backup integrity checks for prototype deployments
 - AES-GCM encrypted backup artifacts with restore-validation dry runs
-- RBAC-protected API routes with object-level vault checks
+- RBAC-protected API routes with object-level vault checks and a separate plaintext reveal permission
 - JIT access request and approval records
 - Ticket-linked approval workflow metadata and high-risk multi-approval support
 - Temporary reveal access after approval
@@ -368,6 +368,19 @@ Implemented in this prototype:
 - Encrypted read-only offline cache export with verification
 - Secret fingerprinting for reuse detection without storing plaintext
 - Compliance report endpoint for audit-ready control summaries
+
+RBAC permissions are intentionally separated so metadata review does not imply
+plaintext disclosure:
+
+| Permission | Purpose | Security Admin | Vault Operator | Auditor |
+| --- | --- | --- | --- | --- |
+| `vault:read` | View scoped vault and secret metadata | Yes | Yes | Yes |
+| `secret:reveal` | Reveal plaintext secret material and rehydrate offline cache entries | Yes | Yes | No |
+| `vault:write` | Create, edit, rotate, delete, and restore secrets | Yes | Yes | No |
+| `vault:share` | Share secrets and decide access requests | Yes | Yes | No |
+| `audit:read` | View audit and compliance evidence | Yes | No | Yes |
+| `users:read` | View user metadata | Yes | No | Yes |
+| `policy:write` | Manage policies, users, integrations, storage, and vault metadata | Yes | No | No |
 
 Still intentionally out of scope for the prototype:
 
@@ -405,6 +418,8 @@ DATABASE_URL=
 IDENTITY_PROVIDER=local
 OIDC_ISSUER=
 OIDC_CLIENT_ID=
+OIDC_CLIENT_SECRET=
+OIDC_REDIRECT_URIS=http://127.0.0.1:5173/auth/callback,http://localhost:5173/auth/callback
 ENTRA_TENANT_ID=
 IDENTITY_GROUP_CLAIM=groups
 IDENTITY_MFA_CLAIM=amr

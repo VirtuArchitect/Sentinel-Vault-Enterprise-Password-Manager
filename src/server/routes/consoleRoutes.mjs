@@ -222,7 +222,7 @@ consoleRoutes.post("/offline-cache/verify", auth, can("vault:read"), (req, res, 
   }
 });
 
-consoleRoutes.post("/offline-cache/rehydrate", auth, can("vault:read"), (req, res, next) => {
+consoleRoutes.post("/offline-cache/rehydrate", auth, can("secret:reveal"), (req, res, next) => {
   try {
     res.json(rehydrateOfflineCacheSecret(req.user, req.body.cache, req.body.secretId));
   } catch (err) {
@@ -271,7 +271,7 @@ consoleRoutes.post("/secrets/:id/versions/:index/restore", auth, can("vault:writ
   }
 });
 
-consoleRoutes.post("/secrets/:id/reveal", auth, can("vault:read"), (req, res, next) => {
+consoleRoutes.post("/secrets/:id/reveal", auth, can("secret:reveal"), (req, res, next) => {
   try {
     res.json(revealSecret(req.user, req.params.id));
   } catch (err) {

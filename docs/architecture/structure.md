@@ -34,6 +34,6 @@ The prototype models the core enterprise password manager entities in memory:
 
 ## Security Boundaries
 
-Routes perform coarse permission checks with RBAC middleware. Service methods then enforce object-level vault or secret access before revealing, rotating, sharing, approving, or denying sensitive records. Console payloads are scoped so users only receive users and audit records when their role grants those permissions.
+Routes perform coarse permission checks with RBAC middleware. Service methods then enforce object-level vault or secret access before revealing, rotating, sharing, approving, or denying sensitive records. `vault:read` permits scoped metadata review, while `secret:reveal` is required before plaintext secret material or offline-cache rehydration can be returned. Console payloads are scoped so users only receive users and audit records when their role grants those permissions.
 
 See `docs/architecture/tenant-isolation.md` for the production tenant isolation model and required negative authorization evidence.

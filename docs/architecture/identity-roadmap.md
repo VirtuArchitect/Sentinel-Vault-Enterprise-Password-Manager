@@ -23,7 +23,7 @@ Sentinel Vault supports seeded local demo users and built-in OIDC/Microsoft Entr
 - Local demo login must remain available only when `IDENTITY_PROVIDER=local`.
 - Local password login is disabled when `IDENTITY_PROVIDER` is `oidc` or `entra`; use `POST /api/login/federated` with an identity-provider ID token.
 - `GET /api/identity/status` exposes provider mode and claim mapping metadata before login so the console can switch between local and federated sign-in modes.
-- `POST /api/login/federated/start` and `POST /api/login/federated/callback` implement OIDC authorization-code login with PKCE, short-lived server-side state, nonce validation, and one-time callback replay protection.
+- `POST /api/login/federated/start` and `POST /api/login/federated/callback` implement OIDC authorization-code login with PKCE, an exact `OIDC_REDIRECT_URIS` callback allowlist, short-lived server-side state, nonce validation, and one-time callback replay protection.
 - `REFRESH_TOKENS_ENABLED=true` enables refresh-session rotation only for `oidc` or `entra` identity modes. Refresh tokens are stored as SHA-256 hashes, rotate on each use, have a bounded `REFRESH_TOKEN_DAYS` lifetime, and revoke the token family on replay.
 
 Deployment evidence is captured in `docs/templates/identity-provider-evidence.json` and validated with:

@@ -1,6 +1,6 @@
 export const roles = {
-  SECURITY_ADMIN: ["vault:read", "vault:write", "vault:share", "users:read", "policy:write", "audit:read"],
-  VAULT_OPERATOR: ["vault:read", "vault:write", "vault:share"],
+  SECURITY_ADMIN: ["vault:read", "secret:reveal", "vault:write", "vault:share", "users:read", "policy:write", "audit:read"],
+  VAULT_OPERATOR: ["vault:read", "secret:reveal", "vault:write", "vault:share"],
   AUDITOR: ["vault:read", "audit:read", "users:read"]
 };
 
