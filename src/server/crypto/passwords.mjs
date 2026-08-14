@@ -5,6 +5,12 @@ export const hashPassword = (password, salt = crypto.randomBytes(16).toString("h
   return { salt, hash };
 };
 
-export const verifyPassword = (password, stored) => hashPassword(password || "", stored.salt).hash === stored.hash;
+export const verifyPassword = (password, stored) => {
+  if (!stored?.salt || !stored?.hash || typeof stored.hash !== "string") return false;
+  const expected = hashPassword(password || "", stored.salt).hash;
+  const expectedBuffer = Buffer.from(expected, "hex");
+  const storedBuffer = Buffer.from(stored.hash, "hex");
+  return expectedBuffer.length === storedBuffer.length && crypto.timingSafeEqual(expectedBuffer, storedBuffer);
+};
 
 export const generateCredential = () => `${crypto.randomBytes(18).toString("base64url")}!A7`;

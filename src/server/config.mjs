@@ -47,6 +47,10 @@ export const config = {
     issuer: process.env.OIDC_ISSUER || "",
     clientId: process.env.OIDC_CLIENT_ID || "",
     clientSecret: process.env.OIDC_CLIENT_SECRET || "",
+    redirectUris: String(process.env.OIDC_REDIRECT_URIS || "http://127.0.0.1:5173/auth/callback,http://localhost:5173/auth/callback")
+      .split(",")
+      .map((uri) => uri.trim())
+      .filter(Boolean),
     tenantId: process.env.ENTRA_TENANT_ID || "",
     groupClaim: process.env.IDENTITY_GROUP_CLAIM || "groups",
     mfaClaim: process.env.IDENTITY_MFA_CLAIM || "amr",
@@ -126,6 +130,19 @@ export const validateConfig = () => {
   }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");
+  }
+  if (config.identityProvider.mode !== "local" && !config.identityProvider.redirectUris.length) {
+    issues.push("OIDC_REDIRECT_URIS must include at least one exact callback URI for external identity providers.");
+  }
+  for (const redirectUri of config.identityProvider.redirectUris) {
+    try {
+      const parsed = new URL(redirectUri);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        issues.push("OIDC_REDIRECT_URIS entries must use http or https.");
+      }
+    } catch {
+      issues.push("OIDC_REDIRECT_URIS entries must be absolute URLs.");
+    }
   }
   if (config.identityProvider.mode === "entra" && !config.identityProvider.tenantId) {
     issues.push("ENTRA_TENANT_ID is required when IDENTITY_PROVIDER is entra.");

@@ -31,6 +31,30 @@ function Assert-Exists {
   }
 }
 
+function Get-Sha256Hex {
+  param(
+    [string]$Path
+  )
+
+  $fileHashCommand = Get-Command Get-FileHash -ErrorAction SilentlyContinue
+  if ($fileHashCommand) {
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+  }
+
+  $stream = [System.IO.File]::OpenRead($Path)
+  try {
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+      $bytes = $sha256.ComputeHash($stream)
+      return ([System.BitConverter]::ToString($bytes) -replace "-", "").ToLowerInvariant()
+    } finally {
+      $sha256.Dispose()
+    }
+  } finally {
+    $stream.Dispose()
+  }
+}
+
 $root = Split-Path -Parent $PSScriptRoot
 $resolvedPackage = if ([System.IO.Path]::IsPathRooted($PackagePath)) { $PackagePath } else { Join-Path $root $PackagePath }
 Assert-Exists -Path $resolvedPackage -Label "Windows package"
@@ -136,7 +160,7 @@ try {
   $result = @{
     format = "sentinel-windows-package-validation-v1"
     packagePath = (Resolve-Path -LiteralPath $resolvedPackage).Path
-    packageSha256 = (Get-FileHash -LiteralPath $resolvedPackage -Algorithm SHA256).Hash.ToLowerInvariant()
+    packageSha256 = Get-Sha256Hex -Path $resolvedPackage
     extractedTo = $resolvedExtractDir
     runtimeSmoke = if ($SkipRuntimeSmoke) { "skipped" } else { "passed" }
     healthUrl = if ($SkipRuntimeSmoke) { $null } else { $healthUrl }

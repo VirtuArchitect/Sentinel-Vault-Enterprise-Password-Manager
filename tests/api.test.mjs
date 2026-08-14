@@ -256,6 +256,32 @@ test("console payload respects users and audit permissions", async () => {
   });
 });
 
+test("auditors can inspect scoped metadata but cannot reveal plaintext secrets", async () => {
+  await withApi(async (baseUrl) => {
+    const iris = await login(baseUrl, "iris.chen@enterprise.example");
+    const consoleResponse = await jsonFetch(`${baseUrl}/console`, iris.token);
+    assert.equal(consoleResponse.status, 200);
+    const consoleData = await consoleResponse.json();
+    assert.ok(consoleData.users.length > 0);
+    assert.ok(consoleData.audit.length > 0);
+    assert.equal(consoleData.user.permissions.includes("vault:read"), true);
+    assert.equal(consoleData.user.permissions.includes("secret:reveal"), false);
+    assert.ok(consoleData.secrets.some((secret) => secret.id === "s3"));
+
+    const revealResponse = await jsonFetch(`${baseUrl}/secrets/s3/reveal`, iris.token, { method: "POST" });
+    assert.equal(revealResponse.status, 403);
+
+    const cacheResponse = await jsonFetch(`${baseUrl}/offline-cache/export`, iris.token, { method: "POST" });
+    assert.equal(cacheResponse.status, 200);
+    const { cache } = await cacheResponse.json();
+    const rehydrateResponse = await jsonFetch(`${baseUrl}/offline-cache/rehydrate`, iris.token, {
+      method: "POST",
+      body: JSON.stringify({ cache, secretId: "s3" })
+    });
+    assert.equal(rehydrateResponse.status, 403);
+  });
+});
+
 test("federated login validates OIDC token claims and local provisioning", async () => {
   const previous = {
     mode: config.identityProvider.mode,
@@ -348,6 +374,7 @@ test("federated PKCE flow exchanges authorization code and rejects replay", asyn
     mode: config.identityProvider.mode,
     issuer: config.identityProvider.issuer,
     clientId: config.identityProvider.clientId,
+    redirectUris: [...config.identityProvider.redirectUris],
     tenantId: config.identityProvider.tenantId,
     groupClaim: config.identityProvider.groupClaim,
     mfaClaim: config.identityProvider.mfaClaim,
@@ -379,6 +406,13 @@ test("federated PKCE flow exchanges authorization code and rejects replay", asyn
 
     await withApi(async (baseUrl) => {
       const redirectUri = "http://127.0.0.1:5173/auth/callback";
+      const rejectedStart = await fetch(`${baseUrl}/login/federated/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: "http://127.0.0.1:5173" },
+        body: JSON.stringify({ redirectUri: "https://evil.example/auth/callback" })
+      });
+      assert.equal(rejectedStart.status, 400);
+
       const start = await fetch(`${baseUrl}/login/federated/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Origin: "http://127.0.0.1:5173" },
@@ -420,6 +454,7 @@ test("federated PKCE flow exchanges authorization code and rejects replay", asyn
   } finally {
     await new Promise((resolve) => oidcServer.close(resolve));
     Object.assign(config.identityProvider, previous);
+    config.identityProvider.redirectUris = previous.redirectUris;
     config.identityProvider.roleMappings = previous.roleMappings;
   }
 });

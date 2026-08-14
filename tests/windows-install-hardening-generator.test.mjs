@@ -74,17 +74,19 @@ test("windows install hardening generator records local install facts", () => {
 test("windows install hardening generator flags demo root keys and secret-like logs", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "sentinel-windows-hardening-generator-fail-"));
   try {
-    const installDir = path.join(dir, "Sentinel Vault");
-    const logsDir = path.join(installDir, "logs");
+    const installDir = "C:\\Program Files\\Sentinel Vault";
+    const localInstallDir = path.join(dir, "Sentinel Vault");
+    const logsDir = path.join(localInstallDir, "logs");
     mkdirSync(logsDir, { recursive: true });
-    writeFileSync(path.join(installDir, "sentinel.env"), "VAULT_ROOT_KEY=replace-with-production-secret\n");
+    const sentinelEnvPath = path.join(localInstallDir, "sentinel.env");
+    writeFileSync(sentinelEnvPath, "VAULT_ROOT_KEY=replace-with-production-secret\n");
     writeFileSync(path.join(logsDir, "server.log"), "VAULT_ROOT_KEY=replace-with-production-secret\n");
 
     const evidencePath = path.join(dir, "windows-hardening.json");
     runGenerator([
       "--install-path", installDir,
       "--logs-dir", logsDir,
-      "--sentinel-env", path.join(installDir, "sentinel.env"),
+      "--sentinel-env", sentinelEnvPath,
       "--out", evidencePath
     ]);
 

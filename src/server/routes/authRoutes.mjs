@@ -51,6 +51,25 @@ const clearLoginFailure = (email) => {
 
 const federatedRedirectBase = (req) => req.get("origin") || `${req.protocol}://${req.get("host")}`;
 
+const normalizeRedirectUri = (value) => {
+  try {
+    return new URL(String(value || "")).toString();
+  } catch {
+    return null;
+  }
+};
+
+const requireAllowedRedirectUri = (redirectUri) => {
+  const normalized = normalizeRedirectUri(redirectUri);
+  const allowed = new Set(config.identityProvider.redirectUris.map(normalizeRedirectUri).filter(Boolean));
+  if (!normalized || !allowed.has(normalized)) {
+    const error = new Error("Federated login redirect URI is not allowed");
+    error.status = 400;
+    throw error;
+  }
+  return normalized;
+};
+
 const createFederatedSessionResponse = (req, res, result) => {
   clearLoginFailure(result.claims.email);
   const session = createSessionBundle(result.user.id, {
@@ -118,7 +137,7 @@ authRoutes.post("/login/federated/start", rateLimit({ windowMs: 60000, max: 10 }
     const state = crypto.randomBytes(24).toString("base64url");
     const nonce = crypto.randomBytes(24).toString("base64url");
     const codeVerifier = createPkceVerifier();
-    const redirectUri = String(req.body.redirectUri || `${federatedRedirectBase(req)}/auth/callback`);
+    const redirectUri = requireAllowedRedirectUri(req.body.redirectUri || `${federatedRedirectBase(req)}/auth/callback`);
     pendingFederatedLogins.set(state, {
       nonce,
       codeVerifier,
