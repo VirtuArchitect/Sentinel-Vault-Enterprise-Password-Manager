@@ -67,7 +67,7 @@ Passw0rd!
 PowerShell quick start:
 
 ```powershell
-cd "C:\Users\john\OneDrive\09 Profile\Documents\GitHub\Sentinel-Vault-Enterprise-Password-Manager"
+cd ".\Sentinel-Vault-Enterprise-Password-Manager"
 .\scripts\start-demo.ps1
 ```
 
