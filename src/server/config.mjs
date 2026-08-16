@@ -8,6 +8,7 @@ export const config = {
   port: Number(process.env.PORT || 5173),
   isProduction: process.env.NODE_ENV === "production",
   isTest: process.env.NODE_ENV === "test",
+  productionProfile: process.env.PRODUCTION_PROFILE || "reference",
   vaultRootKey: process.env.VAULT_ROOT_KEY || "sentinel-demo-root-key",
   vaultKeyVersion: process.env.VAULT_KEY_VERSION || "demo-root-v1",
   vaultKeySalt: process.env.VAULT_KEY_SALT || "sentinel-vault",
@@ -86,8 +87,28 @@ export const config = {
 
 export const validateConfig = () => {
   const issues = [];
+  const strictProduction = config.isProduction && config.productionProfile === "strict";
+  const absoluteUrl = (value) => {
+    try {
+      return new URL(value);
+    } catch {
+      return null;
+    }
+  };
   if (config.isProduction && config.vaultRootKey === "sentinel-demo-root-key") {
     issues.push("VAULT_ROOT_KEY must be set in production.");
+  }
+  if (!["reference", "strict"].includes(config.productionProfile)) {
+    issues.push("PRODUCTION_PROFILE must be reference or strict.");
+  }
+  if (strictProduction && ["sentinel-demo-root-key", "change-me-for-local-demo-only"].includes(config.vaultRootKey)) {
+    issues.push("PRODUCTION_PROFILE=strict requires a non-demo VAULT_ROOT_KEY.");
+  }
+  if (strictProduction && config.vaultKeyVersion.startsWith("demo-")) {
+    issues.push("PRODUCTION_PROFILE=strict requires a non-demo VAULT_KEY_VERSION.");
+  }
+  if (strictProduction && config.vaultKeySalt === "sentinel-vault") {
+    issues.push("PRODUCTION_PROFILE=strict requires a deployment-specific VAULT_KEY_SALT.");
   }
   if (!["local-root-key", "external-kms", "hsm"].includes(config.kms.provider)) {
     issues.push("KMS_PROVIDER must be one of local-root-key, external-kms, or hsm.");
@@ -100,6 +121,9 @@ export const validateConfig = () => {
   }
   if (!["json", "sqlite", "postgres"].includes(config.storage.provider)) {
     issues.push("STORAGE_PROVIDER must be one of json, sqlite, or postgres.");
+  }
+  if (strictProduction && config.storage.provider === "json") {
+    issues.push("PRODUCTION_PROFILE=strict requires STORAGE_PROVIDER=sqlite or postgres.");
   }
   if (config.storage.provider === "sqlite" && !config.storage.sqlitePath) {
     issues.push("SQLITE_PATH is required when STORAGE_PROVIDER is sqlite.");
@@ -128,6 +152,9 @@ export const validateConfig = () => {
   if (!["local", "oidc", "entra"].includes(config.identityProvider.mode)) {
     issues.push("IDENTITY_PROVIDER must be one of local, oidc, or entra.");
   }
+  if (strictProduction && config.identityProvider.mode === "local") {
+    issues.push("PRODUCTION_PROFILE=strict requires IDENTITY_PROVIDER=oidc or entra.");
+  }
   if (config.identityProvider.mode !== "local" && (!config.identityProvider.issuer || !config.identityProvider.clientId)) {
     issues.push("OIDC_ISSUER and OIDC_CLIENT_ID are required for external identity providers.");
   }
@@ -140,8 +167,22 @@ export const validateConfig = () => {
       if (!["http:", "https:"].includes(parsed.protocol)) {
         issues.push("OIDC_REDIRECT_URIS entries must use http or https.");
       }
+      if (strictProduction && parsed.protocol !== "https:") {
+        issues.push("PRODUCTION_PROFILE=strict requires HTTPS OIDC_REDIRECT_URIS entries.");
+      }
     } catch {
       issues.push("OIDC_REDIRECT_URIS entries must be absolute URLs.");
+    }
+  }
+  if (strictProduction && config.kms.provider === "local-root-key") {
+    issues.push("PRODUCTION_PROFILE=strict requires KMS_PROVIDER=external-kms or hsm.");
+  }
+  for (const origin of config.corsOrigins) {
+    const parsed = absoluteUrl(origin);
+    if (!parsed) {
+      issues.push("CORS_ORIGINS entries must be absolute URLs.");
+    } else if (strictProduction && parsed.protocol !== "https:") {
+      issues.push("PRODUCTION_PROFILE=strict requires HTTPS CORS_ORIGINS entries.");
     }
   }
   if (config.identityProvider.mode === "entra" && !config.identityProvider.tenantId) {

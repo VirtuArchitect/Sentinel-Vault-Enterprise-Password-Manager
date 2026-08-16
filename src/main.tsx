@@ -50,11 +50,13 @@ const blankSecret = (vaultId = ""): AddSecret => ({
   notes: ""
 });
 
+const hasCookie = (name: string) => document.cookie.split(";").some((part) => part.trim().startsWith(`${name}=`));
+
 function SentinelLogo({ size = "medium" }: { size?: "small" | "medium" | "large" }) {
   return <img className={`sentinel-logo ${size}`} src={sentinelVaultMarkUrl} alt="" aria-hidden="true" />;
 }
 
-function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: ConsoleData) => void; initialError?: string }) {
+function Login({ onLogin, initialError = "" }: { onLogin: (data: ConsoleData) => void; initialError?: string }) {
   const [email, setEmail] = useState("avery.stone@enterprise.example");
   const [password, setPassword] = useState("Passw0rd!");
   const [idToken, setIdToken] = useState("");
@@ -78,11 +80,11 @@ function Login({ onLogin, initialError = "" }: { onLogin: (token: string, data: 
     setBusy(true);
     setError("");
     try {
-      const login = externalIdentity
-        ? await api<{ token: string; user: UserRecord }>("/api/login/federated", { method: "POST", body: JSON.stringify({ idToken }) })
-        : await api<{ token: string; user: UserRecord }>("/api/login", { method: "POST", body: JSON.stringify({ email, password }) });
-      const data = await api<ConsoleData>("/api/console", {}, login.token);
-      onLogin(login.token, data);
+      externalIdentity
+        ? await api<{ user: UserRecord }>("/api/login/federated", { method: "POST", body: JSON.stringify({ idToken }) })
+        : await api<{ user: UserRecord }>("/api/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      const data = await api<ConsoleData>("/api/console");
+      onLogin(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to sign in");
     } finally {
@@ -179,9 +181,9 @@ function SplashState({ title, message }: { title: string; message: string }) {
 }
 
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem("sentinel-token") || "");
+  const [token, setToken] = useState("");
   const [data, setData] = useState<ConsoleData | null>(null);
-  const [booting, setBooting] = useState(() => Boolean(localStorage.getItem("sentinel-token")));
+  const [booting, setBooting] = useState(true);
   const [bootError, setBootError] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [selectedSecretId, setSelectedSecretId] = useState("");
@@ -200,10 +202,10 @@ function App() {
   const [integrationDraft, setIntegrationDraft] = useState({ siemWebhookUrl: "", siemWebhookSecret: "", itsmBaseUrl: "", itsmTicketPrefixes: "INC,CHG,REQ", itsmAllowedStates: "open,active,approved,in_progress,scheduled", devopsApiEnabled: false });
   const [generator, setGenerator] = useState({ length: 24, upper: true, lower: true, digits: true, symbols: true, noAmbiguous: true });
 
-  const load = async (activeToken = token) => {
-    if (!activeToken) return;
-    const fresh = await api<ConsoleData>("/api/console", {}, activeToken);
+  const load = async () => {
+    const fresh = await api<ConsoleData>("/api/console");
     setData(fresh);
+    setToken("cookie-session");
     setNewVault((current) => ({ ...current, tenantId: current.tenantId || fresh.tenants[0]?.id || "" }));
     setIntegrationDraft((current) => ({
       ...current,
@@ -219,22 +221,15 @@ function App() {
   };
 
   useEffect(() => {
-    if (!token) {
-      setBooting(false);
-      return;
-    }
-
     setBooting(true);
     load().catch((err) => {
-      localStorage.removeItem("sentinel-token");
       setToken("");
-      setBootError(err instanceof Error ? `Previous session could not be restored: ${err.message}` : "Previous session could not be restored");
+      setBootError(hasCookie("sentinel_session") && err instanceof Error ? `Previous session could not be restored: ${err.message}` : "");
     }).finally(() => setBooting(false));
   }, []);
 
-  const onLogin = (nextToken: string, nextData: ConsoleData) => {
-    localStorage.setItem("sentinel-token", nextToken);
-    setToken(nextToken);
+  const onLogin = (nextData: ConsoleData) => {
+    setToken("cookie-session");
     setData(nextData);
     setBootError("");
     setSelectedGroup("all");
@@ -254,11 +249,11 @@ function App() {
     }
     setBooting(true);
     const redirectUri = `${window.location.origin}/auth/callback`;
-    api<{ token: string; user: UserRecord }>("/api/login/federated/callback", {
+    api<{ user: UserRecord }>("/api/login/federated/callback", {
       method: "POST",
       body: JSON.stringify({ code, state, redirectUri })
     })
-      .then((login) => api<ConsoleData>("/api/console", {}, login.token).then((fresh) => onLogin(login.token, fresh)))
+      .then(() => api<ConsoleData>("/api/console").then((fresh) => onLogin(fresh)))
       .catch((err) => {
         setBootError(err instanceof Error ? `Identity provider sign-in failed: ${err.message}` : "Identity provider sign-in failed");
       })
@@ -269,8 +264,7 @@ function App() {
   }, []);
 
   const signOut = () => {
-    api("/api/logout", { method: "POST" }, token).catch(() => undefined);
-    localStorage.removeItem("sentinel-token");
+    api("/api/logout", { method: "POST" }).catch(() => undefined);
     setToken("");
     setData(null);
   };
@@ -350,7 +344,7 @@ function App() {
       return;
     }
     action(async () => {
-      await api("/api/secrets", { method: "POST", body: JSON.stringify(addSecret) }, token);
+      await api("/api/secrets", { method: "POST", body: JSON.stringify(addSecret) });
       setAddOpen(false);
       setAddSecret(blankSecret(data.vaults[0]?.id || ""));
     }, "Entry added to database");
@@ -388,14 +382,14 @@ function App() {
         notes: editSecret.notes
       };
       if (editSecret.password) patch.password = editSecret.password;
-      await api(`/api/secrets/${selectedSecret.id}`, { method: "PATCH", body: JSON.stringify(patch) }, token);
+      await api(`/api/secrets/${selectedSecret.id}`, { method: "PATCH", body: JSON.stringify(patch) });
       setEditOpen(false);
     }, "Entry updated");
   };
 
   const revealSecret = (secret: Secret) => {
     action(async () => {
-      const result = await api<{ password: string; expiresIn: number }>(`/api/secrets/${secret.id}/reveal`, { method: "POST" }, token);
+      const result = await api<{ password: string; expiresIn: number }>(`/api/secrets/${secret.id}/reveal`, { method: "POST" });
       setReveal({ name: secret.name, ...result });
     }, "Password field revealed");
   };
@@ -412,20 +406,20 @@ function App() {
 
   const updatePolicy = (patch: Partial<Policies>) => {
     action(async () => {
-      await api("/api/policies", { method: "PATCH", body: JSON.stringify(patch) }, token);
+      await api("/api/policies", { method: "PATCH", body: JSON.stringify(patch) });
     }, "Policy updated");
   };
 
   const updateUserAdmin = (userId: string, patch: Partial<UserRecord>) => {
     action(async () => {
-      await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify(patch) }, token);
+      await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify(patch) });
     }, "User updated");
   };
 
   const submitVault = (event: React.FormEvent) => {
     event.preventDefault();
     action(async () => {
-      await api("/api/vaults", { method: "POST", body: JSON.stringify({ ...newVault, members: newVault.members.split(",").map((member) => member.trim()) }) }, token);
+      await api("/api/vaults", { method: "POST", body: JSON.stringify({ ...newVault, members: newVault.members.split(",").map((member) => member.trim()) }) });
       setNewVault({ name: "", tenantId: data.tenants[0]?.id || "", classification: "CONFIDENTIAL", ownerUnit: "", members: "u1,u2" });
     }, "Vault group created");
   };
@@ -433,14 +427,14 @@ function App() {
   const submitIntegrations = (event: React.FormEvent) => {
     event.preventDefault();
     action(async () => {
-      await api("/api/integrations/config", { method: "PATCH", body: JSON.stringify(integrationDraft) }, token);
+      await api("/api/integrations/config", { method: "PATCH", body: JSON.stringify(integrationDraft) });
       setIntegrationDraft((current) => ({ ...current, siemWebhookSecret: "" }));
     }, "Integration configuration updated");
   };
 
   const decideAccessRequest = (request: AccessRequest, decision: "approve" | "deny") => {
     action(async () => {
-      await api(`/api/access-requests/${request.id}/${decision}`, { method: "POST", body: JSON.stringify({ minutes: 30 }) }, token);
+      await api(`/api/access-requests/${request.id}/${decision}`, { method: "POST", body: JSON.stringify({ minutes: 30 }) });
     }, decision === "approve" ? "Temporary access approved" : "Temporary access denied");
   };
 
@@ -484,7 +478,7 @@ function App() {
       items: [
         { label: "Copy User Name", disabled: !selectedSecret, action: () => selectedSecret && copyUsername(selectedSecret) },
         { label: "Edit Entry", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && startEditSecret(selectedSecret) },
-        { label: "Delete Entry", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items") }
+        { label: "Delete Entry", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items") }
       ]
     },
     {
@@ -505,9 +499,9 @@ function App() {
       label: "Entry",
       items: [
         { label: "Reveal Secret", disabled: !selectedSecret || viewingDeleted || !canRevealSecrets, action: () => selectedSecret && revealSecret(selectedSecret) },
-        { label: "Rotate Secret", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated") },
-        { label: "Share With Auditor", disabled: !selectedSecret || viewingDeleted || !can("vault:share"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor") },
-        { label: "Restore Deleted Entry", disabled: !selectedSecret || !viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }, token); setSelectedGroup("all"); }, "Entry restored") }
+        { label: "Rotate Secret", disabled: !selectedSecret || viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }); }, "Entry password rotated") },
+        { label: "Share With Auditor", disabled: !selectedSecret || viewingDeleted || !can("vault:share"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }); }, "Entry shared with auditor") },
+        { label: "Restore Deleted Entry", disabled: !selectedSecret || !viewingDeleted || !can("vault:write"), action: () => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }); setSelectedGroup("all"); }, "Entry restored") }
       ]
     },
     {
@@ -570,12 +564,12 @@ function App() {
         <button title="Export console snapshot" onClick={exportConsoleSnapshot}><Download size={18} /></button>
         <button title="Add entry" disabled={!can("vault:write")} onClick={() => setAddOpen(true)}><FilePlus2 size={18} /></button>
         <button title="Edit selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && startEditSecret(selectedSecret)}><Edit3 size={18} /></button>
-        <button title="Delete selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }, token); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items")}><Trash2 size={18} /></button>
+        <button title="Delete selected entry" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}`, { method: "DELETE" }); setSelectedGroup("deleted"); setSelectedSecretId(selectedSecret.id); }, "Entry moved to deleted items")}><Trash2 size={18} /></button>
         <span className="divider" />
         <button title="Copy user name" disabled={!selectedSecret} onClick={() => selectedSecret && copyUsername(selectedSecret)}><User size={18} /></button>
         <button title="Reveal password" disabled={!selectedSecret || viewingDeleted || !canRevealSecrets} onClick={() => selectedSecret && revealSecret(selectedSecret)}><KeyRound size={18} /></button>
-        <button title="Rotate password" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><RefreshCw size={18} /></button>
-        <button title="Share entry" disabled={!selectedSecret || viewingDeleted || !can("vault:share")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }, token); }, "Entry shared with auditor")}><UserCog size={18} /></button>
+        <button title="Rotate password" disabled={!selectedSecret || viewingDeleted || !can("vault:write")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }); }, "Entry password rotated")}><RefreshCw size={18} /></button>
+        <button title="Share entry" disabled={!selectedSecret || viewingDeleted || !can("vault:share")} onClick={() => selectedSecret && action(async () => { await api(`/api/secrets/${selectedSecret.id}/share`, { method: "POST", body: JSON.stringify({ userId: "u3" }) }); }, "Entry shared with auditor")}><UserCog size={18} /></button>
         <span className="divider" />
         <button title="Lock workspace" onClick={() => setLocked(true)}><LockKeyhole size={18} /></button>
         <button title="Sign out" onClick={signOut}><LogOut size={18} /></button>
@@ -656,13 +650,13 @@ function App() {
                   </div>
                   <div className="detail-actions">
                     {viewingDeleted ? (
-                      <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }, token); setSelectedGroup("all"); }, "Entry restored")}><RotateCcw size={16} />Restore</button>
+                      <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/restore`, { method: "POST" }); setSelectedGroup("all"); }, "Entry restored")}><RotateCcw size={16} />Restore</button>
                     ) : (
                       <>
                         <button onClick={() => copyUsername(selectedSecret)}><Clipboard size={16} />Copy User</button>
                         <button disabled={!canRevealSecrets} onClick={() => revealSecret(selectedSecret)}><Eye size={16} />Reveal</button>
                         <button disabled={!can("vault:write")} onClick={() => startEditSecret(selectedSecret)}><Edit3 size={16} />Edit</button>
-                        <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }, token); }, "Entry password rotated")}><Shuffle size={16} />Rotate</button>
+                        <button disabled={!can("vault:write")} onClick={() => action(async () => { await api(`/api/secrets/${selectedSecret.id}/rotate`, { method: "POST" }); }, "Entry password rotated")}><Shuffle size={16} />Rotate</button>
                       </>
                     )}
                   </div>
@@ -677,7 +671,7 @@ function App() {
                     {selectedSecret.deletedAt && <div><dt>Deleted</dt><dd>{new Date(selectedSecret.deletedAt).toLocaleString()}</dd></div>}
                   </dl>
                   <textarea value={`${selectedSecret.notes || "Entry notes"}\nOwner unit: ${selectedVault?.ownerUnit || "Unknown"}\nRotation policy: ${data.policies.rotationDays} days\nLast modified: ${new Date(selectedSecret.rotatedAt).toLocaleString()}`} readOnly />
-                  <VersionHistory secret={selectedSecret} canRestore={can("vault:write") && !viewingDeleted} onRestore={(index) => action(async () => { await api(`/api/secrets/${selectedSecret.id}/versions/${index}/restore`, { method: "POST" }, token); }, "Entry version restored")} />
+                  <VersionHistory secret={selectedSecret} canRestore={can("vault:write") && !viewingDeleted} onRestore={(index) => action(async () => { await api(`/api/secrets/${selectedSecret.id}/versions/${index}/restore`, { method: "POST" }); }, "Entry version restored")} />
                 </section>
               )}
               {!selectedSecret && (

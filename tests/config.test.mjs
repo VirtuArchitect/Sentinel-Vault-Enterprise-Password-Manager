@@ -140,3 +140,76 @@ test("siem webhook signing key rotation metadata is validated", () => {
     config.isProduction = originalProduction;
   }
 });
+
+test("strict production profile rejects reference-only deployment settings", () => {
+  const previous = {
+    isProduction: config.isProduction,
+    productionProfile: config.productionProfile,
+    vaultRootKey: config.vaultRootKey,
+    vaultKeyVersion: config.vaultKeyVersion,
+    vaultKeySalt: config.vaultKeySalt,
+    kmsProvider: config.kms.provider,
+    kmsKeyId: config.kms.keyId,
+    storageProvider: config.storage.provider,
+    sqlitePath: config.storage.sqlitePath,
+    identityMode: config.identityProvider.mode,
+    issuer: config.identityProvider.issuer,
+    clientId: config.identityProvider.clientId,
+    redirectUris: [...config.identityProvider.redirectUris],
+    corsOrigins: [...config.corsOrigins]
+  };
+
+  try {
+    config.isProduction = true;
+    config.productionProfile = "strict";
+    config.vaultRootKey = "change-me-for-local-demo-only";
+    config.vaultKeyVersion = "demo-root-v1";
+    config.vaultKeySalt = "sentinel-vault";
+    config.kms.provider = "local-root-key";
+    config.storage.provider = "json";
+    config.identityProvider.mode = "local";
+    config.identityProvider.redirectUris = ["http://127.0.0.1:5173/auth/callback"];
+    config.corsOrigins = ["http://127.0.0.1:5173"];
+
+    const issues = validateConfig();
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires a non-demo VAULT_ROOT_KEY."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires a non-demo VAULT_KEY_VERSION."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires a deployment-specific VAULT_KEY_SALT."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires KMS_PROVIDER=external-kms or hsm."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires STORAGE_PROVIDER=sqlite or postgres."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires IDENTITY_PROVIDER=oidc or entra."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires HTTPS OIDC_REDIRECT_URIS entries."));
+    assert.ok(issues.includes("PRODUCTION_PROFILE=strict requires HTTPS CORS_ORIGINS entries."));
+
+    config.vaultRootKey = "strict-production-root-key";
+    config.vaultKeyVersion = "prod-root-v1";
+    config.vaultKeySalt = "strict-deployment-salt";
+    config.kms.provider = "external-kms";
+    config.kms.keyId = "kms-key-1";
+    config.storage.provider = "sqlite";
+    config.storage.sqlitePath = "C:/sentinel/sentinel-vault.sqlite";
+    config.identityProvider.mode = "oidc";
+    config.identityProvider.issuer = "https://login.example.test";
+    config.identityProvider.clientId = "sentinel-client";
+    config.identityProvider.redirectUris = ["https://sentinel.example.test/auth/callback"];
+    config.corsOrigins = ["https://sentinel.example.test"];
+
+    const strictIssues = validateConfig();
+    assert.equal(strictIssues.some((issue) => issue.startsWith("PRODUCTION_PROFILE=strict")), false);
+  } finally {
+    config.isProduction = previous.isProduction;
+    config.productionProfile = previous.productionProfile;
+    config.vaultRootKey = previous.vaultRootKey;
+    config.vaultKeyVersion = previous.vaultKeyVersion;
+    config.vaultKeySalt = previous.vaultKeySalt;
+    config.kms.provider = previous.kmsProvider;
+    config.kms.keyId = previous.kmsKeyId;
+    config.storage.provider = previous.storageProvider;
+    config.storage.sqlitePath = previous.sqlitePath;
+    config.identityProvider.mode = previous.identityMode;
+    config.identityProvider.issuer = previous.issuer;
+    config.identityProvider.clientId = previous.clientId;
+    config.identityProvider.redirectUris = previous.redirectUris;
+    config.corsOrigins = previous.corsOrigins;
+  }
+});

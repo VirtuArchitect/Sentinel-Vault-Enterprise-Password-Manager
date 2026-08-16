@@ -8,6 +8,7 @@ const refreshTtlMs = () => Math.max(1, Number(config.refreshTokens.ttlDays || 7)
 const sessionId = (token) => crypto.createHash("sha256").update(String(token || ""), "utf8").digest("base64url").slice(0, 22);
 const refreshTokenHash = (token) => crypto.createHash("sha256").update(String(token || ""), "utf8").digest("base64url");
 const refreshTokenId = (tokenHash) => tokenHash.slice(0, 22);
+const createCsrfToken = () => crypto.randomBytes(32).toString("base64url");
 const isRefreshTokenIssueEnabled = () => config.refreshTokens.enabled && config.identityProvider.mode !== "local";
 
 const rememberDevice = (publicId, session) => {
@@ -79,6 +80,7 @@ export const createSession = (userId, metadata = {}) => {
     userId,
     createdAt: Date.now(),
     lastSeenAt: Date.now(),
+    csrfToken: metadata.csrfToken || createCsrfToken(),
     source: metadata.source || "127.0.0.1",
     userAgent: metadata.userAgent || "unknown"
   });
@@ -135,9 +137,11 @@ const revokeRefreshTokensForSession = (publicSessionId, reason = "session_revoke
 
 export const createSessionBundle = (userId, metadata = {}) => {
   const token = createSession(userId, metadata);
+  const session = store.state.sessions.get(token);
   const refresh = createRefreshTokenRecord(userId, sessionId(token), metadata);
   return {
     token,
+    csrfToken: session?.csrfToken || null,
     refreshToken: refresh?.token || null,
     refreshTokenExpiresAt: refresh?.record.expiresAt || null
   };
@@ -181,6 +185,7 @@ export const refreshSession = (refreshToken, metadata = {}) => {
     identityProvider: record.identityProvider,
     subject: record.subject
   });
+  const session = store.state.sessions.get(token);
   const replacement = createRefreshTokenRecord(user.id, sessionId(token), {
     source: metadata.source || record.source,
     userAgent: metadata.userAgent || record.userAgent,
@@ -191,12 +196,13 @@ export const refreshSession = (refreshToken, metadata = {}) => {
   return {
     user,
     token,
+    csrfToken: session?.csrfToken || null,
     refreshToken: replacement?.token || null,
     refreshTokenExpiresAt: replacement?.record.expiresAt || null
   };
 };
 
-export const resolveSession = (token) => {
+export const resolveSessionContext = (token) => {
   const session = token && store.state.sessions.get(token);
   if (!session) return null;
   if (Date.now() - session.createdAt > sessionTtlMs()) {
@@ -205,8 +211,11 @@ export const resolveSession = (token) => {
   }
   session.lastSeenAt = Date.now();
   rememberDevice(sessionId(token), session);
-  return store.findUserById(session.userId);
+  const user = store.findUserById(session.userId);
+  return user ? { user, session, token } : null;
 };
+
+export const resolveSession = (token) => resolveSessionContext(token)?.user || null;
 
 export const revokeSession = (token) => {
   if (!token) return false;

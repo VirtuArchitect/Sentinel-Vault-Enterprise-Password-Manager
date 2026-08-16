@@ -45,6 +45,23 @@ const jsonFetch = (url, token, options = {}) => fetch(url, {
   }
 });
 
+const setCookies = (response) => {
+  if (typeof response.headers.getSetCookie === "function") return response.headers.getSetCookie();
+  return [response.headers.get("set-cookie")].filter(Boolean);
+};
+
+const cookieHeaderFrom = (response) => setCookies(response)
+  .map((cookie) => cookie.split(";")[0])
+  .join("; ");
+
+const cookieValue = (header, name) => String(header || "")
+  .split(";")
+  .map((part) => part.trim())
+  .find((part) => part.startsWith(`${name}=`))
+  ?.split("=")
+  .slice(1)
+  .join("=") || "";
+
 const waitFor = async (predicate, { timeoutMs = 1000, intervalMs = 20 } = {}) => {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -755,6 +772,58 @@ test("logout revokes the active session token", async () => {
   });
 });
 
+test("browser cookie sessions require CSRF for state-changing requests", async () => {
+  await withApi(async (baseUrl) => {
+    const loginResponse = await fetch(`${baseUrl}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "avery.stone@enterprise.example", password: "Passw0rd!" })
+    });
+    assert.equal(loginResponse.status, 200);
+    const cookies = setCookies(loginResponse);
+    assert.ok(cookies.some((cookie) => cookie.startsWith("sentinel_session=") && cookie.includes("HttpOnly")));
+    assert.ok(cookies.some((cookie) => cookie.startsWith("sentinel_csrf=") && !cookie.includes("HttpOnly")));
+    const cookieHeader = cookieHeaderFrom(loginResponse);
+    const csrf = cookieValue(cookieHeader, "sentinel_csrf");
+    assert.ok(csrf);
+
+    const consoleResponse = await fetch(`${baseUrl}/console`, {
+      headers: { Cookie: cookieHeader }
+    });
+    assert.equal(consoleResponse.status, 200);
+
+    const denied = await fetch(`${baseUrl}/secrets`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookieHeader },
+      body: JSON.stringify({
+        vaultId: "v1",
+        type: "password",
+        name: "Cookie CSRF Denied",
+        username: "svc_cookie_denied",
+        password: "CookieCsrfDenied!2026"
+      })
+    });
+    assert.equal(denied.status, 403);
+
+    const allowed = await fetch(`${baseUrl}/secrets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+        "X-CSRF-Token": csrf
+      },
+      body: JSON.stringify({
+        vaultId: "v1",
+        type: "password",
+        name: "Cookie CSRF Allowed",
+        username: "svc_cookie_allowed",
+        password: "CookieCsrfAllowed!2026"
+      })
+    });
+    assert.equal(allowed.status, 201);
+  });
+});
+
 test("security admins can review and revoke active sessions", async () => {
   await withApi(async (baseUrl) => {
     const ada = await login(baseUrl, "avery.stone@enterprise.example");
@@ -934,6 +1003,9 @@ test("secret edit, version restore, and delete workflows work", async () => {
     assert.ok(deletedSecret);
     assert.ok(deletedSecret.deletedAt);
     assert.ok(deletedSecret.history.length >= 1);
+
+    const deletedReveal = await jsonFetch(`${baseUrl}/secrets/${secret.id}/reveal`, ada.token, { method: "POST" });
+    assert.equal(deletedReveal.status, 404);
 
     const restoreDeleted = await jsonFetch(`${baseUrl}/secrets/${secret.id}/restore`, ada.token, { method: "POST" });
     assert.equal(restoreDeleted.status, 200);
