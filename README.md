@@ -398,6 +398,7 @@ Copy `.env.example` to `.env` for local development and set:
 
 ```text
 PORT=5173
+PRODUCTION_PROFILE=reference
 CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 FAILED_LOGIN_LIMIT=5
 LOGIN_LOCKOUT_MINUTES=15
@@ -437,6 +438,12 @@ ITSM_ALLOWED_STATES=open,active,approved,in_progress,scheduled
 DEVOPS_API_ENABLED=false
 INTEGRATION_OUTBOX_LIMIT=100
 ```
+
+`PRODUCTION_PROFILE=reference` keeps the local/reference deployment path usable for
+demo and controlled evaluation. Set `PRODUCTION_PROFILE=strict` together with
+`NODE_ENV=production` for production gate validation; strict mode rejects local
+identity, local root-key KMS, JSON persistence, demo key metadata, and non-HTTPS
+CORS or OIDC callback URLs.
 
 ## Important Security Note
 

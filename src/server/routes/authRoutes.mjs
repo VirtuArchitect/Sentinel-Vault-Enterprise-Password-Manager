@@ -7,6 +7,7 @@ import { auth } from "../middleware/auth.mjs";
 import { publicUser } from "../rbac/roles.mjs";
 import { createSessionBundle, refreshSession, revokeSession } from "../services/sessionService.mjs";
 import { audit } from "../services/auditService.mjs";
+import { parseCookies } from "../middleware/auth.mjs";
 import {
   createPkceChallenge,
   createPkceVerifier,
@@ -20,6 +21,37 @@ import { rateLimit } from "../middleware/rateLimit.mjs";
 export const authRoutes = express.Router();
 const pendingFederatedLogins = new Map();
 const pendingLoginTtlMs = 5 * 60 * 1000;
+const accessCookieName = "sentinel_session";
+const refreshCookieName = "sentinel_refresh";
+const csrfCookieName = "sentinel_csrf";
+
+const cookieBase = () => [
+  "Path=/",
+  "SameSite=Lax",
+  ...(config.isProduction ? ["Secure"] : [])
+].join("; ");
+
+const cookieMaxAge = (seconds) => `Max-Age=${Math.max(0, Math.floor(seconds))}`;
+
+const appendCookie = (res, value) => {
+  res.append("Set-Cookie", value);
+};
+
+const setSessionCookies = (res, session) => {
+  appendCookie(res, `${accessCookieName}=${encodeURIComponent(session.token)}; HttpOnly; ${cookieBase()}`);
+  if (session.csrfToken) {
+    appendCookie(res, `${csrfCookieName}=${encodeURIComponent(session.csrfToken)}; ${cookieBase()}`);
+  }
+  if (session.refreshToken) {
+    appendCookie(res, `${refreshCookieName}=${encodeURIComponent(session.refreshToken)}; HttpOnly; ${cookieBase()}; ${cookieMaxAge(config.refreshTokens.ttlDays * 24 * 60 * 60)}`);
+  }
+};
+
+const clearSessionCookies = (res) => {
+  for (const name of [accessCookieName, refreshCookieName, csrfCookieName]) {
+    appendCookie(res, `${name}=; ${cookieBase()}; ${cookieMaxAge(0)}`);
+  }
+};
 
 authRoutes.get("/identity/status", (_req, res) => {
   res.json({ identity: getIdentityStatus() });
@@ -85,8 +117,10 @@ const createFederatedSessionResponse = (req, res, result) => {
     `${config.identityProvider.mode} token accepted for ${result.claims.subject}`,
     req.ip
   );
+  setSessionCookies(res, session);
   res.json({
     token: session.token,
+    csrfToken: session.csrfToken,
     refreshToken: session.refreshToken,
     refreshTokenExpiresAt: session.refreshTokenExpiresAt,
     user: publicUser(result.user)
@@ -114,7 +148,8 @@ authRoutes.post("/login", rateLimit({ windowMs: 60000, max: 10 }), (req, res) =>
   clearLoginFailure(email);
   const session = createSessionBundle(user.id, { source: req.ip, userAgent: req.get("user-agent") || "unknown" });
   audit(user.id, "LOGIN", "Sentinel Vault Console", "MFA assertion accepted", req.ip);
-  res.json({ token: session.token, user: publicUser(user) });
+  setSessionCookies(res, session);
+  res.json({ token: session.token, csrfToken: session.csrfToken, user: publicUser(user) });
 });
 
 authRoutes.post("/login/federated", rateLimit({ windowMs: 60000, max: 10 }), async (req, res) => {
@@ -182,13 +217,20 @@ authRoutes.post("/login/federated/callback", rateLimit({ windowMs: 60000, max: 1
 
 authRoutes.post("/session/refresh", rateLimit({ windowMs: 60000, max: 10 }), (req, res) => {
   try {
-    const refreshed = refreshSession(String(req.body.refreshToken || ""), {
+    const cookies = parseCookies(req.headers.cookie);
+    const cookieRefreshToken = cookies[refreshCookieName] || "";
+    if (!req.body.refreshToken && cookieRefreshToken && String(req.get("x-csrf-token") || "") !== String(cookies[csrfCookieName] || "")) {
+      return res.status(403).json({ error: "CSRF token required" });
+    }
+    const refreshed = refreshSession(String(req.body.refreshToken || cookieRefreshToken), {
       source: req.ip,
       userAgent: req.get("user-agent") || "unknown"
     });
     audit(refreshed.user.id, "SESSION_REFRESH", "Sentinel Vault Console", "Refresh token rotated and access session renewed", req.ip);
+    setSessionCookies(res, refreshed);
     res.json({
       token: refreshed.token,
+      csrfToken: refreshed.csrfToken,
       refreshToken: refreshed.refreshToken,
       refreshTokenExpiresAt: refreshed.refreshTokenExpiresAt,
       user: publicUser(refreshed.user)
@@ -200,8 +242,8 @@ authRoutes.post("/session/refresh", rateLimit({ windowMs: 60000, max: 10 }), (re
 });
 
 authRoutes.post("/logout", auth, (req, res) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  revokeSession(token);
+  revokeSession(req.authToken);
   audit(req.user.id, "LOGOUT", "Sentinel Vault Console", "Session invalidated by user", req.ip);
+  clearSessionCookies(res);
   res.json({ ok: true });
 });

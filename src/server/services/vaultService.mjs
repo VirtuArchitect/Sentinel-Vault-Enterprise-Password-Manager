@@ -360,6 +360,11 @@ export const restoreSecretVersion = (user, id, index = 0) => store.withTransacti
 
 export const revealSecret = (user, id) => {
   const secret = requireSecret(id);
+  if (secret.deletedAt) {
+    const error = new Error("Secret not found");
+    error.status = 404;
+    throw error;
+  }
   requireSecretAccess(user, secret);
   audit(user.id, "REVEAL_SECRET", secret.name, "Credential viewed under active session policy");
   return { password: decryptSecret(secret.encrypted), expiresIn: store.state.policies.clipboardTtl };
