@@ -11,6 +11,9 @@ Status: Implemented
 - `scripts/start-demo.ps1` with `pnpm` and `npx pnpm@11.8.0` fallback.
 - README quick start and troubleshooting for `pnpm`, Corepack, Node.js, and port `5173`.
 - Repeatable smoke tests in `docs/testing/smoke-tests.md`.
+- Formal product version marker in `package.json`, `src/version.ts`, README, and the console UI.
+- `CHANGELOG.md` and release-governance runbook for version, documentation, runbook, demo-link, and best-practice update discipline.
+- Release-integrity validator wired into the standard verification path so future updates must keep version, changelog, demo links, runbooks, and developer instructions aligned.
 
 ## Phase 2: Production Storage
 

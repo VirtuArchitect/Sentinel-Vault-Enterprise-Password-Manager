@@ -16,21 +16,36 @@ instructions for all code changes in this repo.
 
 ## Project Commands
 
-Replace these placeholders with the exact commands for this repository:
-
 ```text
-Install:
-Lint:
-Format check:
-Type check:
-Unit tests:
-Integration tests:
-End-to-end tests:
-Build:
-Run app:
-Smoke test:
-Security scan:
+Install: pnpm install
+Release integrity: pnpm validate:release-integrity
+Type check: pnpm typecheck
+Unit/integration tests: pnpm test
+SQLite test lane: pnpm test:sqlite
+Build: pnpm build
+Run app: pnpm demo
+Smoke test: follow docs/testing/smoke-tests.md
+Dependency audit: pnpm audit:deps
+Security scan: pnpm scan:secrets
+Full local verify: pnpm verify
 ```
+
+## Future Update Requirements
+
+Every code, documentation, deployment, or security update must review and update
+the version, changelog, demo link, docs, and runbooks when applicable. Follow
+`docs/operations/release-governance-runbook.md`.
+
+Required release-governance checks:
+
+- Keep `package.json`, `src/version.ts`, `README.md`, and `CHANGELOG.md`
+  version references aligned.
+- Keep the local demo link aligned in `README.md` and
+  `docs/testing/smoke-tests.md`.
+- Update relevant architecture, deployment, operations, testing, and security
+  docs in the same change as behavior or evidence tooling.
+- Add or update tests for changed behavior.
+- Run `pnpm validate:release-integrity` before finishing any repository update.
 
 ## Project Context
 
@@ -108,4 +123,3 @@ Include:
 - Smoke test performed.
 - Security notes if applicable.
 - Untested items or residual risk.
-
