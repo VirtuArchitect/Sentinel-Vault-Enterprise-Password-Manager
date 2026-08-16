@@ -35,6 +35,7 @@ import {
 import { api } from "./api/client";
 import sentinelVaultMarkUrl from "./assets/sentinel-vault-mark.svg";
 import { generatePassword as generateCredentialPassword } from "./lib/passwordGenerator";
+import { APP_VERSION } from "./version";
 import type { AccessRequest, AddSecret, AuditEvent, ConsoleData, IdentityStatus, Policies, Secret, UserRecord } from "./types";
 import "./styles.css";
 
@@ -525,7 +526,7 @@ function App() {
   return (
     <main className={`window-shell ${locked ? "is-locked" : ""}`} onClick={() => setActiveMenu(null)}>
       <section className="titlebar">
-        <div><SentinelLogo size="small" />Sentinel Vault Enterprise Console</div>
+        <div><SentinelLogo size="small" />Sentinel Vault Enterprise Console v{APP_VERSION}</div>
         <div className="window-controls"><span /><span /><span /></div>
       </section>
 
@@ -932,6 +933,7 @@ function ManagementPanel({ data, canManage, newVault, onVaultChange, onVaultSubm
       <h2><Settings size={18} />Management</h2>
       <dl>
         <div><dt>Identity</dt><dd>{data.identity.name} ({data.identity.mode})</dd></div>
+        <div><dt>Version</dt><dd>v{APP_VERSION}</dd></div>
         <div><dt>Tenants</dt><dd>{data.metrics.tenants} hierarchy nodes</dd></div>
         <div><dt>Sessions</dt><dd>{data.session.activeSessions} active / {data.session.reviewable} reviewable / {data.session.knownDevices} devices / {data.session.ttlMinutes} min TTL / refresh {data.session.refreshTokensEnabled ? `${data.session.activeRefreshTokens} active` : "off"}</dd></div>
         <div><dt>Crypto</dt><dd>{data.crypto.algorithm} / {data.crypto.keyVersion} / {data.crypto.keyProvider.provider}</dd></div>

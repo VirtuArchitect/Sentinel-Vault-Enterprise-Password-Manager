@@ -5,7 +5,9 @@ Sentinel Vault is a KeePass-inspired, multi-user enterprise password manager pro
 <img width="1168" height="186" alt="image" src="https://github.com/user-attachments/assets/428f5d89-8840-444d-8aaf-47b40d64f131" />
 
 
+**Current version:** `v1.0.0`
 **Demo:** [Open the local Sentinel Vault console](http://127.0.0.1:5173) after starting the app with `pnpm demo` or `.\scripts\start-demo.ps1`.
+**Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
 ![Sentinel Vault logo](src/assets/sentinel-vault-mark.svg)
 
@@ -256,6 +258,7 @@ Windows deployment hardening guides:
 - `docs/deployment/tls-iis-checklist.md`
 - `docs/architecture/connector-certification.md`
 - `docs/operations/bulk-secret-import-runbook.md`
+- `docs/operations/release-governance-runbook.md`
 - `docs/security/autotype-credential-provider-review.md`
 - `docs/deployment/browser-extension-enterprise-policy.md`
 - `docs/operations/kms-hsm-key-ceremony.md`
